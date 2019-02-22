@@ -28,6 +28,6 @@ export default {
         }
     },
     database: {
-        mongo: env('MONGO_HOST', 'mongodb://localhost:27017/personal')
+        mongo: env('MONGO_HOST', 'mongodb://localhost:27017/rrhh')
     }
 };

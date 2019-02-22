@@ -1,19 +1,21 @@
 import * as bodyParser from 'body-parser';
 import * as boolParser from 'express-query-boolean';
 import * as HttpStatus from 'http-status-codes';
+import { Express } from 'express';
+const requireDir = require('require-dir');
+
+import * as config from './config';
 import { Connections } from './connections';
 import { Auth } from './auth';
-import { Express } from 'express';
 
 
 export function initAPI(app: Express) {
-
-    Connections.initialize();
 
     // Inicializa la autenticación con Passport/JWT
     Auth.initialize(app);
 
     // Inicializa Mongoose
+    Connections.initialize();
 
     // Configura Express
     app.use(bodyParser.json({ limit: '150mb' }));
@@ -40,6 +42,20 @@ export function initAPI(app: Express) {
     let AUTH = require('./auth');
     app.use('/api/auth/', AUTH.Routes);
 
+    for (const m in config.modules) {
+        if (config.modules[m].active) {
+            const routes = requireDir(config.modules[m].path);
+            for (const route in routes) {
+                if (config.modules[m].middleware) {
+                    app.use('/api' + config.modules[m].route,
+                        config.modules[m].middleware, routes[route]['Routes']);
+                } else {
+                    app.use('/api' + config.modules[m].route,
+                        routes[route]['Routes']);
+                }
+            }
+        }
+    }
     // Error handler
     app.use((err: any, req, res, next) => {
         let isError = (e) => {
