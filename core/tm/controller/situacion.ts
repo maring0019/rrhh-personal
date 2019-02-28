@@ -18,9 +18,12 @@ export async function getSituaciones(req, res, next) {
 
 export async function addSituacion(req, res, next) {
     try {
-        let situacionNueva = new Situacion(req.body);
-        await situacionNueva.save();
-        res.json(situacionNueva);
+        const situacion = new Situacion({
+            nombre: req.body.nombre,
+            requiereVencimiento: req.body.requiereVencimiento
+        });
+        const situacionNueva = await situacion.save();
+        return res.json(situacionNueva);
     } catch (err) {
         return next(err);
     }
@@ -29,13 +32,13 @@ export async function addSituacion(req, res, next) {
 export async function updateSituacion(req, res, next) {
     try {
         const id = req.params.id;
-        if (id && !Types.ObjectId.isValid(id)) res.status(404).send("Not found");
+        if (!id || (id && !Types.ObjectId.isValid(id))) return res.status(404).send();
         let situacion:any = await Situacion.findById(id);
-        if (!situacion) res.status(404).send("Not found");
+        if (!situacion) return res.status(404).send();
         situacion.nombre = req.body.nombre;
         situacion.requiereVencimiento = req.body.requiereVencimiento;
-        await situacion.save();
-        return res.json(situacion);
+        const situacionActualizada = await situacion.save();
+        return res.json(situacionActualizada);
     } catch (err) {
         return next(err);
     }
@@ -44,14 +47,12 @@ export async function updateSituacion(req, res, next) {
 export async function deleteSituacion(req, res, next) {
     try {
         const id = req.params.id;
-        if (id && !Types.ObjectId.isValid(id)) res.status(404).send("Not found");
+        if (!id || (id && !Types.ObjectId.isValid(id))) return res.status(404).send();
         let situacion:any = await Situacion.findById(id);
-        if (!situacion) res.status(404).send("Not found");
-        await situacion.remove();
-        return res.json(situacion);
+        if (!situacion) return res.status(404).send("Not found");
+        const situacionEliminada = await situacion.remove();
+        return res.json(situacionEliminada);
     } catch (err) {
         return next(err);
     }
-
 }
-
