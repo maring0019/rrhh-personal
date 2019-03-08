@@ -31,20 +31,25 @@ Routes.get('/sesion', authenticate(), (req, res) => {
 Routes.post('/login', async (req, res, next) => {
     // Función interna que genera token
     const login = async (nombre: string, apellido: string) => {
-        const ps: any[] = [
-            Usuario.findOne({ usuario: req.body.usuario }),
-            Usuario.findOneAndUpdate(
-                { usuario: req.body.usuario },
-                { password: sha1Hash(req.body.password), nombre, apellido },
-            )
-        ];
-        const [user] = await Promise.all(ps);
+        // const ps: any[] = [
+        //     Usuario.findOne({ usuario: req.body.usuario }),
+        //     Usuario.findOneAndUpdate(
+        //         { usuario: req.body.usuario },
+        //         { password: sha1Hash(req.body.password), nombre, apellido },
+        //     )
+        // ];
+        // const [user] = await Promise.all(ps);
 
-        if (!user || user.length === 0) {
-            return next(403);
-        }
+        // if (!user || user.length === 0) {
+        //     return next(403);
+        // }
 
         // Crea el token con los datos de sesión
+        const user:any = new Usuario( { usuario: 28588178,
+            activo: true,
+            nombre: 'David',
+            apellido: 'Nievas'
+        });
         res.json({
             token: Auth.generateUserToken(user)
         });
@@ -66,7 +71,8 @@ Routes.post('/login', async (req, res, next) => {
         return next(403);
     }
     // Usar LDAP?
-    if (!(config.auth.method === 'ldap')) {
+    // if (!(config.auth.method === 'ldap')) {
+    if (true) {
         // Access de prueba
         login(req.body.usuario, req.body.usuario);
     } else {

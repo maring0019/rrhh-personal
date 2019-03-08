@@ -6,6 +6,12 @@ export const modules = {
         route: '/core/tm',
         middleware: null,
     },
+    agentes:{
+        active: true,
+        path: './modules/agentes/routes',
+        route: '/modules/agentes',
+        middleware: null,
+    }
 };
 
 // Cotas de consumo de APIs
