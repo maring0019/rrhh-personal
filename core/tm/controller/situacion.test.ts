@@ -4,6 +4,7 @@ import * as request from 'supertest';
 import mockingoose from 'mockingoose';
 
 import { Routes } from '../routes/situacion';
+import errorMiddleware from '../../../middleware/error.middleware';
 
 
 const baseUrl = '/api/core/tm';
@@ -14,6 +15,7 @@ const initAPI = () =>{
         extended: true
     }));
     app.use(baseUrl, Routes);
+    app.use(errorMiddleware);
     return app;
 }
 
@@ -48,7 +50,7 @@ describe('GET /situaciones', () => {
     });
 
     it('Si algo falla en la consulta retornar status 500', async () => {
-        mockingoose.Situacion.toReturn(new Error(), 'find');
+        mockingoose.Situacion.toReturn(new Error("error"), 'find');
         const response = await request(app).get(baseUrl + '/situaciones');
         expect(response.status).toBe(500);
     });
@@ -57,7 +59,7 @@ describe('GET /situaciones', () => {
 
 describe('POST /situaciones', () => {
     it('Si algo falla al insertar retornar status 500', async () => {
-        mockingoose.Situacion.toReturn(new Error(), 'save');
+        mockingoose.Situacion.toReturn(new Error("error"), 'save');
         const response = await request(app).post(baseUrl + '/situaciones');
         expect(response.status).toBe(500);
     });
@@ -143,8 +145,8 @@ describe('PUT /situaciones', () => {
             nombre: 'Contratados',
             requiereVencimiento: false
         }; 
-        mockingoose.Situacion.toReturn(new Error(), 'findOne');
-        mockingoose.Situacion.toReturn(new Error(), 'save');
+        mockingoose.Situacion.toReturn(new Error("error"), 'findOne');
+        mockingoose.Situacion.toReturn(new Error("error"), 'save');
         const response = await request(app)
                 .put(baseUrl + '/situaciones/507f191e810c19729de860ea')
                 .send(body);
@@ -180,8 +182,8 @@ describe('DELETE /situaciones', () => {
         expect(response.status).toBe(200);
     })
     it('Si existe algun problema general retornar status 500', async () => {
-        mockingoose.Situacion.toReturn(new Error(), 'findOne');
-        mockingoose.Situacion.toReturn(new Error(), 'remove');
+        mockingoose.Situacion.toReturn(new Error("error"), 'findOne');
+        mockingoose.Situacion.toReturn(new Error("error"), 'remove');
         const response = await request(app).del(baseUrl + '/situaciones/507f191e810c19729de860ea');
         expect(JSON.parse(JSON.stringify(response.body))).toMatchObject({});
         expect(response.status).toBe(500);

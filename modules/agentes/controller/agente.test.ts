@@ -5,6 +5,7 @@ import mockingoose from 'mockingoose';
 
 import { Routes } from '../routes/agente';
 import AgenteController from './agente';
+import errorMiddleware from '../../../middleware/error.middleware';
 
 const baseUrl = '/api/modules/agentes';
 const initAPI = () =>{
@@ -14,6 +15,7 @@ const initAPI = () =>{
         extended: true
     }));
     app.use(baseUrl, Routes);
+    app.use(errorMiddleware);
     return app;
 }
 
@@ -24,7 +26,7 @@ describe('POST /agentes', () => {
     // Si el DNI (combinado con algo?) existe entonces notificar con status y body {}
     // Si falta algun dato obligatorio (definido en el schema) notificar correctamente
     it('Si algo falla al insertar retornar status 500', async () => {
-        mockingoose.Agente.toReturn(new Error(), 'save');
+        mockingoose.Agente.toReturn(new Error("error"), 'save');
         const response = await request(app).post(baseUrl + '/agentes');
         expect(response.status).toBe(500);
     });
@@ -55,7 +57,7 @@ describe('POST /agentes', () => {
 
         expect(mockCheckExiste).toBeCalled();
         expect(JSON.parse(JSON.stringify(response.body))).toMatchObject({});
-        expect(response.status).toBe(500);
+        expect(response.status).toBe(400);
     });
 
     it('Si el agente no existe y todos los datos del body estan bien entonces notificar con status 200 y body {}',

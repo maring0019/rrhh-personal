@@ -1,12 +1,14 @@
 import * as bodyParser from 'body-parser';
 import * as boolParser from 'express-query-boolean';
-import * as HttpStatus from 'http-status-codes';
+// import * as HttpStatus from 'http-status-codes';
 import { Express } from 'express';
 const requireDir = require('require-dir');
 
 import * as config from './config';
 import { Connections } from './connections';
 import { Auth } from './auth';
+import errorMiddleware from './middleware/error.middleware';
+import loggerMiddleware from './middleware/logger.middleware';
 
 
 export function initAPI(app: Express) {
@@ -38,7 +40,7 @@ export function initAPI(app: Express) {
     });
 
     // LOAD ALL ROUTES
-
+    app.use(loggerMiddleware);
     let AUTH = require('./auth');
     app.use('/api/auth/', AUTH.Routes);
 
@@ -57,43 +59,5 @@ export function initAPI(app: Express) {
         }
     }
     // Error handler
-    app.use((err: any, req, res, next) => {
-        let isError = (e) => {
-            return e && e.stack && e.message;
-        };
-        if (err) {
-            // Parse err
-            let e: { status: number, message: string };
-            if (!isNaN(err)) {
-                e = {
-                    message: HttpStatus.getStatusText(err),
-                    status: err
-                };
-            } else {
-                if (isError(err)) {
-                    e = {
-                        message: err.message,
-                        status: 500
-                    };
-                } else if (typeof err === 'string') {
-                    e = {
-                        message: err,
-                        status: 400
-                    };
-                } else {
-                    e = {
-                        message: JSON.stringify(err),
-                        status: 400
-                    };
-                }
-            }
-
-            // Send response
-            res.status(e.status);
-            res.send({
-                message: e.message,
-                error: (app.get('env') === 'development') ? err : null
-            });
-        }
-    });
+    app.use(errorMiddleware);
 }
