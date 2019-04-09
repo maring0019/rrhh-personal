@@ -20,7 +20,7 @@ export const AgenteSchema = new Schema({
     },
     cuil: {
         type: String,
-        required: true,
+        required: false, // No todos los agentes tienen CUIL en SQLServer
         es_indexed: true
     },
     nombre: {
@@ -34,13 +34,13 @@ export const AgenteSchema = new Schema({
         es_indexed: true
     },
     estadoCivil: constantes.ESTADOCIVIL,
-    nacionalidad: PaisSchema,
-    // sexo: constantes.SEXO,
-    // genero: constantes.SEXO,
+    sexo: constantes.SEXO,
+    genero: constantes.SEXO,
     fechaNacimiento: {
         type: Date,
         es_indexed: true
     },
+    nacionalidad: PaisSchema,
     direccion: [DireccionSchema],
     contacto: [ContactoSchema],
     educacion: [EducacionSchema],

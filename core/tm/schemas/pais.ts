@@ -2,7 +2,10 @@ import { Schema, model } from 'mongoose';
 
 
 export const PaisSchema = new Schema({
-    nombre: String,
+    nombre: {
+        type: String,
+        required: true,
+    },
     gentilicio: String //Nacionalidad
 });
 
