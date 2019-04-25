@@ -47,6 +47,7 @@
     "typescript": "^3.3.1"
   },
   "dependencies": {
+    "base64-stream": "1.0.0",
     "body-parser": "^1.18.3",
     "debug": "^4.1.1",
     "dotenv": "^6.2.0",
@@ -58,6 +59,7 @@
     "ldapjs": "^1.0.2",
     "moment": "^2.24.0",
     "mongoose": "^5.4.10",
+    "mongoose-gridfs": "0.6.2",
     "passport": "^0.4.0",
     "passport-jwt": "^4.0.0",
     "require-dir": "1.2.0",

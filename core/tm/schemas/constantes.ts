@@ -21,6 +21,7 @@ export const constantes = {
     },
     CONTACTO: {
         type: String,
+        required: true,
         enum: ['fijo', 'celular', 'email']
     },
     ESTUDIOS: {

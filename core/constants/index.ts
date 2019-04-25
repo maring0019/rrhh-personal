@@ -5,6 +5,10 @@ export const constantes = {
         es_indexed: true,
         enum: ['femenino', 'masculino', 'otro']
     },
+    GENERO: {
+        type: String,
+        enum: ['femenino', 'masculino', 'otro', null]
+    },
     ESTADOCIVIL: {
         type: String,
         enum: ['casado', 'separado', 'divorciado', 'viudo', 'soltero', 'concubino', 'otro', null]
