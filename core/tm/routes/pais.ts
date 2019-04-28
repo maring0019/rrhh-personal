@@ -6,5 +6,7 @@ export const Routes = express.Router();
 
 
 Routes.get('/paises/:id', PaisController.getPaisById);
+
 Routes.get('/paises', PaisController.getPaises);
+Routes.post('/paises', PaisController.addPais);
 

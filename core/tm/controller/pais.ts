@@ -10,7 +10,6 @@ export async function getPaisById(req, res, next) {
 }
 
 export async function getPaises(req, res, next) {
-    console.log('Quering paises');
     try {
         let query = Pais.find({});
         if (req.query.nombre) {
@@ -18,6 +17,20 @@ export async function getPaises(req, res, next) {
         }
         let paises = await query.sort({ nombre: 1 }).exec();
         return res.json(paises);
+    } catch (err) {
+        return next(err);
+    }
+}
+
+
+export async function addPais(req, res, next) {
+    try {
+        const pais = new Pais({
+            nombre: req.body.nombre,
+            gentilicio: req.body.gentilicio
+        });
+        const paisNuevo = await pais.save();
+        return res.json(paisNuevo);
     } catch (err) {
         return next(err);
     }

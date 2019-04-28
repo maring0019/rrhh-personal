@@ -1,7 +1,13 @@
-import { Schema } from 'mongoose';
+import { Schema, model } from 'mongoose';
 import {constantes } from '../../constants/index';
 
 export const EducacionSchema = new Schema({
-    tipo: constantes.ESTUDIOS,
-    titulo: String
+    tipoEducacion: constantes.ESTUDIOS,
+    titulo: {
+        type: String,
+        required: true,
+        index: true,
+    },
 })
+
+export const Educacion = model('Educacion', EducacionSchema, 'educacion');
