@@ -6,7 +6,7 @@ import { PaisSchema } from '../../../core/tm/schemas/pais';
 import { ContactoSchema } from '../../../core/tm/schemas/contacto';
 import { EducacionSchema } from '../../../core/tm/schemas/educacion';
 import { EspecialidadSchema } from '../../../core/tm/schemas/especialidad';
-// import { SituacionEnPlantaSchema } from './situacionEnPlanta';
+import { SituacionSchema } from '../../../core/tm/schemas/situacion';
 import { CargoSchema } from '../../../core/tm/schemas/cargo';
 
 
@@ -45,7 +45,16 @@ export const AgenteSchema = new Schema({
     contactos: [ContactoSchema],
     educacion: [EducacionSchema],
     especialidad: EspecialidadSchema, // TODO Ver especialidadSchema
-    // situacion: SituacionEnPlantaSchema,
+    // TODO: Si estos datos son realmente necesarios moverlos a otro schema
+    situacion: SituacionSchema,
+    situacionLugarPago: String,
+    situacionFechaIngresoEstado: Date,
+    situacionFechaIngresoHospital: Date,
+    antiguedadVacaciones: Date,
+    antiguedadPago: Date,
+    exceptuadoFichado: Boolean,
+    trabajaEnHospital: Boolean,
+    trasladoDesde: String,
     cargos: [CargoSchema],
     foto: String,
     codigoFichado: String,

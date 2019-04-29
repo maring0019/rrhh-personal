@@ -9,7 +9,7 @@ export const SituacionSchema = new Schema({
     nombre: {
         type: String,
         required: true,
-        unique: true,
+        index: true,
     },
     requiereVencimiento: {// Indica si la carga de un agente requerira una fecha de baja automatica
         type: Boolean,
