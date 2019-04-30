@@ -7,7 +7,7 @@ import { ContactoSchema } from '../../../core/tm/schemas/contacto';
 import { EducacionSchema } from '../../../core/tm/schemas/educacion';
 import { EspecialidadSchema } from '../../../core/tm/schemas/especialidad';
 import { SituacionSchema } from '../../../core/tm/schemas/situacion';
-import { CargoSchema } from '../../../core/tm/schemas/cargo';
+import { CargoSchema } from './cargo';
 
 
 export const AgenteSchema = new Schema({
@@ -55,10 +55,10 @@ export const AgenteSchema = new Schema({
     exceptuadoFichado: Boolean,
     trabajaEnHospital: Boolean,
     trasladoDesde: String,
-    cargos: [CargoSchema],
     foto: String,
     codigoFichado: String,
-    activo: Boolean
+    activo: Boolean,
+    historiaLaboral: [CargoSchema]
 });
 
 /**

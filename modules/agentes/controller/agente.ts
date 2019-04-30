@@ -135,6 +135,7 @@ async function addAgente(req, res, next){
             exceptuadoFichado: req.body.exceptuadoFichado,
             trabajaEnHospital: req.body.trabajaEnHospital,
             trasladoDesde: req.body.trasladoDesde,
+            historiaLaboral: req.body.historiaLaboral
         });
         // Con el objetivo de facilitar el testing de funciones que invocan
         // otras funciones internas dentro del mismo modulo es que se realiza

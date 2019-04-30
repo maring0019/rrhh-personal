@@ -6,6 +6,12 @@ export const modules = {
         route: '/core/tm',
         middleware: null,
     },
+    organigrama: {
+        active: true,
+        path: './core/organigrama/routes',
+        route: '/core/organigrama',
+        middleware: null,
+    },
     agentes:{
         active: true,
         path: './modules/agentes/routes',

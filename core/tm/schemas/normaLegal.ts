@@ -1,8 +1,14 @@
-import { Schema } from 'mongoose';
+import { Schema, model } from 'mongoose';
 
 /**
  * 
  */
-export const NormaLegalSchema = new Schema({
-    nombre: String
+export const TipoNormaLegalSchema = new Schema({
+    nombre:{
+        type: String,
+        es_indexed: true
+    }
 });
+
+
+export const TipoNormaLegal = model('TipoNormaLegal', TipoNormaLegalSchema, 'tiposnormalegal');
