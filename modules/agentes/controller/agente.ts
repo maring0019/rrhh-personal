@@ -126,16 +126,8 @@ async function addAgente(req, res, next){
             // TODO Test
             contactos: req.body.contactos,
             educacion: req.body.educacion,
-            situacion: req.body.situacion,
-            situacionLugarPago: req.body.situacionLugarPago,
-            situacionFechaIngresoEstado: req.body.situacionFechaIngresoEstado,
-            situacionFechaIngresoHospital: req.body.situacionFechaIngresoHospital,
-            antiguedadVacaciones: req.body.antiguedadVacaciones,
-            antiguedadPago: req.body.antiguedadPago,
-            exceptuadoFichado: req.body.exceptuadoFichado,
-            trabajaEnHospital: req.body.trabajaEnHospital,
-            trasladoDesde: req.body.trasladoDesde,
-            historiaLaboral: req.body.historiaLaboral
+            historiaLaboral: req.body.historiaLaboral,
+            situacionLaboral: req.body.situacionLaboral
         });
         // Con el objetivo de facilitar el testing de funciones que invocan
         // otras funciones internas dentro del mismo modulo es que se realiza
