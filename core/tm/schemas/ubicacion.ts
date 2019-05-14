@@ -1,4 +1,5 @@
 import { Schema } from 'mongoose';
+import { ProvinciaSchema } from './provincia';
 
 export const UbicacionSchema = new Schema({
     barrio: { type: String },
@@ -7,11 +8,6 @@ export const UbicacionSchema = new Schema({
         required: false
     },
     provincia: {
-        type: String,
-        required: false
-    },
-    pais: {
-        type: String,
-        required: false
+         type: ProvinciaSchema
     }
 });

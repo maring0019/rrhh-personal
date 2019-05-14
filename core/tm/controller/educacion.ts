@@ -15,6 +15,9 @@ export async function getEducacion(req, res, next) {
         if (req.query.titulo) {
             query.where('titulo').equals(RegExp('^.*' + req.query.titulo + '.*$', 'i'));
         }
+        if (req.query.tipoEducacion) {
+            query.where('tipoEducacion').equals(req.query.tipoEducacion);
+        }
         let educacion = await query.sort({ titulo: 1 }).exec();
         return res.json(educacion);
     } catch (err) {

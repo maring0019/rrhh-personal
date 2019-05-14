@@ -21,6 +21,7 @@ async function getAgentes(req, res, next){
 
 // TODO Implementar testing
 async function getAgenteByID(req, res, next){
+    console.log('Busqueda por ID!!!');
     try {
         const id = req.params.id;
         if (!id || (id && !Types.ObjectId.isValid(id))) return res.status(404).send();
@@ -155,12 +156,27 @@ async function updateAgente(req, res, next) {
     try {
         const id = req.params.id;
         if (!id || (id && !Types.ObjectId.isValid(id))) return res.status(404).send();
-        let situacion:any = await Agente.findById(id);
-        if (!situacion) return res.status(404).send();
-        situacion.nombre = req.body.nombre;
-        situacion.requiereVencimiento = req.body.requiereVencimiento;
-        const situacionActualizada = await situacion.save();
-        return res.json(situacionActualizada);
+        let agente:any = await Agente.findById(id);
+        if (!agente) return res.status(404).send();
+            agente.numero= req.body.numero;
+            agente.documento= req.body.documento;
+            agente.cuil= req.body.cuil;
+            agente.nombre= req.body.nombre;
+            agente.apellido= req.body.apellido;
+            agente.estadoCivil= req.body.estadoCivil;
+            agente.sexo= req.body.sexo;
+            agente.genero= req.body.genero;
+            agente.fechaNacimiento= req.body.fechaNacimiento;
+            agente.nacionalidad= req.body.nacionalidad;
+            agente.direccion= req.body.direccion;
+            // TODO Test
+            agente.contactos= req.body.contactos;
+            agente.educacion= req.body.educacion;
+            // agente.historiaLaboral= req.body.historiaLaboral,
+            // agente.situacionLaboral= req.body.situacionLaboral
+        
+        const agenteActualizado = await agente.save();
+        return res.json(agenteActualizado);
     } catch (err) {
         return next(err);
     }
