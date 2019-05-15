@@ -28,6 +28,7 @@ export async function addDepartamento(req, res, next) {
         const departamento = new Departamento({
             nombre: req.body.nombre,
             jefe: req.body.jefe, // ID de un Agente
+            direccion: req.body.direccion,
             ubicacion: req.body.ubicacion
         });
         const departamentoNuevo = await departamento.save();
