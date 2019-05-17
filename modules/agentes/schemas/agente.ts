@@ -6,8 +6,7 @@ import { PaisSchema } from '../../../core/tm/schemas/pais';
 import { ContactoSchema } from '../../../core/tm/schemas/contacto';
 import { EducacionSchema } from '../../../core/tm/schemas/educacion';
 import { EspecialidadSchema } from '../../../core/tm/schemas/especialidad';
-import { CargoSchema } from './cargo';
-import { SituacionLaboralSchema } from './situacionLaboral';
+import { HistoriaLaboralSchema } from './historiaLaboral';
 
 
 export const AgenteSchema = new Schema({
@@ -49,11 +48,7 @@ export const AgenteSchema = new Schema({
     foto: String,
     codigoFichado: String,
     activo: Boolean,
-    historiaLaboral: [CargoSchema],
-    // TODO La situacion posiblemente este vinculada directamente
-    // a cada cargo de la historia laboral del agente (Consultar)
-    // Con el regimen posiblemente se de el mismo caso
-    situacionLaboral: SituacionLaboralSchema 
+    historiaLaboral: [HistoriaLaboralSchema]
 });
 
 /**
