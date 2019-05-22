@@ -128,7 +128,6 @@ async function addAgente(req, res, next){
             contactos: req.body.contactos,
             educacion: req.body.educacion,
             historiaLaboral: req.body.historiaLaboral,
-            situacionLaboral: req.body.situacionLaboral
         });
         // Con el objetivo de facilitar el testing de funciones que invocan
         // otras funciones internas dentro del mismo modulo es que se realiza

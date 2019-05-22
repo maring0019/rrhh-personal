@@ -6,7 +6,8 @@ import { Schema, model } from 'mongoose';
 export const PuestoSchema = new Schema({
     nombre:{
         type: String,
-        es_indexed: true
+        index: true,
+        required: true,
     }
 });
 

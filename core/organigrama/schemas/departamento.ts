@@ -5,7 +5,8 @@ import { DireccionSchema } from './direccion';
 export const DepartamentoSchema = new Schema({
     nombre:{
         type: String,
-        es_indexed: true
+        index: true,
+        required: true,
     },
     jefe: String, // ID de un Agente
     direccion: DireccionSchema,

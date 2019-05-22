@@ -3,7 +3,7 @@ import * as bodyParser from 'body-parser';
 import * as request from 'supertest';
 import mockingoose from 'mockingoose';
 
-import { Routes } from '../routes/situacion';
+import { Routes } from '../routes/tiposituacion';
 import errorMiddleware from '../../../middleware/error.middleware';
 
 
@@ -21,7 +21,7 @@ const initAPI = () =>{
 
 let app = initAPI()
 
-describe('GET /situaciones', () => {
+describe('GET /tiposituaciones', () => {
     const _docs =[ 
         {
             _id: '507f191e810c19729de860ea',
@@ -34,41 +34,41 @@ describe('GET /situaciones', () => {
         }];
 
     it('Si no tiene parametros de busqueda retornamos todos los elementos y un status 200', async () => {
-        mockingoose.Situacion.toReturn(_docs, 'find'); 
-        const response = await request(app).get(baseUrl + '/situaciones');
+        mockingoose.TipoSituacion.toReturn(_docs, 'find'); 
+        const response = await request(app).get(baseUrl + '/tiposituaciones');
         expect(JSON.parse(JSON.stringify(response.body))).toMatchObject(_docs);
         expect(response.status).toBe(200);
     });
 
     it('Si tiene parametros de busqueda validamos que se apliquen ', async () => {
         const expectedResults = [_docs[1]];
-        mockingoose.Situacion.toReturn(expectedResults, 'find');
-        const response = await request(app).get(baseUrl + '/situaciones?nombre=Permanente');
+        mockingoose.TipoSituacion.toReturn(expectedResults, 'find');
+        const response = await request(app).get(baseUrl + '/tiposituaciones?nombre=Permanente');
         // [TODO] Validar que se aplique el parametro de busqueda a la consulta
         expect(JSON.parse(JSON.stringify(response.body))).toMatchObject(expectedResults);
         expect(response.status).toBe(200);
     });
 
     it('Si algo falla en la consulta retornar status 500', async () => {
-        mockingoose.Situacion.toReturn(new Error("error"), 'find');
-        const response = await request(app).get(baseUrl + '/situaciones');
+        mockingoose.TipoSituacion.toReturn(new Error("error"), 'find');
+        const response = await request(app).get(baseUrl + '/tiposituaciones');
         expect(response.status).toBe(500);
     });
 })
 
 
-describe('POST /situaciones', () => {
+describe('POST /tiposituaciones', () => {
     it('Si algo falla al insertar retornar status 500', async () => {
-        mockingoose.Situacion.toReturn(new Error("error"), 'save');
-        const response = await request(app).post(baseUrl + '/situaciones');
+        mockingoose.TipoSituacion.toReturn(new Error("error"), 'save');
+        const response = await request(app).post(baseUrl + '/tiposituaciones');
         expect(response.status).toBe(500);
     });
 
     it('Si el body no tiene el atributo nombre retornar status 500 y un objeto vacio', async () => {
         const _doc = {};
-        mockingoose.Situacion.toReturn(_doc, 'save');
+        mockingoose.TipoSituacion.toReturn(_doc, 'save');
         const response = await request(app)
-            .post(baseUrl + '/situaciones');
+            .post(baseUrl + '/tiposituaciones');
         expect(JSON.parse(JSON.stringify(response.body))).toMatchObject(_doc);
         expect(response.status).toBe(500);
     })
@@ -79,26 +79,26 @@ describe('POST /situaciones', () => {
                 nombre: 'Contratado',
                 requiereVencimiento: true
             };
-            mockingoose.Situacion.toReturn(_doc, 'save'); 
+            mockingoose.TipoSituacion.toReturn(_doc, 'save'); 
             const response = await request(app)
-                .post(baseUrl + '/situaciones')
+                .post(baseUrl + '/tiposituaciones')
                 .send(_doc); // body del POST
             expect(JSON.parse(JSON.stringify(response.body))).toMatchObject(_doc);
             expect(response.status).toBe(200);
     })
 });
 
-describe('PUT /situaciones', () => {
+describe('PUT /tiposituaciones', () => {
     it('Si no existe id de situacion en la URL retornar status 404', async () => {
-        const response = await request(app).put(baseUrl + '/situaciones');
+        const response = await request(app).put(baseUrl + '/tiposituaciones');
         expect(JSON.parse(JSON.stringify(response.body))).toMatchObject({});
         expect(response.status).toBe(404);
 
     });
     it('Si existe el id en la URL pero no existe el objeto situacion con ese id, retornar 404',
         async () => {
-        mockingoose.Situacion.toReturn(null, 'findOne');
-        const response = await request(app).put(baseUrl + '/situaciones/507f191e810c19729de860ea');
+        mockingoose.TipoSituacion.toReturn(null, 'findOne');
+        const response = await request(app).put(baseUrl + '/tiposituaciones/507f191e810c19729de860ea');
         expect(JSON.parse(JSON.stringify(response.body))).toMatchObject({});
         expect(response.status).toBe(404);
 
@@ -110,8 +110,8 @@ describe('PUT /situaciones', () => {
             nombre: 'Contratado',
             requiereVencimiento: true
         };
-        mockingoose.Situacion.toReturn(_doc, 'findOne');
-        const response = await request(app).put(baseUrl + '/situaciones/507f191e810c19729de860ea');
+        mockingoose.TipoSituacion.toReturn(_doc, 'findOne');
+        const response = await request(app).put(baseUrl + '/tiposituaciones/507f191e810c19729de860ea');
         expect(JSON.parse(JSON.stringify(response.body))).toMatchObject({});
         expect(response.status).toBe(500);
     });
@@ -131,10 +131,10 @@ describe('PUT /situaciones', () => {
                 nombre: 'Contratados',
                 requiereVencimiento: false
             };
-            mockingoose.Situacion.toReturn(_doc, 'findOne');
-            mockingoose.Situacion.toReturn(_updatedDoc, 'save');
+            mockingoose.TipoSituacion.toReturn(_doc, 'findOne');
+            mockingoose.TipoSituacion.toReturn(_updatedDoc, 'save');
             const response = await request(app)
-                .put(baseUrl + '/situaciones/507f191e810c19729de860ea')
+                .put(baseUrl + '/tiposituaciones/507f191e810c19729de860ea')
                 .send(body);
             expect(JSON.parse(JSON.stringify(response.body))).toMatchObject(_updatedDoc);
             expect(response.status).toBe(200);
@@ -145,26 +145,26 @@ describe('PUT /situaciones', () => {
             nombre: 'Contratados',
             requiereVencimiento: false
         }; 
-        mockingoose.Situacion.toReturn(new Error("error"), 'findOne');
-        mockingoose.Situacion.toReturn(new Error("error"), 'save');
+        mockingoose.TipoSituacion.toReturn(new Error("error"), 'findOne');
+        mockingoose.TipoSituacion.toReturn(new Error("error"), 'save');
         const response = await request(app)
-                .put(baseUrl + '/situaciones/507f191e810c19729de860ea')
+                .put(baseUrl + '/tiposituaciones/507f191e810c19729de860ea')
                 .send(body);
         expect(JSON.parse(JSON.stringify(response.body))).toMatchObject({});
         expect(response.status).toBe(500);
     });
 });
 
-describe('DELETE /situaciones', () => {
+describe('DELETE /tiposituaciones', () => {
     it('Si no existe id de situacion en la URL retornar status 404', async () => {
-        const response = await request(app).del(baseUrl + '/situaciones');
+        const response = await request(app).del(baseUrl + '/tiposituaciones');
         expect(JSON.parse(JSON.stringify(response.body))).toMatchObject({});
         expect(response.status).toBe(404);
     });
     it('Si existe el id en la URL pero no existe el objeto situacion con ese id, retornar 404',
         async () => {
-        mockingoose.Situacion.toReturn(null, 'findOne');
-        const response = await request(app).del(baseUrl + '/situaciones/507f191e810c19729de860ea');
+        mockingoose.TipoSituacion.toReturn(null, 'findOne');
+        const response = await request(app).del(baseUrl + '/tiposituaciones/507f191e810c19729de860ea');
         expect(JSON.parse(JSON.stringify(response.body))).toMatchObject({});
         expect(response.status).toBe(404);
     });
@@ -175,16 +175,16 @@ describe('DELETE /situaciones', () => {
             nombre: 'Contratados',
             requiereVencimiento: false
         };
-        mockingoose.Situacion.toReturn(_deletedDoc, 'findOne');
-        mockingoose.Situacion.toReturn(_deletedDoc, 'remove');
-        const response = await request(app).del(baseUrl + '/situaciones/507f191e810c19729de860ea');
+        mockingoose.TipoSituacion.toReturn(_deletedDoc, 'findOne');
+        mockingoose.TipoSituacion.toReturn(_deletedDoc, 'remove');
+        const response = await request(app).del(baseUrl + '/tiposituaciones/507f191e810c19729de860ea');
         expect(JSON.parse(JSON.stringify(response.body))).toMatchObject(_deletedDoc);
         expect(response.status).toBe(200);
     })
     it('Si existe algun problema general retornar status 500', async () => {
-        mockingoose.Situacion.toReturn(new Error("error"), 'findOne');
-        mockingoose.Situacion.toReturn(new Error("error"), 'remove');
-        const response = await request(app).del(baseUrl + '/situaciones/507f191e810c19729de860ea');
+        mockingoose.TipoSituacion.toReturn(new Error("error"), 'findOne');
+        mockingoose.TipoSituacion.toReturn(new Error("error"), 'remove');
+        const response = await request(app).del(baseUrl + '/tiposituaciones/507f191e810c19729de860ea');
         expect(JSON.parse(JSON.stringify(response.body))).toMatchObject({});
         expect(response.status).toBe(500);
     })

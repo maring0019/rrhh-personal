@@ -3,7 +3,8 @@ import { Schema, model } from 'mongoose';
 export const RegimenHorarioSchema = new Schema({
     nombre:{
         type: String,
-        es_indexed: true
+        index: true,
+        required: true,
     }
 });
 

@@ -1,10 +1,10 @@
 import { Types } from 'mongoose';
-import { Situacion } from '../schemas/situacion';
+import { TipoSituacion } from '../schemas/tiposituacion';
 
 
-export async function getSituaciones(req, res, next) {
+export async function getTipoSituaciones(req, res, next) {
     try {
-        let query = Situacion.find({});
+        let query = TipoSituacion.find({});
         if (req.query.nombre) {
             query.where('nombre').equals(RegExp('^.*' + req.query.nombre + '.*$', 'i'));
         }
@@ -16,9 +16,9 @@ export async function getSituaciones(req, res, next) {
 }
 
 
-export async function addSituacion(req, res, next) {
+export async function addTipoSituacion(req, res, next) {
     try {
-        const situacion = new Situacion({
+        const situacion = new TipoSituacion({
             nombre: req.body.nombre,
             requiereVencimiento: req.body.requiereVencimiento
         });
@@ -29,11 +29,11 @@ export async function addSituacion(req, res, next) {
     }
 }
 
-export async function updateSituacion(req, res, next) {
+export async function updateTipoSituacion(req, res, next) {
     try {
         const id = req.params.id;
         if (!id || (id && !Types.ObjectId.isValid(id))) return next(404);
-        let situacion:any = await Situacion.findById(id);
+        let situacion:any = await TipoSituacion.findById(id);
         if (!situacion) return next(404);
         situacion.nombre = req.body.nombre;
         situacion.requiereVencimiento = req.body.requiereVencimiento;
@@ -44,11 +44,11 @@ export async function updateSituacion(req, res, next) {
     }
 }
 
-export async function deleteSituacion(req, res, next) {
+export async function deleteTipoSituacion(req, res, next) {
     try {
         const id = req.params.id;
         if (!id || (id && !Types.ObjectId.isValid(id))) return next(404);
-        let situacion:any = await Situacion.findById(id);
+        let situacion:any = await TipoSituacion.findById(id);
         if (!situacion) return next(404);
         const situacionEliminada = await situacion.remove();
         return res.json(situacionEliminada);

@@ -5,7 +5,7 @@ import { Schema, model } from 'mongoose';
  * Situacion en planta de los agentes ingresados al sistema.
  * Ej Contrados, Permanentes, etc
  */
-export const SituacionSchema = new Schema({
+export const TipoSituacionSchema = new Schema({
     nombre: {
         type: String,
         required: true,
@@ -17,4 +17,4 @@ export const SituacionSchema = new Schema({
     }
 });
 
-export const Situacion = model('Situacion', SituacionSchema, 'situacion');
+export const TipoSituacion = model('TipoSituacion', TipoSituacionSchema, 'tiposituaciones');

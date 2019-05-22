@@ -1,5 +1,4 @@
 import { Schema, model } from 'mongoose';
-import { ServicioSchema } from './servicio';
 
 
 export const SectorSchema = new Schema({
@@ -7,8 +6,8 @@ export const SectorSchema = new Schema({
         type: String,
         es_indexed: true
     },
-    jefe: String, // Referencia codigo Agente
-    servicio: ServicioSchema,
+    jefe: String,     // Referencia codigo Agente? TODO: Consultar
+    servicio: String, // Referencia codigo Servicio? TODO: Consultar
     ubicacion: {
         type: Number,
         required: true,

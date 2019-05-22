@@ -3,7 +3,11 @@ import { DepartamentoSchema } from './departamento';
 
 
 export const ServicioSchema = new Schema({
-    nombre: String, 
+    nombre: {
+        type: String,
+        index: true,
+        required: true,
+    }, 
     jefe: String, // ID de un Agente
     departamento: DepartamentoSchema,
     ubicacion: {

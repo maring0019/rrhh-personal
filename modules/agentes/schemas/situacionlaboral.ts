@@ -1,18 +1,22 @@
 import { Schema } from 'mongoose';
 
-import { SituacionSchema } from '../../../core/tm/schemas/situacion';
+import { CargoSchema } from './cargo';
+import { TipoNormaLegalSchema } from '../../../core/tm/schemas/normalegal';
+import { RegimenSchema } from './regimen';
+import { SituacionSchema } from './situacion';
 
+/**
+ * Historia Laboral del Agente
+ */
 export const SituacionLaboralSchema = new Schema({
+    tipoNormaLegal: TipoNormaLegalSchema,
+    numeroNormaLegal: String,
+    fechaNormaLegal: Date,
     situacion: SituacionSchema,
-    situacionLugarPago: String,
-    situacionFechaIngresoEstado: Date,
-    situacionFechaIngresoHospital: Date,
-    antiguedadVacaciones: Date,
-    antiguedadPago: Date,
-    exceptuadoFichado: Boolean,
-    trabajaEnHospital: Boolean,
-    trasladoDesde: String,
+    cargo: CargoSchema,
+    regimen: RegimenSchema,
+    inactivo:{
+        type: Boolean,
+        default: false
+    }
 })
-
-// export const SituacionLaboral = model('SituacionLaboral', SituacionLaboralSchema, 'situacionLaboral');
-

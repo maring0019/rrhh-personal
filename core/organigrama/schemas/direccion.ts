@@ -4,7 +4,8 @@ import { Schema, model } from 'mongoose';
 export const DireccionSchema = new Schema({
     nombre:{
         type: String,
-        es_indexed: true
+        index: true,
+        required: true,
     },
     jefe: String, // Es un nombre completo (preguntar porque no es un agente)
     ubicacion: {
