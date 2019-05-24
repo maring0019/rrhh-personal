@@ -1,6 +1,6 @@
 import { Schema, model } from 'mongoose';
 
-import { TipoNormaLegalSchema } from '../../../core/tm/schemas/normalegal';
+import { TipoNormaLegalSchema } from '../../../core/tm/schemas/normaLegal';
 import { ServicioSchema } from '../../../core/organigrama/schemas/servicio';
 import { SectorSchema } from '../../../core/organigrama/schemas/sector';
 import { PuestoSchema } from '../../../core/organigrama/schemas/puesto';

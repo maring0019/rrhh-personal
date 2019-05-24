@@ -1,4 +1,4 @@
-import { TipoNormaLegal } from '../schemas/normalegal';
+import { TipoNormaLegal } from '../schemas/normaLegal';
 
 export async function getTipoNormaLegalById(req, res, next) {
     try {
