@@ -1,7 +1,7 @@
 import { Schema } from 'mongoose';
 
 import { CargoSchema } from './cargo';
-import { TipoNormaLegalSchema } from '../../../core/tm/schemas/normaLegal';
+import { TipoNormaLegalSchema } from '../../../core/tm/schemas/normalegal';
 import { RegimenSchema } from './regimen';
 import { SituacionSchema } from './situacion';
 
