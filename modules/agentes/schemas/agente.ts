@@ -48,7 +48,12 @@ export const AgenteSchema = new Schema({
     foto: String,
     codigoFichado: String,
     activo: Boolean,
-    historiaLaboral: [SituacionLaboralSchema]
+    historiaLaboral: [SituacionLaboralSchema],
+    // TODO: Analizar si traer estos datos aqui desde SchemaSituacion
+    situacionFechaIngresoEstado: Date,
+    situacionFechaIngresoHospital: Date,
+    antiguedadVacaciones: Date,
+    antiguedadPago: Date
 });
 
 /**

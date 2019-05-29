@@ -1,13 +1,7 @@
 import { Schema } from 'mongoose';
-import { ProvinciaSchema } from './provincia';
+import { LocalidadSchema } from './localidad';
 
 export const UbicacionSchema = new Schema({
     barrio: { type: String },
-    localidad: {
-        type: String,
-        required: false
-    },
-    provincia: {
-         type: ProvinciaSchema
-    }
+    localidad: { type: LocalidadSchema },
 });

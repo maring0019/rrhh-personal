@@ -1,15 +1,12 @@
 import { Schema } from 'mongoose';
-import { UbicacionSchema } from './ubicacion';
+import { LocalidadSchema } from './localidad';
 
 
 export const DireccionSchema = new Schema({
-    // tipo: {
-    //     type: String,
-    //     required: false
-    // },
     valor: String,
     codigoPostal: String,
-    ubicacion: { type: UbicacionSchema},
+    barrio: { type: String },
+    localidad: { type: LocalidadSchema },
     geoReferencia: {
         type: [Number],
         index: '2d'
@@ -25,5 +22,4 @@ export const DireccionSchema = new Schema({
         default: true
     },
     ultimaActualizacion: Date,
-    
 });

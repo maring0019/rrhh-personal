@@ -29,3 +29,20 @@ export async function getLocalidades(req, res, next) {
         return next(err);
     }
 }
+
+
+
+export async function addLocalidad(req, res, next) {
+    console.log('Adding Localidad');
+    try {
+        const obj = new Localidad({
+            nombre: req.body.nombre,
+            codigo: req.body.codigo,
+            provincia: req.body.provincia
+        });
+        const objNuevo = await obj.save();
+        return res.json(objNuevo);
+    } catch (err) {
+        return next(err);
+    }
+}

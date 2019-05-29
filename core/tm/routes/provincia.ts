@@ -8,3 +8,5 @@ export const Routes = express.Router();
 Routes.get('/provincias/:id', ProvinciaController.getProvinciaById);
 Routes.get('/provincias', ProvinciaController.getProvincias);
 
+Routes.post('/provincias', ProvinciaController.addProvincia);
+

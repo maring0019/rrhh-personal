@@ -7,7 +7,8 @@ export const LocalidadSchema = new Schema({
         index: true,
         required: true,
     },
-    provincia: { type: ProvinciaSchema }
+    provincia: { type: ProvinciaSchema },
+    codigo: String // Se mantiene solo por compatibilidad con el sistema anterior
 });
 
-export const Localidad = model('Localidad', LocalidadSchema, 'localidad');
+export const Localidad = model('Localidad', LocalidadSchema, 'localidades');
