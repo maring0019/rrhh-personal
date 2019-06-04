@@ -50,7 +50,7 @@ describe('POST /agentes', () => {
             nombre: 'Marcos',
             apellido: 'Cisterna'
         };
-        const mockCheckExiste = jest.spyOn(AgenteController, "findAgente");
+        const mockCheckExiste = jest.spyOn(AgenteController, "_findAgente");
         const mockResultCheckExiste = {
                 _id: '507f191e810c19729de860eb',
                 documento: '28588178',
@@ -86,7 +86,7 @@ describe('POST /agentes', () => {
             sexo: 'masculino',
             genero: 'masculino',
         };
-        const mockCheckExiste = jest.spyOn(AgenteController, "findAgente");
+        const mockCheckExiste = jest.spyOn(AgenteController, "_findAgente");
         mockCheckExiste.mockResolvedValue({});
         mockingoose.Agente.toReturn(_doc, 'save');
         const response = await request(app)
@@ -101,27 +101,27 @@ describe('POST /agentes', () => {
 
 describe('Controles para determinar si un objeto es vacio', () => {
     it('Si el objeto es un json vacio retornar true', async () => {
-        const result = AgenteController.isEmpty({});
+        const result = AgenteController._isEmpty({});
         expect(result).toEqual(true);
     });
 
     it('Si el objeto es null retornar true', async () => {
-        const result = AgenteController.isEmpty(null);
+        const result = AgenteController._isEmpty(null);
         expect(result).toEqual(true);
     });
 
     it('Si el objeto es undefined retornar true', async () => {
-        const result = AgenteController.isEmpty(undefined);
+        const result = AgenteController._isEmpty(undefined);
         expect(result).toEqual(true);
     })
 
     it('Si el objeto es una cadena vacia retornar true', async () => {
-        const result = AgenteController.isEmpty('');
+        const result = AgenteController._isEmpty('');
         expect(result).toEqual(true);
     })
 
     it('Si el objeto tiene al menos un atributo retornar false', async () => {
-        const result = AgenteController.isEmpty({documento:28588178});
+        const result = AgenteController._isEmpty({documento:28588178});
         expect(result).toEqual(false);
     })
 });
@@ -137,7 +137,7 @@ describe('Controles sobre atributos requeridos de un Agente ', () => {
                 genero: 'masculino',
             }
             const expectedResult = ['documento'];
-            const result = AgenteController.validateAgenteAttributes(agente);
+            const result = AgenteController._validateAgenteAttributes(agente);
             expect(result).toEqual(expectedResult);
     });
 
@@ -152,7 +152,7 @@ describe('Controles sobre atributos requeridos de un Agente ', () => {
                 genero: 'masculino',
             }
             const expectedResult = ['nombre'];
-            const result = AgenteController.validateAgenteAttributes(agente);
+            const result = AgenteController._validateAgenteAttributes(agente);
             expect(result).toEqual(expectedResult);
     });
 
@@ -167,7 +167,7 @@ describe('Controles sobre atributos requeridos de un Agente ', () => {
                 genero: 'femenino',
             });
             const expectedResult = [];
-            const result = AgenteController.validateAgenteAttributes(agente);
+            const result = AgenteController._validateAgenteAttributes(agente);
             expect(result).toEqual(expectedResult);
     });
     
@@ -179,7 +179,7 @@ describe('Controles sobre atributos requeridos de un Agente ', () => {
             sexo:'',
             fechaNacimiento: '',
         }
-        await expect(AgenteController.findAgente(agente)).rejects.toThrowError('Faltan atributos requeridos');
+        await expect(AgenteController._findAgente(agente)).rejects.toThrowError('Faltan atributos requeridos');
     });
 
 })
@@ -195,7 +195,7 @@ describe('Controles sobre la existencia de un Agente ', () => {
     //             sexo:'',
     //             fechaNacimiento: '',
     //         }
-    //         AgenteController.findAgente(agente);
+    //         AgenteController._findAgente(agente);
     //         mockingoose.Agente.toHaveBeenCalled(agente, 'find');
     // });
     it('Si se realizo una busqueda, y se encontro un agente retornar el mismo', async () => {
@@ -216,7 +216,7 @@ describe('Controles sobre la existencia de un Agente ', () => {
             cuil:'20-28588178-2'
         }
         mockingoose.Agente.toReturn(agenteFound, 'findOne');
-        const result = await AgenteController.findAgente(agente);
+        const result = await AgenteController._findAgente(agente);
         expect(result).toHaveProperty('documento', '28588178');
         expect(result).toHaveProperty('nombre', 'Marcos');
         expect(result).toHaveProperty('apellido', 'Cisterna');
@@ -235,7 +235,7 @@ describe('Controles sobre la existencia de un Agente ', () => {
         }
         const agenteFound = null;
         mockingoose.Agente.toReturn(agenteFound, 'findOne');
-        const result = await AgenteController.findAgente(agente);
+        const result = await AgenteController._findAgente(agente);
         expect(result).toBe(agenteFound);
     });
 

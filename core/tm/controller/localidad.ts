@@ -33,7 +33,6 @@ export async function getLocalidades(req, res, next) {
 
 
 export async function addLocalidad(req, res, next) {
-    console.log('Adding Localidad');
     try {
         const obj = new Localidad({
             nombre: req.body.nombre,

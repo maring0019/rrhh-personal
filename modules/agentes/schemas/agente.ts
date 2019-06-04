@@ -45,7 +45,7 @@ export const AgenteSchema = new Schema({
     educacion: [EducacionSchema],
     especialidad: EspecialidadSchema, // TODO Ver especialidadSchema
 
-    foto: String,
+    foto: String, // Encode64
     codigoFichado: String,
     activo: Boolean,
     historiaLaboral: [SituacionLaboralSchema],
