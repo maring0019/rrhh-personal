@@ -17,6 +17,12 @@ export const modules = {
         path: './modules/agentes/routes',
         route: '/modules/agentes',
         middleware: null,
+    },
+    ausentismo:{
+        active: true,
+        path: './modules/ausentismo/routes',
+        route: '/modules/ausentismo',
+        middleware: null,
     }
 };
 

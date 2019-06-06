@@ -70,7 +70,7 @@ async function addAgente(req, res, next){
             fechaNacimiento: req.body.fechaNacimiento,
             nacionalidad: req.body.nacionalidad,
             direccion: req.body.direccion,
-            // TODO Test
+            // TODO Test insert de estas relaciones
             contactos: req.body.contactos,
             educacion: req.body.educacion,
             historiaLaboral: req.body.historiaLaboral,
