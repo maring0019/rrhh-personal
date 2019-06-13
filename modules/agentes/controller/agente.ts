@@ -1,9 +1,10 @@
 import { Types } from 'mongoose';
-import { Agente } from '../schemas/agente';
 
 import { Readable } from 'stream';
-import { makeFs } from '../../../core/tm/schemas/imagenes';
 
+import { Agente } from '../schemas/agente';
+import { Ausencia } from '../../ausentismo/schemas/ausencia';
+import { makeFs } from '../../../core/tm/schemas/imagenes';
 
 async function getAgentes(req, res, next){
     try {
@@ -25,7 +26,7 @@ async function getAgenteByID(req, res, next){
         if (!id || (id && !Types.ObjectId.isValid(id))) return next(404);
         let agente:any = await Agente.findById(id);
         if (!agente) return next(404);
-        let foto = await AgenteController._findFotoAgente(id);
+        let foto = await AgenteController._findFotoPerfil(id);
         if (foto){
             foto.read((err, buffer) => {
                 if (err) {
@@ -141,7 +142,7 @@ async function deleteAgente(req, res, next) {
 }
 
 
-async function uploadAgenteFoto(req, res, next){
+async function uploadFotoPerfil(req, res, next){
     try {
         const id = req.params.id;
         const imagen = req.body.imagen;
@@ -176,9 +177,9 @@ async function uploadAgenteFoto(req, res, next){
     }
 }
 
-async function getAgenteFoto(req, res, next){
+async function getFotoPerfil(req, res, next){
         const id = req.params.id;
-        const foto = await AgenteController._findFotoAgente(id);
+        const foto = await AgenteController._findFotoPerfil(id);
         if (foto){
             foto.read((err, buffer) => {
                 if (err) {
@@ -196,6 +197,21 @@ async function getAgenteFoto(req, res, next){
             return res.send(null);
         }
 }
+
+async function getAusencias(req, res, next){
+    try {
+        const id = req.params.id;
+        if (!id || (id && !Types.ObjectId.isValid(id))) return next(404);
+        let agente:any = await Agente.findById(id);
+        if (!agente) return next(404);
+        let ausencias = await Ausencia.find({ 'agente.id': new Types.ObjectId(agente.id)}).sort({ fecha: 1 }).exec();
+        return res.json(ausencias);
+    } catch (err) {
+        return next(err);
+    }
+}
+
+
 
 /**
  * Valida que un agente tenga todos los atributos requeridos
@@ -260,7 +276,7 @@ function _isEmpty(obj){
         })();
 }
 
-async function _findFotoAgente(agenteID){
+async function _findFotoPerfil(agenteID){
     if (agenteID){
         const fotoAgenteModel = makeFs();
         const fotos = await fotoAgenteModel.find({ 'metadata.agenteID': new Types.ObjectId(agenteID)});
@@ -305,9 +321,10 @@ const AgenteController = {
     deleteAgente,
     searchAgentes,
     getAgenteByID,
-    getAgenteFoto,
-    uploadAgenteFoto,
-    _findFotoAgente,
+    getFotoPerfil,
+    getAusencias,
+    uploadFotoPerfil,
+    _findFotoPerfil,
     _findAgente,
     _saveImage,
     _validateAgenteAttributes,
