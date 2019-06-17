@@ -1,4 +1,5 @@
 import { Ausencia } from '../schemas/ausencia';
+import { AusenciaPeriodo } from '../schemas/ausenciaPeriodo';
 
 export async function getAusenciaById(req, res, next) {
     try {
@@ -25,7 +26,6 @@ export async function getAusencias(req, res, next) {
 
 
 export async function addAusencia(req, res, next) {
-    console.log('Agregando Ausencia!!');
     try {
         const obj = new Ausencia({
             agente: req.body.agente, 
@@ -43,3 +43,51 @@ export async function addAusencia(req, res, next) {
         return next(err);
     }
 }
+
+export async function addAusenciasPeriodo(req, res, next) {
+    try {
+        const periodo = new AusenciaPeriodo({
+            agente: req.body.agente, 
+            articulo: req.body.articulo,
+            fechaDesde: req.body.fechaDesde,
+            fechaHasta: req.body.fechaHasta,
+            cantidadDias: req.body.cantidadDias,
+            observacion: req.body.observacion,
+            certificado: req.body.certificado
+        });
+        let ausencias = generarAusencias(periodo);
+        let result = await Ausencia.insertMany(ausencias);
+        return res.json(result);
+    } catch (err) {
+        return next(err);
+    }
+}
+
+export async function calcularAusencias(req, res, next){
+
+}
+
+export function generarAusencias(ausenciaPeriodo){
+    let ausencias = [];
+    let fecha:Date = ausenciaPeriodo.fechaDesde;
+    for (let i = 0; i < ausenciaPeriodo.cantidadDias ; i++) {
+        const ausencia = new Ausencia({
+            agente: ausenciaPeriodo.agente, 
+            fecha: fecha,
+            articulo: ausenciaPeriodo.articulo,
+            observacion: ausenciaPeriodo.observacion
+            }
+        )
+        ausencias.push(ausencia);
+        let tomorrow = new Date(fecha);
+        fecha = new Date(tomorrow.setDate(tomorrow.getDate() + 1));
+        }
+    return ausencias;
+}
+
+
+export async function validateAusencias(ausenciaPeriodo) {
+    return true;
+}
+
+

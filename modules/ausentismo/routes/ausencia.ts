@@ -9,6 +9,7 @@ Routes.get('/ausencias', AusenciaController.getAusencias);
 Routes.get('/ausencias/:id', AusenciaController.getAusenciaById);
 
 Routes.post('/ausencias', AusenciaController.addAusencia);
+Routes.post('/ausencias/periodo', AusenciaController.addAusenciasPeriodo);
 // Routes.put('/ausencias/:id', AusenciaController.updateAusencia);
 // Routes.delete('/ausencias/:id', AusenciaController.deleteAusencia);
 
