@@ -6,6 +6,12 @@ export const modules = {
         route: '/core/tm',
         middleware: null,
     },
+    files:{
+        active: true,
+        path: './core/files/routes',
+        route: '/core/files',
+        middleware: null,
+    },
     organigrama: {
         active: true,
         path: './core/organigrama/routes',
@@ -29,3 +35,4 @@ export const modules = {
 // Cotas de consumo de APIs
 export const defaultLimit = 50;
 export const maxLimit = 1000;
+export const uploadFilesPath = 'tempUploads'

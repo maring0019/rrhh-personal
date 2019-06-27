@@ -25,6 +25,7 @@ export const AusenciaPeriodoSchema = new Schema({
     fechaHasta: Date,
     cantidadDias: Number,
     observacion: String,
+    adjuntos: Array,
     certificado: CertificadoSchema
 });
 

@@ -14,6 +14,8 @@ Routes.get('/agentes/:id/ausencias', AgenteController.getAusencias);
 
 Routes.post('/agentes', AgenteController.addAgente);
 Routes.post('/agentes/:id/fotos', AgenteController.uploadFotoPerfil);
+Routes.post('/agentes/:id/files', AgenteController.uploadFilesAgente);
+// 5cfea24202890c22fcad0e46
 
 Routes.put('/agentes/:id', AgenteController.updateAgente);
 Routes.delete('/agentes/:id', AgenteController.deleteAgente);

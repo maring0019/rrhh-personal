@@ -1,6 +1,8 @@
 import { Ausencia } from '../schemas/ausencia';
 import { AusenciaPeriodo } from '../schemas/ausenciaPeriodo';
 
+import { attachFilesToObject } from '../../../core/files/controller/file';
+
 export async function getAusenciaById(req, res, next) {
     try {
         let obj = await Ausencia.findById(req.params.id);
@@ -46,6 +48,7 @@ export async function addAusencia(req, res, next) {
 
 export async function addAusenciasPeriodo(req, res, next) {
     try {
+        let adjuntos = req.body.adjuntos;
         const periodo = new AusenciaPeriodo({
             agente: req.body.agente, 
             articulo: req.body.articulo,
@@ -55,8 +58,13 @@ export async function addAusenciasPeriodo(req, res, next) {
             observacion: req.body.observacion,
             certificado: req.body.certificado
         });
+
+        if (adjuntos && adjuntos.length){
+            await attachFilesToObject(adjuntos, periodo);
+        }
         let ausencias = generarAusencias(periodo);
         let result = await Ausencia.insertMany(ausencias);
+        
         return res.json(result);
     } catch (err) {
         return next(err);

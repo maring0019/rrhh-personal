@@ -5,6 +5,7 @@ import { Readable } from 'stream';
 import { Agente } from '../schemas/agente';
 import { Ausencia } from '../../ausentismo/schemas/ausencia';
 import { makeFs } from '../../../core/tm/schemas/imagenes';
+import { attachFilesToObject } from '../../../core/files/controller/file'
 
 async function getAgentes(req, res, next){
     try {
@@ -60,7 +61,7 @@ async function addAgente(req, res, next){
     try {
         const agente = new Agente({
             numero: req.body.numero,
-            // tipoDocumento 
+            // tipoDocumento
             documento: req.body.documento,
             cuil: req.body.cuil,
             nombre: req.body.nombre,
@@ -119,7 +120,7 @@ async function updateAgente(req, res, next) {
             agente.contactos= req.body.contactos;
             agente.educacion= req.body.educacion;
             agente.historiaLaboral= req.body.historiaLaboral;
-        
+
         const agenteActualizado = await agente.save();
         return res.json(agenteActualizado);
     } catch (err) {
@@ -160,7 +161,7 @@ async function uploadFotoPerfil(req, res, next){
         let stream = new Readable();
         stream.push(buffer);
         stream.push(null);
-        
+
         const options = ({
                 filename: 'fotoCredencialNueva.jpg',
                 contentType: 'image/jpg',
@@ -240,12 +241,12 @@ function _validateAgenteAttributes(agente):String[]{
 }
 
 /**
- * Realiza la busqueda de un agente específico. Basicamente determina la 
- * existencia del mismo o no en la db. El agente que se proporciona como 
+ * Realiza la busqueda de un agente específico. Basicamente determina la
+ * existencia del mismo o no en la db. El agente que se proporciona como
  * parametro debe tener todos los atributos obligatorios para poder luego
  * determinar con precision si existe el agente. Si no se proveen todos
  * los atributos se arroja una excepcion indicando los atributos faltantes
- * 
+ *
  * @param agente obj a determinar su existencia
  */
 async function _findAgente(agente):Promise<any>{
@@ -299,7 +300,7 @@ async function _saveImage(req, res, imagen, agente){
     let buffer = Buffer.from(imagen, 'base64');
     stream.push(buffer);
     stream.push(null);
-    
+
     // stream.pipe()
     const options = ({
             filename: 'fotoCredencialNueva.jpg',
@@ -309,8 +310,26 @@ async function _saveImage(req, res, imagen, agente){
             }
         });
     agenteFotoModel.write(options, stream, (error, file) => { });
-    
 }
+
+async function uploadFilesAgente(req, res, next){
+    try {
+        const id = req.params.id;
+        if (!id || (id && !Types.ObjectId.isValid(id))) return next(404);
+        let agente:any = await Agente.findById(id);
+        if (!agente) return next(404);
+        console.log('Agente Encontrado!!!');
+        console.log(agente.nombre);
+        const result = await attachFilesToObject([], agente);
+        return res.json(result);
+    } catch (err) {
+        console.log('Estamos atrapando el error!!')
+        return next(err);
+    }
+}
+
+
+
 
 
 
@@ -324,6 +343,7 @@ const AgenteController = {
     getFotoPerfil,
     getAusencias,
     uploadFotoPerfil,
+    uploadFilesAgente,
     _findFotoPerfil,
     _findAgente,
     _saveImage,
