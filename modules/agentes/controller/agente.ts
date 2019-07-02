@@ -3,9 +3,10 @@ import { Types } from 'mongoose';
 import { Readable } from 'stream';
 
 import { Agente } from '../schemas/agente';
-import { Ausencia } from '../../ausentismo/schemas/ausencia';
+// import { Ausencia } from '../../ausentismo/schemas/ausencia';
 import { makeFs } from '../../../core/tm/schemas/imagenes';
 import { attachFilesToObject } from '../../../core/files/controller/file'
+import { AusenciaPeriodo } from '../../ausentismo/schemas/ausenciaPeriodo';
 
 async function getAgentes(req, res, next){
     try {
@@ -205,7 +206,14 @@ async function getAusencias(req, res, next){
         if (!id || (id && !Types.ObjectId.isValid(id))) return next(404);
         let agente:any = await Agente.findById(id);
         if (!agente) return next(404);
-        let ausencias = await Ausencia.find({ 'agente.id': new Types.ObjectId(agente.id)}).sort({ fecha: 1 }).exec();
+        
+        const pipeline = [
+            {
+                $unwind: '$ausencias'
+            }
+        ]
+        // let ausencias = await Ausencia.find({ 'agente.id': new Types.ObjectId(agente.id)}).sort({ fecha: 1 }).exec();
+        let ausencias = await AusenciaPeriodo.aggregate(pipeline)
         return res.json(ausencias);
     } catch (err) {
         return next(err);

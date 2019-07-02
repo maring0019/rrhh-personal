@@ -1,5 +1,4 @@
 import { Schema, model, Types } from 'mongoose';
-import { CertificadoSchema } from './certificado';
 
 export const AusenciaSchema = new Schema({
     agente: {
@@ -19,12 +18,9 @@ export const AusenciaSchema = new Schema({
             required: true
         }
     },
-    observacion: String,
-    adicional: String,
-    extra: String,
-    adjuntos: Array,
-    certificado: CertificadoSchema
-
+    // observacion: String,
+    // adicional: String,
+    // extra: String
 })
 
 export const Ausencia = model('Ausencia', AusenciaSchema, 'ausencias');

@@ -10,6 +10,7 @@ Routes.get('/agentes/search', AgenteController.searchAgentes);
 Routes.get('/agentes/:id', AgenteController.getAgenteByID);
 Routes.get('/agentes/:id/fotos', AgenteController.getFotoPerfil);
 Routes.get('/agentes/:id/ausencias', AgenteController.getAusencias);
+Routes.get('/agentes/:id/ausencias/periodo', AgenteController.getAusencias);
 
 
 Routes.post('/agentes', AgenteController.addAgente);

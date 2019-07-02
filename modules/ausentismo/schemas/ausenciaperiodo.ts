@@ -1,5 +1,6 @@
 import { Schema, Types, model } from 'mongoose';
 import { CertificadoSchema } from './certificado';
+import { AusenciaSchema } from './ausencia';
 
 export const AusenciaPeriodoSchema = new Schema({
     agente: {
@@ -22,11 +23,20 @@ export const AusenciaPeriodoSchema = new Schema({
         type: Date,
         required: true
     },
-    fechaHasta: Date,
-    cantidadDias: Number,
+    fechaHasta: {
+        type: Date,
+        required: true
+    },
+    cantidadDias: {
+        type: Number,
+        required: true
+    },
     observacion: String,
+    adicional: String,
+    extra: String,
+    ausencias: [AusenciaSchema],
     adjuntos: Array,
-    certificado: CertificadoSchema
+    certificado: CertificadoSchema,
 });
 
-export const AusenciaPeriodo = model('AusenciaPeriodo', AusenciaPeriodoSchema, 'ausenciasPeriodo');
+export const AusenciaPeriodo = model('AusenciaPeriodo', AusenciaPeriodoSchema, 'ausenciasperiodo');
