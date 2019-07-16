@@ -10,8 +10,9 @@ export const Routes = express.Router();
 
 
 Routes.post('/ausencias', AusenciaController.addAusencia);
-Routes.post('/ausencias/periodo', AusenciaController.addAusenciasPeriodo);
+Routes.post('/ausencias/periodo', AusenciaController.addAusentismo);
 Routes.get('/ausencias/periodo', AusenciaController.getAusenciasPeriodo);
-// Routes.put('/ausencias/:id', AusenciaController.updateAusencia);
+Routes.get('/ausencias/periodo/:id', AusenciaController.getAusentismoById);
+Routes.put('/ausencias/periodo/:id', AusenciaController.updateAusentismo);
 // Routes.delete('/ausencias/:id', AusenciaController.deleteAusencia);
 

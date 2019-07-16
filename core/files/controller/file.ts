@@ -118,6 +118,45 @@ export async function addFile(req, res, next){
     }
 }
 
+export async function attachFiles(req, res, next){
+    try {
+        const files = req.body.filesToAttach;
+        const objId = req.params.objId;
+        if (!objId || (objId && !Types.ObjectId.isValid(objId))) return next(404);
+        const result = await attachFilesToObject(files, objId);
+        return res.json(result);
+        
+    } catch (err) {
+        return next(err);
+    }
+}
+
+export async function dettachFiles(req, res, next){
+    try {
+        const files = req.body.filesToDettach;
+        const objId = req.params.objId;
+        if (!objId || (objId && !Types.ObjectId.isValid(objId))) return next(404);
+        const result = await dettachFilesFromObject(files, objId);
+        return res.json(result);
+        
+    } catch (err) {
+        return next(err);
+    }
+}
+
+
+export async function getFiles(req, res, next){
+    try {
+        const id = req.params.id;
+        if (!id || (id && !Types.ObjectId.isValid(id))) return next(404);
+        const filesModel = FilesModel();
+        const files = await filesModel.find({ 'metadata.objID': new Types.ObjectId(id)});
+        return res.json(files);
+    } catch (err) {
+        return next(err);
+    }
+}
+
 export async function readFile(req, res, next){
 
 }
@@ -134,7 +173,7 @@ export async function removeFile(req, res, next){
         const fileId = req.params.fileId;
         if (!objId || (objId && !Types.ObjectId.isValid(objId))) return res.status(404).send();
         if (!fileId || (fileId && !Types.ObjectId.isValid(fileId))) return res.status(404).send();
-        await dettachFileFromObject([fileId], objId)
+        await dettachFilesFromObject([fileId], objId)
         return res.status(200).send();
     } catch (err) {
         return next(err);
@@ -152,39 +191,45 @@ export async function removeFile(req, res, next){
  * @param {*} files
  * @param {*} obj
  */
-export async function attachFilesToObject(fileIds, obj, removeFiles=true){
-    let files = await _findFileDescriptors(fileIds);
-    Promise.all(
-        files.map((file) => {
-            _writeFileFromFsToMongo(file, obj._id);
+export async function attachFilesToObject(fileIds, objectOwnerId, removeFiles=true){
+    let filesD = await _findFileDescriptors(fileIds);
+    let results = await Promise.all(
+        filesD.map((file) => {
+            return _writeFileFromFsToMongo(file, objectOwnerId);
         })
     )
-    .then(function(files:any) {
+    .then(files => {
         // Se terminaron de procesar todas las promesas. Si corresponde se
         // eliminan los archivos del filesystem recientemente copiados a la db
+        // TODO: Habria que analizar si fallo la copia de algun archivo quizas.
         if (removeFiles){
-            _removeFilesFromFs(files);
+            _removeFilesFromFs(filesD);
+            // TODO: Remove file descriptors!!
         }
         return files;
     })
     .catch(function(err) {
         return [];
     });
+    return results;
 }
 
-export async function dettachFileFromObject(fileIds, objID){
+export async function dettachFilesFromObject(fileIds, objID){
     const filesModel = FilesModel();
-    const files = await filesModel.find({ 'id': { $in: fileIds , 'metadata.objectId': objID } });
+    fileIds = fileIds.map(id => id = Types.ObjectId(id));
+    // const files = await filesModel.find({ '_id': { $in: fileIds , 'metadata.objID': Types.ObjectId(objID) } });
+    const files = await filesModel.find({ '_id': { $in: fileIds } });
     files.forEach(file => {
-        file.unlinkById(file._id, (error, unlinkedAttachment) => { });
+        filesModel.unlinkById(file._id, (error, unlinkedAttachment) => { });
     });
 }
 
-export function _writeFileFromFsToMongo(file:FileDescriptorDocument, objectId){
+export function _writeFileFromFsToMongo(file:FileDescriptorDocument, objectId):Promise<any>{
     const filesModel = FilesModel();
     return new Promise(function(resolve, reject) {
-        let stream = fs.createReadStream(path.join(config.uploadFilesPath, file.id));
-        stream.on('error', function(){ 
+        let stream = fs.createReadStream(path.join(config.uploadFilesPath, file.real_id));
+        stream.on('error', function()
+        { 
             resolve({ok:false, filename:file.filename, id:file.id}) 
         });
 
@@ -192,20 +237,23 @@ export function _writeFileFromFsToMongo(file:FileDescriptorDocument, objectId){
             filename: file.filename,
             contentType: file.mimetype,
             metadata: {
-                objID: objectId
+                objID: Types.ObjectId(objectId)
             }
         });
         filesModel.write(options, stream, (error, newfile) => {
-            if (error) return resolve({ok:false, filename:file.filename, id:file.id});
-            return resolve({ok:true, filename:file.filename, id:file.id});
+            if (error){
+                resolve({ok:false, filename:file.filename, id:file.id});
+            }
+            resolve(newfile);
+            // resolve({ok:true, filename:file.filename, id:file.id});
         });
     })
 }
 
-export async function _removeFilesFromFs(filesToRemove){
+export async function _removeFilesFromFs(filesToRemove:FileDescriptorDocument[]){
     filesToRemove.forEach(file => {
         try{
-            const filePath = path.join(config.uploadFilesPath, file.id);
+            const filePath = path.join(config.uploadFilesPath, file.real_id);
             fs.unlink(filePath, (err) => {
             });
         }
@@ -219,7 +267,8 @@ export async function _findFileDescriptorBy(id) {
 }
 
 export async function _findFileDescriptors(ids) {
-    return await FileDescriptor.find({ 'id': { $in: ids } });
+    let objIds = ids.map(id => id = Types.ObjectId(id));
+    return await FileDescriptor.find({ '_id': { $in: objIds } });
 }
 
 

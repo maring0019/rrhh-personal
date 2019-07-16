@@ -18,4 +18,4 @@ export let FileDescriptorSchema: Schema = new Schema({
     filename: String
 });
 
-export let FileDescriptor: Model<FileDescriptorDocument> = model('FileMetadata', FileDescriptorSchema, 'filesMetadata');
+export let FileDescriptor: Model<FileDescriptorDocument> = model('FileDescriptor', FileDescriptorSchema, 'fileDescriptors');

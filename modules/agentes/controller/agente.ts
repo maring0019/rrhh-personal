@@ -106,21 +106,21 @@ async function updateAgente(req, res, next) {
         if (!id || (id && !Types.ObjectId.isValid(id))) return res.status(404).send();
         let agente:any = await Agente.findById(id);
         if (!agente) return res.status(404).send();
-            agente.numero= req.body.numero;
-            agente.documento= req.body.documento;
-            agente.cuil= req.body.cuil;
-            agente.nombre= req.body.nombre;
-            agente.apellido= req.body.apellido;
-            agente.estadoCivil= req.body.estadoCivil;
-            agente.sexo= req.body.sexo;
-            agente.genero= req.body.genero;
-            agente.fechaNacimiento= req.body.fechaNacimiento;
-            agente.nacionalidad= req.body.nacionalidad;
-            agente.direccion= req.body.direccion;
-            // TODO Test
-            agente.contactos= req.body.contactos;
-            agente.educacion= req.body.educacion;
-            agente.historiaLaboral= req.body.historiaLaboral;
+        agente.numero= req.body.numero;
+        agente.documento= req.body.documento;
+        agente.cuil= req.body.cuil;
+        agente.nombre= req.body.nombre;
+        agente.apellido= req.body.apellido;
+        agente.estadoCivil= req.body.estadoCivil;
+        agente.sexo= req.body.sexo;
+        agente.genero= req.body.genero;
+        agente.fechaNacimiento= req.body.fechaNacimiento;
+        agente.nacionalidad= req.body.nacionalidad;
+        agente.direccion= req.body.direccion;
+        // TODO Test
+        agente.contactos= req.body.contactos;
+        agente.educacion= req.body.educacion;
+        agente.historiaLaboral= req.body.historiaLaboral;
 
         const agenteActualizado = await agente.save();
         return res.json(agenteActualizado);
