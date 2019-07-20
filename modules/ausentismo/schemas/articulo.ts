@@ -19,7 +19,9 @@ export const ArticuloSchema = new Schema({
     limitado: Boolean,                     // TODO consultar este dato
     requiereInformacionAdicional: Boolean, // TODO consultar este dato
     tituloInformacionAdicional: String,
-    codigoOTI: String,                     // TODO consultar este dato
+    codigoOTI: String,
+    diasCorridos: Boolean,
+    diasHabiles: Boolean,                     // TODO consultar este dato
     formulas: [FormulaSchema]
 })
 
