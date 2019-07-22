@@ -21,7 +21,7 @@ export const ArticuloSchema = new Schema({
     tituloInformacionAdicional: String,
     codigoOTI: String,
     diasCorridos: Boolean,
-    diasHabiles: Boolean,                     // TODO consultar este dato
+    diasHabiles: Boolean,                    // TODO consultar este dato
     formulas: [FormulaSchema]
 })
 

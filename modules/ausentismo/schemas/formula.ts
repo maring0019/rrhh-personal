@@ -36,10 +36,11 @@ const constantes = {
  */
 export const FormulaSchema = new Schema({
     operacion:constantes.OPERACION,       // Este atributo esta de mas segun la logica del sistema anterior. Lo mantenemos por el momento
+    parametro: String,                    // Representa un numero de dias
+    comparador: constantes.COMPARADOR,    // 
     sexo:constantes.SEXO,                 // Indica segun el sexo del agente si se debe aplicar o no el control/formula definida
     periodo: PeriodoSchema,               // Indica el periodo en el que se debe evaluar la formula
-    comparador: constantes.COMPARADOR,    // 
-    parametro: String,                    // Representa un numero de dias
+    limiteAusencias: Number,
     fechaDesde: Date,                     // Indica a partir de que fecha aplicar el control
     fechaHasta:Date,                      // Indica hasta cuando aplicar el control
     activa: Boolean                       // Este atributo tiene prioridad sobre las fechas desde y hasta
