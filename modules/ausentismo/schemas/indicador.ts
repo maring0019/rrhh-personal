@@ -31,22 +31,20 @@ export const IndicadorAusentismoSchema = new Schema({
             required: true
         }
     },
-    vigencia: Number, // Anio de vigencia
-    indicadores: [
+    vigencia: Number, // TODO Anio de vigencia o Fecha desde y hasta??
+    periodo: String,           // Anual, Cuatrimestre, Bimestre
+    intervalos:[               // Ej. Anual=1 intervalo, Cuatrimestre=3 intervalos, etc
         {
-            periodo: String,           // Anual, Cuatrimestre, Bimestre
-            intervalos:[               // Ej. Anual=1 intervalo, Cuatrimestre=3 intervalos, etc
-                {
-                    desde: Date,
-                    hasta: Date,
-                    totales: Number,
-                    ejecutadas: Number,
-                    disponibles: Number,
-                    asignadas: Number, // Volatile
-                }
-            ]
+            desde: Date,
+            hasta: Date,
+            totales: Number,
+            ejecutadas: Number,
+            disponibles: Number,
+            asignadas: Number, // Volatile
         }
     ]
+        
+    
 })
 
 export const IndicadorAusentismo = model('IndicadorAusentismo', IndicadorAusentismoSchema, 'indicadoresAusentismo');

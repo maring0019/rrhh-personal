@@ -132,6 +132,40 @@ export async function addAusentismo(req, res, next) {
     }
 }
 
+export async function sugerirAusentismo(req, res, next) {
+    try {
+        const ausentismo = {
+            agente: req.body.agente, 
+            articulo: req.body.articulo,
+            fechaDesde: req.body.fechaDesde? new Date(req.body.fechaDesde):null,
+        };
+    let ausencias = await sugerirAusencias(
+        ausentismo.agente, ausentismo.articulo, ausentismo.fechaDesde);
+    return res.json(ausencias);
+    } catch (err) {
+        return next(err);
+    }
+}
+
+
+export async function calcularAusentismo(req, res, next) {
+    try {
+        const ausentismo = {
+            agente: req.body.agente,
+            articulo: req.body.articulo,
+            fechaDesde: req.body.fechaDesde? new Date(req.body.fechaDesde):null,
+            fechaHasta: req.body.fechaHasta? new Date(req.body.fechaHasta):null,
+            cantidadDias: req.body.cantidadDias
+        };
+    let ausencias = await calcularAusencias(
+        ausentismo.agente, ausentismo.articulo, ausentismo.fechaDesde, ausentismo.fechaHasta,
+        ausentismo.cantidadDias);
+    return res.json(ausencias);
+    } catch (err) {
+        return next(err);
+    }
+}
+
 export async function updateAusentismo(req, res, next){
     try {
         const id = req.params.id;
@@ -174,25 +208,76 @@ export function generarAusencias(periodo){
 export async function calcularAusencias(agente, articulo, desde, hasta, dias){
     desde = desde? new Date(desde.getFullYear(), desde.getMonth(), desde.getDate()):null;
     hasta = hasta? new Date(hasta.getFullYear(), hasta.getMonth(), hasta.getDate()):null;
-    let ausenciasCalculadas:any;
+    let ausenciasCalculadas = procesaDias(agente, articulo, desde, hasta, dias);
+    return ausenciasCalculadas;
+}   
+
+export async function sugerirAusencias(agente, articulo, desde){
+    desde = new Date(desde.getFullYear(), desde.getMonth(), desde.getDate());
+    console.log('Vamos a sugerir los dias de ausencia');
+    let indicadores = await getIndicadoresAusencias(agente, articulo, desde);
+    console.log('Indicadores recuperados');
+    for (const indicador of indicadores){
+        console.log(indicador.periodo);
+        console.log(indicador.vigencia);
+        console.log(indicador.intervalos);
+        console.log("#####################################");
+    }
+    
+    let ausenciasSugeridas:any;
+    console.log('Vamos a buscar el indicador mas relevante');
+    let indicador = getIndicadorMasRelevante(indicadores, desde);
+    console.log('Indicador Relevante:');
+    console.log(indicador.periodo);
+    console.log(indicador.vigencia);
+    console.log(indicador.intervalos);
+    let diasDisponibles = indicador.intervalos[0].disponibles;
+    console.log('Dias disponibles:');
+    console.log(diasDisponibles);
+
+    if ( diasDisponibles > 0){
+        ausenciasSugeridas = procesaDias(agente, articulo, desde, null, diasDisponibles)
+    }
+    else{
+        console.log('Error!!!. No se puede sugerir nada.')
+        ausenciasSugeridas = 'Error!!';
+    }
+    
+    return ausenciasSugeridas;
+}
+
+export function getIndicadorMasRelevante(indicadores, fechaInteres){
+    let indicadorRelevante:any;
+    let intervaloRelevante:any;
+    indicadorRelevante = indicadores[0];
+    for (const indicador of indicadores) {
+        if (indicador.intervalos.length > indicadorRelevante.intervalos.length){
+            indicadorRelevante = indicador;
+        }
+    }
+    for (const intervalo of indicadorRelevante.intervalos){
+        if (!intervalo.hasta || (intervalo.hasta >= fechaInteres)) {
+            intervaloRelevante = intervalo;
+            break;
+        } 
+    }
+    indicadorRelevante.intervalos = [intervaloRelevante];
+    return indicadorRelevante;
+}
+
+export async function validarAusencias(agente, articulo, desde, hasta, dias){
+    desde = desde? new Date(desde.getFullYear(), desde.getMonth(), desde.getDate()):null;
+    hasta = hasta? new Date(hasta.getFullYear(), hasta.getMonth(), hasta.getDate()):null;
 
     // TODO controlar que esten presente los inputs necesarios
     // por ejemplo fecha desde debe estar presente
     // fecha desde debe ser menor o igual que fecha hasta
 
-    if (articulo.diasCorridos){
-        ausenciasCalculadas = procesaDiasCorridos(desde, hasta, dias);
-    }
+    let ausenciasCalculadas = procesaDias(agente, articulo, desde, hasta, dias);
 
-    if (articulo.diasHabiles){
-        ausenciasCalculadas = procesaDiasHabiles(desde, hasta, dias);
-    }
-
-    let indicadores = await recuperarIndicadoresAusencias(
-        agente, articulo, ausenciasCalculadas);
+    let indicadores = await getIndicadoresAusencias(agente, articulo, ausenciasCalculadas.desde, ausenciasCalculadas.hasta);
     
-    let indicadoresRecalculados = distribuirAusenciasEntreIndicadores(
-        indicadores, ausenciasCalculadas);
+    let indicadoresRecalculados = distribuirAusenciasEntreIndicadores(indicadores, ausenciasCalculadas);
     
     for (let i of indicadoresRecalculados){
         for (let iprima of i.indicadores){
@@ -204,49 +289,19 @@ export async function calcularAusencias(agente, articulo, desde, hasta, dias){
 }
 
 
-export function procesaPeriodo(){
-
-}
-
-export function distribuirAusenciasEntreIndicadores(indicadoresAusentismo, ausentismo){
-    console.log('Vamos a distribuir las ausencias');
-    console.log('Primero filtramos los indicadores a solo los de interes');
-    
-    for( let indicadorAusentismo of indicadoresAusentismo ) {
-        let indicadoresFiltrados = [];
-        for (let indicador of indicadorAusentismo.indicadores){
-            let indicadorFiltrado = filterIntervalosIndicador(indicador, ausentismo.desde, ausentismo.hasta)
-            indicadoresFiltrados.push(indicadorFiltrado);
-        }
-        // console.log('Indicadores Filtrados');
-        // console.log(indicadoresFiltrados);
-        indicadorAusentismo.indicadores = indicadoresFiltrados;
+export function procesaDias(agente, articulo, desde, hasta?, dias?){
+    let ausencias:any;
+    if (articulo.diasCorridos){
+        ausencias = procesaDiasCorridos(desde, hasta, dias);
     }
 
-    console.log('Luego distribuimos las ausencias que le corresponden a cada intervalo de los periodos');
-
-    for (let indicadorAusentismo of indicadoresAusentismo){
-        for (let indicador of indicadorAusentismo.indicadores){
-            for (let intervalo of indicador.intervalos){
-                intervalo.asignadas = 0; // Inicializamos en 0 el contador
-                if ( intervalo.desde <= ausentismo.desde && intervalo.hasta >= ausentismo.hasta){
-                    intervalo.asignadas = ausentismo.ausencias.length;
-                }
-                else{
-                    for (let dia of ausentismo.ausencias){
-                        if ( intervalo.desde <= dia && intervalo.hasta >= dia){
-                            intervalo.asignadas = intervalo.asignadas + 1;
-                        }
-                        if (intervalo.hasta < dia) break;
-                    }
-                }
-            }
-           
-        }     
+    if (articulo.diasHabiles){
+        ausencias = procesaDiasHabiles(desde, hasta, dias);
     }
-    
-    return indicadoresAusentismo;
+    return ausencias;
 }
+
+
 
 /**
  * Utilidad para reducir el nro de indicadores a analizar
@@ -278,63 +333,105 @@ export function filterIntervalosIndicador(indicador, desde, hasta){
     return indicador;
 }
 
-export async function recuperarIndicadoresAusencias(agente, articulo, ausencias){
-    const anioDesde = ausencias.desde.getFullYear();
-    const anioHasta = ausencias.hasta.getFullYear();
-    let anios = [anioDesde];
+export async function getIndicadoresAusencias(agente, articulo, desde, hasta?){
     let indicadores = [];
-    if (anioDesde != anioHasta) anios.push(anioHasta);
+    for (let formula of articulo.formulas ) {        
+        if ( formula.periodo ){
+            indicadores = indicadores.concat(await getIndicadorConPeriodo(agente, articulo, formula, desde, hasta));   
+        }
+        else {
+            indicadores = indicadores.concat(await getIndicadorSinPeriodo(agente, articulo, formula, desde, hasta));
+        }
+    }
+    return indicadores;
+}
+
+export async function getIndicadorConPeriodo(agente, articulo, formula, desde, hasta?){
+    const anioDesde = desde.getFullYear();
+    const anioHasta = hasta? hasta.getFullYear() : null;
+    let anios = [anioDesde];
+    if (anioHasta && (anioDesde != anioHasta)) anios.push(anioHasta);
+    let indicadores = [];
     for ( let anio of anios){
         let indicador = await IndicadorAusentismo.findOne(
             {
                 'agente.id': new Types.ObjectId(agente.id),
                 'articulo.id': new Types.ObjectId(articulo.id),
-                'vigencia':anio
+                'periodo': formula.periodo.nombre, // TODO Idealmente buscar por ID???
+                'vigencia': anio // TODO analizar el tema de la vigencia correctamente
             });
         if (!indicador){
-            indicador = await crearIndicadoresAusentismo(agente, articulo, anio);
+            indicador = await crearIndicadoresAusentismo(agente, articulo, formula, anio);
         }
         indicadores.push(indicador);
     }
     return indicadores;
 }
 
-export async function crearIndicadoresAusentismo(agente, articulo, anio){
+export async function getIndicadorSinPeriodo(agente, articulo, formula, desde?, hasta?){
+    let indicador:any;
+    if ( formula.diasContinuos ){
+        indicador = await crearIndicadoresAusentismo(agente, articulo, formula)
+    }
+    else {
+         indicador = await IndicadorAusentismo.findOne(
+            {
+                'agente.id': new Types.ObjectId(agente.id),
+                'articulo.id': new Types.ObjectId(articulo.id),
+                'periodo': null,
+            });
+        if (!indicador) indicador = await crearIndicadoresAusentismo(agente, articulo, formula);
+    }
+    return indicador;
+}
+
+export async function findIndicadorAusentismo(agente, articulo){
+
+}
+
+export async function crearIndicadoresAusentismo(agente, articulo, formula, anio?){
     let indicadorAusentismo:any= {
         agente: agente,
         articulo: articulo,
         vigencia: anio,
-        indicadores:[]
+        periodo: formula.periodo? formula.periodo.nombre : null,
+        intervalos: []
     }
-    for (let formula of articulo.formulas ) {
-        let indicador = {
-            periodo: formula.periodo.nombre,
-            intervalos: []
-        }
-        indicador.intervalos = await calcularIndicadoresPorIntervaloPeriodo(formula, agente, articulo, anio);
-        indicadorAusentismo.indicadores.push(indicador);
-    };
+    indicadorAusentismo.intervalos = await calcularIndicadoresPorIntervalo(
+                                        agente, articulo, formula, anio);
     return indicadorAusentismo;
 }
 
-export async function calcularIndicadoresPorIntervaloPeriodo(formula, agente, articulo, anio){
+export async function calcularIndicadoresPorIntervalo(agente, articulo, formula, anio?){
     let intervalos = [];
-    let periodoConfiguracion = constantes[formula.periodo.nombre];
-    for ( let int of periodoConfiguracion.intervalos){
-        let desde = int.desde? new Date(anio, int.desde.mes, int.desde.dia) : null;
-        let hasta = int.hasta? new Date(anio, int.hasta.mes, int.hasta.dia) : null;
-        let totales = formula.limiteAusencias;
-        let ejecutadas = await getTotalAusenciasPorArticulo(agente, articulo, desde, hasta);
-        let disponibles = totales - ejecutadas;     
-        let indicadoresIntervalo = {
-            desde: desde,
-            hasta: hasta,
-            totales: totales,
-            ejecutadas: ejecutadas,
-            disponibles: disponibles
+    let indicadoresIntervalo: any;
+    if (!formula.periodo){
+        indicadoresIntervalo = {
+            totales: formula.limiteAusencias,
+            ejecutadas: 0,
+            disponibles: formula.limiteAusencias
         }
         intervalos.push(indicadoresIntervalo)
-    };
+    }
+    else{
+        let periodoConfiguracion = constantes[formula.periodo.nombre];
+        for ( let int of periodoConfiguracion.intervalos){
+            let desde = int.desde? new Date(anio, int.desde.mes, int.desde.dia) : null;
+            let hasta = int.hasta? new Date(anio, int.hasta.mes, int.hasta.dia) : null;
+            let totales = formula.limiteAusencias;
+            let ejecutadas = await getTotalAusenciasPorArticulo(agente, articulo, desde, hasta);
+            let disponibles = totales - ejecutadas;     
+            indicadoresIntervalo = {
+                desde: desde,
+                hasta: hasta,
+                totales: totales,
+                ejecutadas: ejecutadas,
+                disponibles: disponibles
+            }
+            intervalos.push(indicadoresIntervalo)
+        };
+    }
+
     return intervalos;
 }
 
@@ -432,20 +529,71 @@ export function esDiaHabil(date){
     return esDiaHabil;
 }
 
-export async function getTotalAusenciasPorArticulo(agente, articulo, desde, hasta){
-    const pipeline = [
+export async function getTotalAusenciasPorArticulo(agente, articulo, desde?, hasta?){
+    let pipeline:any = [
         { $match: { 'agente.id': Types.ObjectId(agente.id), 'articulo.id': Types.ObjectId(articulo.id) } },
-        { $unwind: '$ausencias'},
-        { $match: { 'ausencias.fecha':{ $gte:desde, $lte: hasta} } },
-        { $count: 'total_ausencias'}
+        { $unwind: '$ausencias'}
     ]
+    if (desde && hasta){
+        // Filtramos por fecha desde y hasta solo si estos params estan presentes
+        pipeline.push({ $match: { 'ausencias.fecha':{ $gte:desde, $lte: hasta} } });
+    }
+    // Finalmente contabilizamos el total de ausencias
+    pipeline.push({ $count: 'total_ausencias'})
+        
     let total = await AusenciaPeriodo.aggregate(pipeline);
     return total.length? total[0].total_ausencias : 0;
 }
 
+export function distribuirAusenciasEntreIndicadores(indicadoresAusentismo, ausentismo){
+    console.log('Vamos a distribuir las ausencias');
+    console.log('Primero filtramos los indicadores a solo los de interes');
+    
+    for( let indicadorAusentismo of indicadoresAusentismo ) {
+        let indicadoresFiltrados = [];
+        for (let indicador of indicadorAusentismo.indicadores){
+            let indicadorFiltrado = filterIntervalosIndicador(indicador, ausentismo.desde, ausentismo.hasta)
+            indicadoresFiltrados.push(indicadorFiltrado);
+        }
+        // console.log('Indicadores Filtrados');
+        // console.log(indicadoresFiltrados);
+        indicadorAusentismo.indicadores = indicadoresFiltrados;
+    }
+
+    console.log('Luego distribuimos las ausencias que le corresponden a cada intervalo de los periodos');
+
+    for (let indicadorAusentismo of indicadoresAusentismo){
+        for (let indicador of indicadorAusentismo.indicadores){
+            for (let intervalo of indicador.intervalos){
+                intervalo.asignadas = 0; // Inicializamos en 0 el contador
+                if ( intervalo.desde <= ausentismo.desde && intervalo.hasta >= ausentismo.hasta){
+                    intervalo.asignadas = ausentismo.ausencias.length;
+                }
+                else{
+                    for (let dia of ausentismo.ausencias){
+                        if ( intervalo.desde <= dia && intervalo.hasta >= dia){
+                            intervalo.asignadas = intervalo.asignadas + 1;
+                        }
+                        if (intervalo.hasta < dia) break;
+                    }
+                }
+            }
+           
+        }     
+    }
+    
+    return indicadoresAusentismo;
+}
+
 export const constantes = {
+    PERIODO_INDETERMINADO: {
+        intervalos: [{}]
+    },
+    PERIODO_CONSTANTE: {
+        intervalos: [{desde: {dia:1, mes:0}, hasta:{dia:31, mes:11 } }]
+    },
     PERIODO_ANUAL: {
-        intervalos: [{desde: {dia:1, mes:0}, hasta:{dia:31, mes:11 }, limiteAusencias:74 }]
+        intervalos: [{desde: {dia:1, mes:0}, hasta:{dia:31, mes:11 } }]
     },
     PERIODO_CUATRIMESTRE: {
         intervalos: [
