@@ -71,7 +71,7 @@ export async function getAusenciasPeriodo(req, res, next) {
         if (fechaHasta) {
             query.where({'fechaHasta': { $lte: fechaHasta }})
         }
-        results = await query.sort({ fechaHasta: 1 }).exec();
+        results = await query.sort({ fechaHasta: -1 }).exec();
         return res.json(results);
     } catch (err) {
         return next(err);
@@ -245,8 +245,7 @@ export async function sugerirAusencias(agente, articulo, desde){
             ausenciasSugeridas = procesaDias(agente, articulo, desde, null, diasDisponibles)
         }
         else{
-            console.log('Error!!!. No se puede sugerir nada.')
-            ausenciasSugeridas = 'Error!!';
+            // No de deberiamos estar en esta condicion nunca
         }
     }
     return ausenciasSugeridas;

@@ -206,11 +206,11 @@ async function getAusencias(req, res, next){
         if (!id || (id && !Types.ObjectId.isValid(id))) return next(404);
         let agente:any = await Agente.findById(id);
         if (!agente) return next(404);
-        
+                
         const pipeline = [
-            {
-                $unwind: '$ausencias'
-            }
+            { $match: { 'agente.id': Types.ObjectId(agente.id) } },
+            { $unwind: '$ausencias'},
+            // { $sort : { 'ausencias.fecha' : 1 } }
         ]
         // let ausencias = await Ausencia.find({ 'agente.id': new Types.ObjectId(agente.id)}).sort({ fecha: 1 }).exec();
         let ausencias = await AusenciaPeriodo.aggregate(pipeline)
