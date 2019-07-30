@@ -263,7 +263,7 @@ export async function _removeFilesFromFs(filesToRemove:FileDescriptorDocument[])
 
 
 export async function _findFileDescriptorBy(id) {
-    return await FileDescriptor.findById(id);
+    return await FileDescriptor.findById(Types.ObjectId(id));
 }
 
 export async function _findFileDescriptors(ids) {
