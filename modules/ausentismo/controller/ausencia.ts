@@ -7,6 +7,7 @@ import { Agente } from '../../agentes/schemas/agente';
 // import { attachFilesToObject } from '../../../core/files/controller/file';
 import { IndicadorAusentismo } from '../schemas/indicador';
 import { format } from 'util';
+import { Articulo } from '../schemas/articulo';
 
 
 export async function getAusenciaById(req, res, next) {
@@ -97,7 +98,6 @@ export async function findObjectById(objectId, Model){
     
 }
 
-
 export async function addAusentismo(req, res, next) {
     try {
         // let adjuntos = req.body.adjuntos;
@@ -137,12 +137,12 @@ export async function addAusentismo(req, res, next) {
 export async function sugerirAusentismo(req, res, next) {
     try {
         const ausentismo = {
+            id: req.body.id, 
             agente: req.body.agente, 
             articulo: req.body.articulo,
             fechaDesde: req.body.fechaDesde? new Date(req.body.fechaDesde):null,
         };
-    let ausencias = await sugerirAusencias(
-        ausentismo.agente, ausentismo.articulo, ausentismo.fechaDesde);
+    let ausencias = await sugerirAusencias(ausentismo);
     return res.json(ausencias);
     } catch (err) {
         return next(err);
@@ -174,20 +174,41 @@ export async function updateAusentismo(req, res, next){
         if (!id || (id && !Types.ObjectId.isValid(id))) return res.status(404).send();
         let ausentismo:any = await AusenciaPeriodo.findById(id);
         if (!ausentismo) return res.status(404).send();
-        ausentismo.articulo= req.body.articulo;
-        ausentismo.fechaDesde= req.body.fechaDesde;
-        ausentismo.fechaHasta= req.body.fechaHasta;
-        ausentismo.cantidadDias= req.body.cantidadDias;
-        ausentismo.observacion= req.body.observacion;
-        ausentismo.adicional= req.body.adicional;
-        ausentismo.extra= req.body.extra;
-        ausentismo.certificado= req.body.certificado;
+        let auToUpdate = parseAusentismoReqBody(req);
+        let ausenciasCalculadas = await validarAusenciasEnEdicion(
+            ausentismo,
+            auToUpdate.agente, auToUpdate.articulo, auToUpdate.fechaDesde,
+            auToUpdate.fechaHasta, auToUpdate.cantidadDias);
+        console.log('Ausencias Calculadas');
+        console.log(ausenciasCalculadas);
+        // ausentismo.articulo= req.body.articulo;
+        // ausentismo.fechaDesde= req.body.fechaDesde;
+        // ausentismo.fechaHasta= req.body.fechaHasta;
+        // ausentismo.cantidadDias= req.body.cantidadDias;
+        // ausentismo.observacion= req.body.observacion;
+        // ausentismo.adicional= req.body.adicional;
+        // ausentismo.extra= req.body.extra;
+        // ausentismo.certificado= req.body.certificado;
         // ausentismo.ausencias = generarAusencias(ausentismo);
-        const ausentismoUpdated = await ausentismo.save();
-        return res.json(ausentismoUpdated);
+        // const ausentismoUpdated = await ausentismo.save();
+        return res.json(ausenciasCalculadas);
     } catch (err) {
         return next(err);
     }
+}
+
+function parseAusentismoReqBody(req){
+    let ausentismo = {
+        agente: req.body.agente, 
+        articulo: req.body.articulo,
+        fechaDesde: req.body.fechaDesde? new Date(req.body.fechaDesde):null,
+        fechaHasta: req.body.fechaHasta? new Date(req.body.fechaHasta):null,
+        cantidadDias: req.body.cantidadDias,
+        observacion: req.body.observacion,
+        adicional: req.body.adicional,
+        extra: req.body.extra
+    };
+    return ausentismo;
 }
 
 export function generarAusencias(periodo, dias){
@@ -249,10 +270,15 @@ export function formatWarningsSuperposicion(ausentismosPrevios){
    return warningsText;
 }
 
+export function procesarWarnings(){
+
+}
+
 export async function calcularAusencias(agente, articulo, desde, hasta, dias){
     desde = desde? parseDate(desde) : null;
     hasta = hasta? parseDate(hasta) : null;
-    let ausenciasCalculadas = procesaDias(agente, articulo, desde, hasta, dias);
+    articulo = await Articulo.findById(articulo.id);// get articulo con formulasausentismo.articulo;
+    let ausenciasCalculadas = calculaDiasAusencias(agente, articulo, desde, hasta, dias);
     return ausenciasCalculadas;
 }   
 
@@ -263,35 +289,28 @@ export async function calcularAusencias(agente, articulo, desde, hasta, dias){
  * y listado de dias de ausencias para el periodo que corresponda. Si durante el
  * proceso se identifican problemas como por ejemplo numero maximo de dias de
  * ausencias superados, se indican en un listado de warnings.
- * @param agente 
- * @param articulo 
- * @param desde 
+ * @param ausentismo 
  */
-export async function sugerirAusencias(agente, articulo, desde){
-    let fechaDesde = parseDate(desde);
-    let ausencias:any = {
-        desde: fechaDesde,
-        ausencias: [],
-        warnings: []
-    }
-    let indicadores = await getIndicadoresAusencias(agente, articulo, fechaDesde);
-    let warnings = controlDiasPorPeriodo(indicadores, fechaDesde);
-    if (warnings.length){
-        ausencias.warnings = ausencias.warnings.concat(formatWarningsIndicadores(warnings));
-    }
-    else{
-        let indicador = getIndicadorMasRelevante(indicadores, fechaDesde);
-        // Aqui determinamos realmente las ausencias sugeridas
-        ausencias = procesaDias(agente, articulo, fechaDesde, null, indicador.intervalos[0].disponibles)
-    }
-    warnings = await controlSuperposicionAusencias(agente, articulo, ausencias.desde, ausencias.hasta);
-    ausencias.warnings = ausencias.warnings.concat(formatWarningsSuperposicion(warnings));
+export async function sugerirAusencias(ausentismo){
+    let agente = ausentismo.agente;
+    let articulo = await Articulo.findById(ausentismo.articulo.id);// get articulo con formulas
+    let fechaDesde = parseDate(ausentismo.fechaDesde);
+    // let ausencias:any = { desde: fechaDesde, ausencias: [], warnings: []}
+    let warnings = [];
+    
+    let indicadores = await findIndicadoresAll(agente, articulo, fechaDesde);
+    let ausencias = await calculaDiasAusencias(agente, articulo, fechaDesde, null, getMaxDiasDisponibles(indicadores, fechaDesde))
+    
+    warnings = warnings.concat(formatWarningsIndicadores(await controlIndicadoresSugerencia(indicadores, fechaDesde, ausentismo)));
+    warnings = warnings.concat(formatWarningsSuperposicion(await controlSuperposicion(agente, articulo, ausencias.desde, ausencias.hasta, ausentismo)));
+
+    ausencias.warnings = warnings;
     return ausencias;
 }
 
 
 /**
- * Retorna aquellos indicadores que hayan alcanzado el numero maximo de ausencias
+ * Identifica y retorna indicadores que hayan alcanzado el numero maximo de ausencias
  * permitida por periodo. El listado de indicadores con problemas solo incluira el
  * intervalo del periodo que presenta problemas de acuerdo a la fecha de interes.
  * Por ejemplo si un indicador indica que para el mes de abril no hay mas ausencias
@@ -300,8 +319,9 @@ export async function sugerirAusencias(agente, articulo, desde){
  * Si no hay problemas detectados se retorna un array vacio.
  * @param indicadores Listado total de indicadores para un articulo en particular
  * @param fechaInteres Es la fecha desde del ausentismo a cargar
+ * @param ausentismo Opcional. Si esta presente 
  */
-export function controlDiasPorPeriodo(indicadores, fechaInteres){
+export function controlIndicadoresSugerencia(indicadores, fechaInteres, ausentismo?){
     let indicadoresConProblemas = [];
     for (const indicador of indicadores){
         let intervaloConProblemas:any;
@@ -318,10 +338,14 @@ export function controlDiasPorPeriodo(indicadores, fechaInteres){
             indicadoresConProblemas.push(indicador)
         }     
     }
+
+    // if (ausentismo){
+
+    // }
     return indicadoresConProblemas;
 }
 
-export function getIndicadoresFinalesConProblemas(indicadores){
+export function controlIndicadoresGuardado(indicadores){
     let indicadoresConProblemas = [];
     for (const indicador of indicadores){
         let intervaloConProblemas:any;
@@ -352,7 +376,7 @@ export function getIndicadoresFinalesConProblemas(indicadores){
  * @param indicadores Listado de indicadores para un articulo en particular
  * @param fechaInteres Es la fecha desde del ausentismo a cargar  
  */
-export function getIndicadorMasRelevante(indicadores, fechaInteres){
+export function getMaxDiasDisponibles(indicadores, fechaInteres){
     let indicadorRelevante:any;
     let intervaloRelevante:any;
     indicadorRelevante = indicadores[0];
@@ -367,51 +391,148 @@ export function getIndicadorMasRelevante(indicadores, fechaInteres){
             break;
         } 
     }
-    indicadorRelevante.intervalos = [intervaloRelevante];
-    return indicadorRelevante;
+    // if (intervaloRelevante) intervalos[0].disponibles
+    // indicadorRelevante.intervalos = [intervaloRelevante];
+    // if (indicador){
+    //     dias = indicador.intervalos[0].disponibles;
+    // }
+    return intervaloRelevante? intervaloRelevante.disponibles : 0;
 }
 
 export async function validarAusencias(agente, articulo, desde, hasta, dias){
     desde = desde? parseDate(desde) : null;
     hasta = hasta? parseDate(hasta) : null;
 
-    let ausencias = procesaDias(agente, articulo, desde, hasta, dias);
-    let indicadores = await getIndicadoresAusencias(agente, articulo, ausencias.desde, ausencias.hasta);
+    let ausencias = calculaDiasAusencias(agente, articulo, desde, hasta, dias);
+    let indicadores = await findIndicadoresAll(agente, articulo, ausencias.desde, ausencias.hasta);
     let indicadoresRecalculados = distribuirAusenciasEntreIndicadores(indicadores, ausencias);
-    let warnings = getIndicadoresFinalesConProblemas(indicadoresRecalculados);
+    let warnings = controlIndicadoresGuardado(indicadoresRecalculados);
     
     if (warnings.length){
         ausencias.warnings = ausencias.warnings.concat(formatWarningsIndicadores(warnings));
     }
 
-    warnings = await controlSuperposicionAusencias(agente, articulo, ausencias.desde, ausencias.hasta);
+    warnings = await controlSuperposicion(agente, articulo, ausencias.desde, ausencias.hasta);
     ausencias.warnings = ausencias.warnings.concat(formatWarningsSuperposicion(warnings));
     return ausencias;
 }
 
+async function primerPaso(ausentismo){
+    let desde = parseDate(ausentismo.fechaDesde);// desde? parseDate(desde) : null;
+    let hasta = parseDate(ausentismo.fechaHasta); //hasta? parseDate(hasta) : null;
+    let agente = ausentismo.agente;
+    let articulo = await Articulo.findById(ausentismo.articulo.id);// get articulo con formulasausentismo.articulo;
+    let dias = ausentismo.cantidadDias;
+    let ausencias = calculaDiasAusencias(agente, articulo, desde, hasta, dias);
+    let indicadores = await findIndicadoresAll(agente, articulo, ausencias.desde, ausencias.hasta);
+    let indicadoresRecalculados = distribuirAusenciasEntreIndicadores(indicadores, ausencias);
+    indicadoresRecalculados = rollbackIndicadores(indicadoresRecalculados);
+    return indicadoresRecalculados;
+}
 
-export function procesaDias(agente, articulo, desde, hasta?, dias?){
+function mergeIndicadores(indicadoresNuevos, indicadoresPrevios){
+    for (let indNuevo of indicadoresNuevos){
+        for (let intervalo of indNuevo.intervalos){
+            const intEncontrado = findIntervalo(intervalo, indicadoresPrevios);
+            if (intEncontrado){
+                intervalo.ejecutadas = intEncontrado.ejecutadas;
+                intervalo.disponibles = intEncontrado.disponibles;
+            }
+            
+        }
+    }
+    return indicadoresNuevos;
+}
+
+function findIntervalo(intervalo, indicadores){
+    let intervaloEncontrado;
+    for (const indicador of indicadores){
+        for (const int of indicador.intervalos){
+            if (int.desde.getTime() == intervalo.desde.getTime() &&
+                int.hasta.getTime() == intervalo.hasta.getTime()){
+                    intervaloEncontrado = int;
+                    break;
+                }
+        }
+        if (intervaloEncontrado) break;
+    }   
+    return intervaloEncontrado;
+}
+
+export async function validarAusenciasEnEdicion(ausentismo, agente, articulo, desde, hasta, dias){
+    console.log('Vamos a validar un update');
+    desde = desde? parseDate(desde) : null;
+    hasta = hasta? parseDate(hasta) : null;
+    articulo = await Articulo.findById(ausentismo.articulo.id);// get articulo con formulasausentismo.articulo;
+
+    let ausencias = calculaDiasAusencias(agente, articulo, desde, hasta, dias);
+    let indicadores = await findIndicadoresAll(agente, articulo, ausencias.desde, ausencias.hasta);
+    let indicadoresRecalculados = distribuirAusenciasEntreIndicadores(indicadores, ausencias);
+    console.log('Indicadores indicadoresRecalculados##############################');
+    for (let i of indicadoresRecalculados) console.log(i);
+    let indicadoresRollback = await primerPaso(ausentismo);
+    console.log('Indicadores Rollback#############################################');
+    for (let i of indicadoresRollback) console.log(i);
+    let indicadoresFinales = mergeIndicadores(indicadoresRecalculados, indicadoresRollback);
+    console.log('Terminamos de hacer el merge####################################');
+    for (let i of indicadoresFinales) console.log(i);
+
+    let warnings = [];
+    
+    warnings = warnings.concat(formatWarningsIndicadores(await controlIndicadoresGuardado(indicadoresFinales)));
+    console.log('Warnings');
+    console.log(warnings)
+    warnings = warnings.concat(formatWarningsSuperposicion(await controlSuperposicion(agente, articulo, ausencias.desde, ausencias.hasta, ausentismo)));
+
+    ausencias.warnings = warnings;
+
+    // let warnings = getIndicadoresFinalesConProblemas(indicadoresFinales);
+    
+    // if (warnings.length){
+    //     ausencias.warnings = ausencias.warnings.concat(formatWarningsIndicadores(warnings));
+    // }
+
+    // warnings = await controlSuperposicion(agente, articulo, ausencias.desde, ausencias.hasta);
+    // ausencias.warnings = ausencias.warnings.concat(formatWarningsSuperposicion(warnings));
+    return ausencias;
+}
+
+function rollbackIndicadores(indicadores){
+    for (let indicador of indicadores){
+        for (let intervalo of indicador.intervalos){
+            intervalo.ejecutadas = intervalo.ejecutadas - intervalo.asignadas;
+            intervalo.disponibles = intervalo.disponibles + intervalo.asignadas; 
+        }
+    }
+    return indicadores;
+}
+
+
+export function calculaDiasAusencias(agente, articulo, desde, hasta?, dias?){
     let ausencias:any;
     if (articulo.diasCorridos){
-        ausencias = procesaDiasCorridos(desde, hasta, dias);
+        ausencias = calculaDiasCorridos(desde, hasta, dias);
     }
 
     if (articulo.diasHabiles){
-        ausencias = procesaDiasHabiles(desde, hasta, dias);
+        ausencias = calculaDiasHabiles(desde, hasta, dias);
     }
     return ausencias;
 }
 
 
 /**
- * Busca ausencias previas existentes en un periodo determinado para un agente
+ * Busca ausencias previas existentes en un periodo determinado para un agente.
+ * El parametro ausentismo se utiliza unicamente en el caso que se este en modo 
+ * edicion, para evitar controlar con el mismo ausentismo que se esta editando
  * @param agente 
  * @param articulo 
  * @param desde 
  * @param hasta 
+ * @param ausentismo Opcional. Unicamente necesario en modo edicion
  */
-export async function controlSuperposicionAusencias(agente, articulo, desde, hasta){
-    let ausentismosPrevios = await AusenciaPeriodo.find({
+export async function controlSuperposicion(agente, articulo, desde, hasta, ausentismo?){
+    let ausentismos = await AusenciaPeriodo.find({
         'agente.id': agente.id,
         'ausencias': {
             $elemMatch: {
@@ -422,9 +543,11 @@ export async function controlSuperposicionAusencias(agente, articulo, desde, has
             }
         }
     });
-    return ausentismosPrevios;
+    if (ausentismo){
+        ausentismos = ausentismos.filter(au => au.id != ausentismo.id);
+    }
+    return ausentismos;
 }
-
 
 
 /**
@@ -464,16 +587,16 @@ export function filterIntervalosIndicador(indicador, desde, hasta){
  * @param hasta 
  * @returns [IndicadorAusentismoSchema]
  */
-export async function getIndicadoresAusencias(agente, articulo, desde, hasta?){
+export async function findIndicadoresAll(agente, articulo, desde, hasta?){
     let indicadores = [];
     for (let formula of articulo.formulas ) {        
         if ( formula.periodo ){
             indicadores = indicadores.concat(
-                await getIndicadoresConPeriodo(agente, articulo, formula, desde, hasta));   
+                await getIndicadorConPeriodo(agente, articulo, formula, desde, hasta));   
         }
         else {
             indicadores = indicadores.concat(
-                await getIndicadoresSinPeriodo(agente, articulo, formula, desde, hasta));
+                await getIndicadorSinPeriodo(agente, articulo, formula, desde, hasta));
         }
     }
     return indicadores;
@@ -494,7 +617,7 @@ export async function getIndicadoresAusencias(agente, articulo, desde, hasta?){
  * @param hasta
 * @returns [IndicadorAusentismoSchema]
  */
-export async function getIndicadoresConPeriodo(agente, articulo, formula, desde, hasta?){
+export async function getIndicadorConPeriodo(agente, articulo, formula, desde, hasta?){
     const anioDesde = desde.getFullYear();
     const anioHasta = hasta? hasta.getFullYear() : null;
     let anios = [anioDesde];
@@ -528,7 +651,7 @@ export async function getIndicadoresConPeriodo(agente, articulo, formula, desde,
  * @param hasta 
  * @returns [IndicadorAusentismoSchema]
  */
-export async function getIndicadoresSinPeriodo(agente, articulo, formula, desde?, hasta?){
+export async function getIndicadorSinPeriodo(agente, articulo, formula, desde?, hasta?){
     let indicador:any;
     if ( formula.diasContinuos ){
         // Si la formula del articulo exige que los dias de licencias
@@ -612,7 +735,7 @@ export async function calcularIndicadoresPorIntervalo(agente, articulo, formula,
     return intervalos;
 }
 
-export function procesaDiasCorridos(desde:Date, hasta?:Date, dias?:number){
+export function calculaDiasCorridos(desde:Date, hasta?:Date, dias?:number){
     let ausencias = [];
     let totalDias = 0;
     if (hasta && !dias){
@@ -641,7 +764,7 @@ export function procesaDiasCorridos(desde:Date, hasta?:Date, dias?:number){
     }
 }
 
-export function procesaDiasHabiles(desde:Date, hasta?:Date, dias?){
+export function calculaDiasHabiles(desde:Date, hasta?:Date, dias?){
     let ausencias = [];
     let totalDias = 0;
     if (hasta && !dias){
