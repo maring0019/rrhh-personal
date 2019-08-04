@@ -34,9 +34,21 @@ export const AusenciaPeriodoSchema = new Schema({
     observacion: String,
     adicional: String,
     extra: String,
-    ausencias: [AusenciaSchema],
     adjuntos: Array,
     certificado: CertificadoSchema,
+    ausencias: [AusenciaSchema],
+    indicadoresLog:[
+        {
+            id: {
+                type: Types.ObjectId,
+                required: true
+            },
+            totales: Number,
+            ejecutadas: Number,
+            disponibles: Number,
+            asignadas: Number, 
+        }
+    ]
 });
 
 export const AusenciaPeriodo = model('AusenciaPeriodo', AusenciaPeriodoSchema, 'ausenciasperiodo');

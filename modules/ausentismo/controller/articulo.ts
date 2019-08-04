@@ -1,5 +1,18 @@
 import { Articulo } from '../schemas/articulo';
 
+
+export async function addAgrupamiento(req, res, next) {
+    try {
+        const agrupamiento = new Articulo({
+            nombre: req.body.nombre
+        });
+        const agrupamientoNuevo = await agrupamiento.save();
+        return res.json(agrupamientoNuevo);
+    } catch (err) {
+        return next(err);
+    }
+}
+
 export async function getArticuloById(req, res, next) {
     try {
         let obj = await Articulo.findById(req.params.id);

@@ -1,6 +1,8 @@
 import { AusenciaPeriodo } from '../schemas/ausenciaPeriodo';
 import * as utils from '../commons/utils';
 import * as ind from '../commons/indicadores';
+// import { IndicadorAusentismo } from '../schemas/indicador';
+// import { IndicadorAusentismo } from '../schemas/indicador';
 
 export async function addAusentismo(req, res, next) {
     try {
@@ -21,6 +23,51 @@ export async function addAusentismo(req, res, next) {
         return next(err);
     }
 }
+
+export async function addLicencia(req, res, next) {
+    try {
+        const au = await utils.parseAusentismo(req.body);
+        let ausenciasCalculadas = await generarLicencia(au.agente, au.articulo, au.fechaDesde,
+                                        au.fechaHasta, au.cantidadDias);
+        
+        if (ausenciasCalculadas.warnings && ausenciasCalculadas.warnings.length){
+            return res.json(ausenciasCalculadas);
+        }
+        else{
+            // Actualizamos los indicadores
+            for (const indicador of ausenciasCalculadas.indicadores){
+                for (let intervalo of indicador.intervalos){
+                    intervalo.ejecutadas = intervalo.ejecutadas + intervalo.asignadas;
+                    intervalo.disponibles = intervalo.totales - intervalo.ejecutadas;
+                    intervalo.asignadas = 0;
+                }
+                await indicador.save()
+            }
+            // Generamos el nuevo ausentismo
+            au.ausencias = utils.generarDiasAusencia(au, ausenciasCalculadas.ausencias);
+            const obj = new AusenciaPeriodo(au);
+            const objNuevo = await obj.save();
+            return res.json(objNuevo);
+        }
+    } catch (err) {
+        return next(err);
+    }
+}
+
+export async function generarLicencia(agente, articulo, desde, hasta, dias){
+    let ausencias = utils.calcularDiasAusencias(agente, articulo, desde, hasta, dias);
+    let indicadores = await ind.getIndicadoresLicencia(agente, articulo, ausencias.desde, ausencias.hasta);
+    let indicadoresRecalculados = await utils.distribuirLicenciasEntreIndicadores(agente, articulo, indicadores, ausencias);  
+
+    let warnings = [];
+    warnings = warnings.concat(utils.formatWarningsIndicadores(await utils.checkIndicadoresGuardado(indicadoresRecalculados)));
+    warnings = warnings.concat(utils.formatWarningsSuperposicion(await utils.checkSolapamientoPeriodos(agente, articulo, ausencias.desde, ausencias.hasta)));
+    
+    ausencias.warnings = warnings;
+    ausencias.indicadores = indicadoresRecalculados;
+    return ausencias;
+}
+
 
 export async function generarAusentismo(agente, articulo, desde, hasta, dias){
     let ausencias = utils.calcularDiasAusencias(agente, articulo, desde, hasta, dias);

@@ -217,7 +217,6 @@ export async function attachFilesToObject(fileIds, objectOwnerId, removeFiles=tr
 export async function dettachFilesFromObject(fileIds, objID){
     const filesModel = FilesModel();
     fileIds = fileIds.map(id => id = Types.ObjectId(id));
-    // const files = await filesModel.find({ '_id': { $in: fileIds , 'metadata.objID': Types.ObjectId(objID) } });
     const files = await filesModel.find({ '_id': { $in: fileIds } });
     files.forEach(file => {
         filesModel.unlinkById(file._id, (error, unlinkedAttachment) => { });

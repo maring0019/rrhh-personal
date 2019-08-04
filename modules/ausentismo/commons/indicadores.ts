@@ -20,11 +20,11 @@ export async function getIndicadoresAusentismo(agente, articulo, desde, hasta?){
     for (let formula of articulo.formulas ) {        
         if ( formula.periodo ){
             indicadores = indicadores.concat(
-                await getIndicadorConPeriodo(agente, articulo, formula, desde, hasta));   
+                await getIndicadoresConPeriodo(agente, articulo, formula, desde, hasta));   
         }
         else {
             indicadores = indicadores.concat(
-                await getIndicadorSinPeriodo(agente, articulo, formula, desde, hasta));
+                await getIndicadoresSinPeriodo(agente, articulo, formula, desde, hasta));
         }
     }
     return indicadores;
@@ -45,7 +45,7 @@ export async function getIndicadoresAusentismo(agente, articulo, desde, hasta?){
  * @param hasta
 * @returns [IndicadorAusentismoSchema]
  */
-export async function getIndicadorConPeriodo(agente, articulo, formula, desde, hasta?){
+export async function getIndicadoresConPeriodo(agente, articulo, formula, desde, hasta?){
     const anioDesde = desde.getFullYear();
     const anioHasta = hasta? hasta.getFullYear() : null;
     let anios = [anioDesde];
@@ -79,7 +79,7 @@ export async function getIndicadorConPeriodo(agente, articulo, formula, desde, h
  * @param hasta 
  * @returns [IndicadorAusentismoSchema]
  */
-export async function getIndicadorSinPeriodo(agente, articulo, formula, desde?, hasta?){
+export async function getIndicadoresSinPeriodo(agente, articulo, formula, desde?, hasta?){
     let indicador:any;
     if ( formula.diasContinuos ){
         // Si la formula del articulo exige que los dias de licencias
@@ -100,6 +100,17 @@ export async function getIndicadorSinPeriodo(agente, articulo, formula, desde?, 
         if (!indicador) indicador = await calcularIndicadoresAusentismo(agente, articulo, formula);
     }
     return indicador;
+}
+
+
+export async function getIndicadoresLicencia(agente, articulo, formula, desde?, hasta?){
+    let indicadores = await IndicadorAusentismo.find(
+        {
+            'agente.id': new Types.ObjectId(agente.id),
+            'articulo.id': new Types.ObjectId(articulo.id),
+            'vencido': false
+        }).sort({ vigencia: 1 });
+    return indicadores;
 }
 
 
@@ -191,6 +202,30 @@ export async function getTotalAusenciasPorArticulo(agente, articulo, desde?, has
         
     let total = await AusenciaPeriodo.aggregate(pipeline);
     return total.length? total[0].total_ausencias : 0;
+}
+
+export async function getTotalLicenciasDisponibles(agente, articulo){
+    let pipeline:any = [
+        { 
+            $match: { 
+                'agente.id': Types.ObjectId(agente.id),
+                'articulo.id': Types.ObjectId(articulo.id),
+                'vencido': false
+            }
+        } ,
+        {
+            $unwind: '$intervalos'
+        },
+        {
+            $group: {
+                _id : null,
+                total : { $sum: '$intervalos.disponibles'}
+            }
+        }
+     ]
+    
+    let total = await IndicadorAusentismo.aggregate(pipeline);
+    return total.length? total[0].total : 0;
 }
 
 

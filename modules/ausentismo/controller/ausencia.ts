@@ -132,14 +132,45 @@ export async function updateAusentismo(req, res, next){
             ausentismoChanged.fechaHasta, ausentismoChanged.cantidadDias);
         
         if (!ausentismoValidado.warnings || !ausentismoValidado.warnings.length){
-            console.log('Vamos a guardar los cambios del update!!');
-            console.log(ausentismoChanged)
             ausentismoToUpdate.ausencias = utils.generarDiasAusencia(ausentismoChanged, ausentismoValidado.ausencias);
             ausentismoToUpdate.fechaDesde = ausentismoChanged.fechaDesde;
             ausentismoToUpdate.fechaHasta = ausentismoChanged.fechaHasta;
             ausentismoToUpdate.cantidadDias = ausentismoChanged.cantidadDias;
             ausentismoToUpdate.articulo = ausentismoChanged.articulo;
-            console.log(ausentismoToUpdate)
+            
+            const ausentismoUpdated = await ausentismoToUpdate.save();
+            return res.json(ausentismoUpdated);
+        }
+        else{
+            // Return ausencias con warnings. No guardamos nada
+            return res.json(ausentismoValidado);    
+        }
+    } catch (err) {
+        return next(err);
+    }
+}
+
+
+export async function updateLicencia(req, res, next){
+    try {
+        const id = req.params.id;
+        if (!id || (id && !Types.ObjectId.isValid(id))) return res.status(404).send();
+        
+        let ausentismoToUpdate:any = await AusenciaPeriodo.findById(id);
+        if (!ausentismoToUpdate) return res.status(404).send();
+        
+        let ausentismoChanged = await utils.parseAusentismo(req.body);
+        let ausentismoValidado = await editarAusentismo(
+            ausentismoToUpdate, ausentismoChanged.agente, ausentismoChanged.articulo, ausentismoChanged.fechaDesde,
+            ausentismoChanged.fechaHasta, ausentismoChanged.cantidadDias);
+        
+        if (!ausentismoValidado.warnings || !ausentismoValidado.warnings.length){
+            ausentismoToUpdate.ausencias = utils.generarDiasAusencia(ausentismoChanged, ausentismoValidado.ausencias);
+            ausentismoToUpdate.fechaDesde = ausentismoChanged.fechaDesde;
+            ausentismoToUpdate.fechaHasta = ausentismoChanged.fechaHasta;
+            ausentismoToUpdate.cantidadDias = ausentismoChanged.cantidadDias;
+            ausentismoToUpdate.articulo = ausentismoChanged.articulo;
+            
             const ausentismoUpdated = await ausentismoToUpdate.save();
             return res.json(ausentismoUpdated);
         }
@@ -204,3 +235,24 @@ export async function editarAusentismoArticuloNuevo(ausEnEdicion, agente, articu
     return ausencias;
 }
 
+
+export async function editarLicenciaArticuloActual(licEnEdicion, agente, articulo, desde, hasta, dias){
+    let ausencias = utils.calcularDiasAusencias(agente, articulo, desde, hasta, dias);
+    let indicadores = await ind.getIndicadoresLicencia(agente, articulo, ausencias.desde, ausencias.hasta);
+    
+    // Hacer metodo nuevo getIndicadoresLicenciaHistoricos
+    // Hacer metodo nuevo mergeIndicadoresLicencia
+    // Hacer metodo nuevo guardado de logs de indicadores
+    let indicadoresHistoricos = await ind.getIndicadoresHistoricos(licEnEdicion.agente, licEnEdicion.articulo, licEnEdicion.fechaDesde, licEnEdicion.fechaHasta, licEnEdicion.cantidadDias);
+    let indicadoresFinales = ind.mergeIndicadores(indicadores, indicadoresHistoricos);
+
+    let indicadoresRecalculados = await utils.distribuirLicenciasEntreIndicadores(agente, articulo, indicadoresFinales, ausencias);  
+
+    let warnings = [];
+    warnings = warnings.concat(utils.formatWarningsIndicadores(await utils.checkIndicadoresGuardado(indicadoresRecalculados)));
+    warnings = warnings.concat(utils.formatWarningsSuperposicion(await utils.checkSolapamientoPeriodos(agente, articulo, ausencias.desde, ausencias.hasta)));
+    
+    ausencias.warnings = warnings;
+    ausencias.indicadores = indicadoresRecalculados;
+    return ausencias;
+}

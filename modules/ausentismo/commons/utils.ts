@@ -2,6 +2,8 @@ import { Ausencia } from '../schemas/ausencia';
 import { AusenciaPeriodo } from '../schemas/ausenciaPeriodo';
 import { Articulo } from '../schemas/articulo';
 
+import * as ind from './indicadores'; 
+
 import { format } from 'util';
 
 export function calcularDiasAusencias(agente, articulo, desde, hasta?, dias?){
@@ -111,8 +113,8 @@ export function distribuirAusenciasEntreIndicadores(indicadores, ausentismo){
             if ( !indicador.periodo || 
                 (intervalo.desde <= ausentismo.desde && 
                 intervalo.hasta >= ausentismo.hasta)){
-                // Asignamos el total de dias de ausnecias al intervalo
-                intervalo.asignadas = ausentismo.ausencias.length;
+                // Asignamos el total de dias de ausencias al intervalo
+                intervalo.asignadas = ausentismo.dias;
             }
             else{
                 for (let dia of ausentismo.ausencias){
@@ -123,7 +125,7 @@ export function distribuirAusenciasEntreIndicadores(indicadores, ausentismo){
                 }
             }
         }
-    }    
+    }
     return indicadores;
 }
 
@@ -156,6 +158,32 @@ export function minimizarIntervalosIndicador(indicador, desde, hasta){
     return indicador;
 }
 
+export async function distribuirLicenciasEntreIndicadores(agente, articulo, indicadores, ausencias){
+    let totalDiasLicencia = ausencias.dias;
+    let totalDiasDisponibles = await ind.getTotalLicenciasDisponibles(agente, articulo);
+    if (totalDiasDisponibles < totalDiasLicencia ){
+        // No es posible asignar las licencias requeridas. Hay que alertar!
+        indicadores[0].intervalos[0].asignadas = totalDiasLicencia; 
+    }
+    else{
+        // Es posible asignar las licencias requeridas. Hay que ajustar los
+        // indicadores para reflejar cuantos dias se restan a cada anio
+        for (let indicador of indicadores){
+            for (const intervalo of indicador.intervalos){
+                if ( intervalo.disponibles ==  0 ) break;
+                if ( intervalo.disponibles <=  totalDiasLicencia ){
+                    totalDiasLicencia = totalDiasLicencia - intervalo.disponibles;
+                    intervalo.asignadas = intervalo.disponibles;
+                }
+                else{
+                    intervalo.asignadas = totalDiasLicencia;
+                    totalDiasLicencia = 0;
+                }
+            }   
+        } 
+    }
+    return indicadores;
+}
 
 export function checkIndicadoresGuardado(indicadores){
     let indicadoresConProblemas = [];
@@ -345,14 +373,14 @@ export function formatWarningsIndicadores(indicadores){
 }
 
 export function formatWarningsSuperposicion(ausentismosPrevios){
-    let textControl = `Conflicto de fechas con Articulo `;
+    let textControl = `Conflicto de fechas con Articulo`;
     let warningsText = []; 
     for (const ausentismo of ausentismosPrevios){
         let textWarning = ``;
             const desde = getFormattedDate(ausentismo.fechaDesde);
             const hasta = getFormattedDate(ausentismo.fechaHasta);
             const articulo = ausentismo.articulo.codigo;
-            textWarning = `${textControl}. ${articulo}: (${desde} - ${hasta})`;
+            textWarning = `${textControl} ${articulo}: (${desde} - ${hasta})`;
             warningsText.push(textWarning)    
         }
    return warningsText;
