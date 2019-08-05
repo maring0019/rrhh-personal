@@ -25,7 +25,6 @@ export const IndicadorAusentismoSchema = new Schema({
             hasta: Date,
             totales: Number,
             ejecutadas: Number,
-            disponibles: Number,
             asignadas: Number, // Volatile. Atributo temporal utilizado al momento del calculo de dias
                                // de ausencia que se asignaran. No se persiste este atributo
         }

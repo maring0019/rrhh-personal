@@ -170,10 +170,11 @@ export async function distribuirLicenciasEntreIndicadores(agente, articulo, indi
         // indicadores para reflejar cuantos dias se restan a cada anio
         for (let indicador of indicadores){
             for (const intervalo of indicador.intervalos){
-                if ( intervalo.disponibles ==  0 ) break;
-                if ( intervalo.disponibles <=  totalDiasLicencia ){
-                    totalDiasLicencia = totalDiasLicencia - intervalo.disponibles;
-                    intervalo.asignadas = intervalo.disponibles;
+                const diasDisponibles = intervalo.totales - intervalo.ejecutadas;
+                if ( diasDisponibles ==  0 ) break;
+                if ( diasDisponibles <=  totalDiasLicencia ){
+                    totalDiasLicencia = totalDiasLicencia - diasDisponibles;
+                    intervalo.asignadas = diasDisponibles;
                 }
                 else{
                     intervalo.asignadas = totalDiasLicencia;
@@ -190,7 +191,8 @@ export function checkIndicadoresGuardado(indicadores){
     for (const indicador of indicadores){
         let intervaloConProblemas:any;
         for (const intervalo of indicador.intervalos){
-            const restoDiasDisponibles = intervalo.disponibles - intervalo.asignadas;
+            const diasDisponibles = intervalo.totales - intervalo.ejecutadas;
+            const restoDiasDisponibles = diasDisponibles - intervalo.asignadas;
             if( restoDiasDisponibles < 0) {
                 intervaloConProblemas = intervalo;
                 break;
@@ -222,7 +224,8 @@ export function checkIndicadoresSugerencia(indicadores, fechaInteres, ausentismo
         let intervaloConProblemas:any;
         for (const intervalo of indicador.intervalos){
             if (!intervalo.hasta || (intervalo.hasta >= fechaInteres)) {
-                if( intervalo.disponibles <= 0) {
+                const diasDisponibles = intervalo.totales - intervalo.ejecutadas;
+                if( diasDisponibles <= 0) {
                     intervaloConProblemas = intervalo;
                 }
                 break;

@@ -1,47 +1,25 @@
 import { Types } from 'mongoose';
 
-import { Ausencia } from '../schemas/ausencia';
 import { AusenciaPeriodo } from '../schemas/ausenciaPeriodo';
 import { Agente } from '../../agentes/schemas/agente';
-
-// import { attachFilesToObject } from '../../../core/files/controller/file';
-
-import { Articulo } from '../schemas/articulo';
 
 import * as utils from '../commons/utils';
 import * as ind from '../commons/indicadores';
 
 
-export async function getAusenciaById(req, res, next) {
+export async function getAusentismoById(req, res, next){
     try {
-        let obj = await Ausencia.findById(req.params.id);
+        const id = req.params.id;
+        if (!id || (id && !Types.ObjectId.isValid(id))) return next(404);
+        let obj:any = await AusenciaPeriodo.findById(id);
+        if (!obj) return next(404);
         return res.json(obj);
     } catch (err) {
         return next(err);
     }
 }
 
-
-export async function addAusencia(req, res, next) {
-    try {
-        const obj = new Ausencia({
-            agente: req.body.agente, 
-            fecha: req.body.fecha,
-            articulo: req.body.articulo,
-            observacion: req.body.observacion,
-            adicional: req.body.adicional,
-            extra: req.body.extra,
-            adjuntos: req.body.adjuntos,
-            certificado: req.body.certificado
-        });
-        const objNuevo = await obj.save();
-        return res.json(objNuevo);
-    } catch (err) {
-        return next(err);
-    }
-}
-
-export async function getAusenciasPeriodo(req, res, next) {
+export async function getAusentismo(req, res, next) {
     try {
         let results = [];
         let query = AusenciaPeriodo.find({});
@@ -82,36 +60,12 @@ export async function getAusenciasPeriodo(req, res, next) {
     }
 }
 
-export async function getAusentismoById(req, res, next){
-    try {
-        const id = req.params.id;
-        if (!id || (id && !Types.ObjectId.isValid(id))) return next(404);
-        let obj:any = await AusenciaPeriodo.findById(id);
-        if (!obj) return next(404);
-        return res.json(obj);
-    } catch (err) {
-        return next(err);
-    }
-}
-
-export async function findObjectById(objectId, Model){
-    if (!objectId || (objectId && !Types.ObjectId.isValid(objectId))) return;
-    return await Model.findById(objectId);
-    
-}
 
 export async function calcularAusentismo(req, res, next) {
     try {
-        const ausentismo = {
-            agente: req.body.agente,
-            articulo: req.body.articulo,
-            fechaDesde: req.body.fechaDesde? new Date(req.body.fechaDesde):null,
-            fechaHasta: req.body.fechaHasta? new Date(req.body.fechaHasta):null,
-            cantidadDias: req.body.cantidadDias
-        };
-    let ausencias = await calcularAusencias(
-        ausentismo.agente, ausentismo.articulo, ausentismo.fechaDesde, ausentismo.fechaHasta,
-        ausentismo.cantidadDias);
+        const ausentismo = await utils.parseAusentismo(req.body);
+    let ausencias = utils.calcularDiasAusencias(ausentismo.agente, ausentismo.articulo,
+        ausentismo.fechaDesde, ausentismo.fechaHasta, ausentismo.cantidadDias);
     return res.json(ausencias);
     } catch (err) {
         return next(err);
@@ -150,47 +104,11 @@ export async function updateAusentismo(req, res, next){
     }
 }
 
-
-export async function updateLicencia(req, res, next){
-    try {
-        const id = req.params.id;
-        if (!id || (id && !Types.ObjectId.isValid(id))) return res.status(404).send();
-        
-        let ausentismoToUpdate:any = await AusenciaPeriodo.findById(id);
-        if (!ausentismoToUpdate) return res.status(404).send();
-        
-        let ausentismoChanged = await utils.parseAusentismo(req.body);
-        let ausentismoValidado = await editarAusentismo(
-            ausentismoToUpdate, ausentismoChanged.agente, ausentismoChanged.articulo, ausentismoChanged.fechaDesde,
-            ausentismoChanged.fechaHasta, ausentismoChanged.cantidadDias);
-        
-        if (!ausentismoValidado.warnings || !ausentismoValidado.warnings.length){
-            ausentismoToUpdate.ausencias = utils.generarDiasAusencia(ausentismoChanged, ausentismoValidado.ausencias);
-            ausentismoToUpdate.fechaDesde = ausentismoChanged.fechaDesde;
-            ausentismoToUpdate.fechaHasta = ausentismoChanged.fechaHasta;
-            ausentismoToUpdate.cantidadDias = ausentismoChanged.cantidadDias;
-            ausentismoToUpdate.articulo = ausentismoChanged.articulo;
-            
-            const ausentismoUpdated = await ausentismoToUpdate.save();
-            return res.json(ausentismoUpdated);
-        }
-        else{
-            // Return ausencias con warnings. No guardamos nada
-            return res.json(ausentismoValidado);    
-        }
-    } catch (err) {
-        return next(err);
-    }
+export async function findObjectById(objectId, Model){
+    if (!objectId || (objectId && !Types.ObjectId.isValid(objectId))) return;
+    return await Model.findById(objectId);
+    
 }
-
-
-export async function calcularAusencias(agente, articulo, desde, hasta, dias){
-    desde = desde? utils.parseDate(desde) : null;
-    hasta = hasta? utils.parseDate(hasta) : null;
-    articulo = await Articulo.findById(articulo.id);// get articulo con formulasausentismo.articulo;
-    let ausenciasCalculadas = utils.calcularDiasAusencias(agente, articulo, desde, hasta, dias);
-    return ausenciasCalculadas;
-}   
 
 
 export async function editarAusentismo(ausEnEdicion, agente, articulo, desde, hasta, dias){
@@ -236,21 +154,69 @@ export async function editarAusentismoArticuloNuevo(ausEnEdicion, agente, articu
 }
 
 
+
+export async function updateLicencia(req, res, next){
+    try {
+        const id = req.params.id;
+        if (!id || (id && !Types.ObjectId.isValid(id))) return res.status(404).send();
+        
+        let ausentismoToUpdate:any = await AusenciaPeriodo.findById(id);
+        if (!ausentismoToUpdate) return res.status(404).send();
+        
+        let ausentismoNewValues = await utils.parseAusentismo(req.body);
+        let ausenciasCalculadas = await editarLicencia(ausentismoToUpdate, ausentismoNewValues.agente,
+            ausentismoNewValues.articulo, ausentismoNewValues.fechaDesde, ausentismoNewValues.fechaHasta, ausentismoNewValues.cantidadDias);
+        
+        if (!ausenciasCalculadas.warnings || !ausenciasCalculadas.warnings.length){
+            const ausentismoUpdated = await saveLicenciaUpdated(ausentismoToUpdate, ausentismoNewValues, ausenciasCalculadas)
+            await ind.deleteIndicadoresHistoricos(ausentismoToUpdate);
+            await ind.saveIndicadoresHistoricos(ausentismoToUpdate, ausenciasCalculadas.indicadores);
+            await ind.saveIndicadores(ausenciasCalculadas.indicadores);
+            return res.json(ausentismoUpdated);
+        }
+        else{
+            // Return ausencias con warnings. No guardamos nada
+            return res.json(ausenciasCalculadas);    
+        }
+    } catch (err) {
+        return next(err);
+    }
+}
+
+async function saveLicenciaUpdated(ausentismoToUpdate, ausentismoNewValues, ausenciasCalculadas){
+    ausentismoToUpdate.ausencias = utils.generarDiasAusencia(ausentismoNewValues, ausenciasCalculadas.ausencias);
+    ausentismoToUpdate.fechaDesde = ausentismoNewValues.fechaDesde;
+    ausentismoToUpdate.fechaHasta = ausentismoNewValues.fechaHasta;
+    ausentismoToUpdate.cantidadDias = ausentismoNewValues.cantidadDias;
+    ausentismoToUpdate.articulo = ausentismoNewValues.articulo;
+        
+    const ausentismoUpdated = await ausentismoToUpdate.save();
+    return ausentismoUpdated
+}
+
+export async function editarLicencia(ausEnEdicion, agente, articulo, desde, hasta, dias){
+    let ausencias:any;
+    if(ausEnEdicion.articulo.id == articulo.id){
+        ausencias = editarLicenciaArticuloActual(ausEnEdicion, agente, articulo, desde, hasta, dias)
+    }
+    else{
+        ausencias = editarAusentismoArticuloNuevo(ausEnEdicion, agente, articulo, desde, hasta, dias)
+    }
+    return ausencias;
+}
+
+
 export async function editarLicenciaArticuloActual(licEnEdicion, agente, articulo, desde, hasta, dias){
     let ausencias = utils.calcularDiasAusencias(agente, articulo, desde, hasta, dias);
-    let indicadores = await ind.getIndicadoresLicencia(agente, articulo, ausencias.desde, ausencias.hasta);
     
-    // Hacer metodo nuevo getIndicadoresLicenciaHistoricos
-    // Hacer metodo nuevo mergeIndicadoresLicencia
-    // Hacer metodo nuevo guardado de logs de indicadores
-    let indicadoresHistoricos = await ind.getIndicadoresHistoricos(licEnEdicion.agente, licEnEdicion.articulo, licEnEdicion.fechaDesde, licEnEdicion.fechaHasta, licEnEdicion.cantidadDias);
-    let indicadoresFinales = ind.mergeIndicadores(indicadores, indicadoresHistoricos);
-
-    let indicadoresRecalculados = await utils.distribuirLicenciasEntreIndicadores(agente, articulo, indicadoresFinales, ausencias);  
+    let indicadoresActuales = await ind.getIndicadoresLicencia(agente, articulo, ausencias.desde, ausencias.hasta);
+    let indicadoresHistoricos = await ind.getIndicadoresLicenciaHistoricos(licEnEdicion);
+    let indicadoresCorregidos = ind.mergeIndicadores(indicadoresActuales, indicadoresHistoricos);
+    let indicadoresRecalculados = await utils.distribuirLicenciasEntreIndicadores(agente, articulo, indicadoresCorregidos, ausencias);  
 
     let warnings = [];
     warnings = warnings.concat(utils.formatWarningsIndicadores(await utils.checkIndicadoresGuardado(indicadoresRecalculados)));
-    warnings = warnings.concat(utils.formatWarningsSuperposicion(await utils.checkSolapamientoPeriodos(agente, articulo, ausencias.desde, ausencias.hasta)));
+    warnings = warnings.concat(utils.formatWarningsSuperposicion(await utils.checkSolapamientoPeriodos(agente, articulo, ausencias.desde, ausencias.hasta, licEnEdicion)));
     
     ausencias.warnings = warnings;
     ausencias.indicadores = indicadoresRecalculados;

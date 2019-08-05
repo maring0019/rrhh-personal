@@ -4,6 +4,7 @@ import { IndicadorAusentismo } from '../schemas/indicador';
 import { AusenciaPeriodo } from '../schemas/ausenciaPeriodo';
 
 import * as utils from '../commons/utils';
+import { IndicadorAusentismoHistorico } from '../schemas/indicadorhistorico';
 
 /**
  * Dado un agente y articulo recupera un listado de indicadores del agente con
@@ -143,17 +144,17 @@ export async function calcularIndicadoresPorIntervalo(agente, articulo, formula,
         if ( formula.diasContinuos ){
             indicadoresIntervalo = {
                 totales: formula.limiteAusencias,
-                ejecutadas: 0,
-                disponibles: formula.limiteAusencias
+                ejecutadas: 0
+                // TODO remove disponibles: formula.limiteAusencias
             }
         }
         else{
-            let totales = formula.limiteAusencias;
+            // let totales = formula.limiteAusencias;
             let ejecutadas = await getTotalAusenciasPorArticulo(agente, articulo);
             indicadoresIntervalo = {
                 totales: formula.limiteAusencias,
-                ejecutadas: ejecutadas,
-                disponibles: totales - ejecutadas
+                ejecutadas: ejecutadas
+                // TODO Remove disponibles: totales - ejecutadas
             }
         }
         intervalos.push(indicadoresIntervalo)
@@ -165,13 +166,13 @@ export async function calcularIndicadoresPorIntervalo(agente, articulo, formula,
             let hasta = int.hasta? new Date(anio, int.hasta.mes, int.hasta.dia) : null;
             let totales = formula.limiteAusencias;
             let ejecutadas = await getTotalAusenciasPorArticulo(agente, articulo, desde, hasta);
-            let disponibles = totales - ejecutadas;     
+            // TODO Remove let disponibles = totales - ejecutadas;     
             indicadoresIntervalo = {
                 desde: desde,
                 hasta: hasta,
                 totales: totales,
-                ejecutadas: ejecutadas,
-                disponibles: disponibles
+                ejecutadas: ejecutadas
+                // TODO Remove disponibles: disponibles
             }
             intervalos.push(indicadoresIntervalo)
         };
@@ -219,13 +220,14 @@ export async function getTotalLicenciasDisponibles(agente, articulo){
         {
             $group: {
                 _id : null,
-                total : { $sum: '$intervalos.disponibles'}
+                totales : { $sum: '$intervalos.totales'},
+                ejecutadas : { $sum: '$intervalos.ejecutadas'}
             }
         }
      ]
     
-    let total = await IndicadorAusentismo.aggregate(pipeline);
-    return total.length? total[0].total : 0;
+    let resultado = await IndicadorAusentismo.aggregate(pipeline);
+    return resultado.length? resultado[0].totales - resultado[0].ejecutadas : 0;
 }
 
 
@@ -237,11 +239,18 @@ export async function getIndicadoresHistoricos(agente, articulo, desde, hasta, d
     return indicadoresHistoricos;
 }
 
+export async function getIndicadoresLicenciaHistoricos(ausentismo){
+    let indicadores = await IndicadorAusentismoHistorico.find({
+        'ausentismo.id': Types.ObjectId(ausentismo.id)
+    });
+    return indicadores;
+}
+
 function rollbackIndicadores(indicadores){
     for (let indicador of indicadores){
         for (let intervalo of indicador.intervalos){
             intervalo.ejecutadas = intervalo.ejecutadas - intervalo.asignadas;
-            intervalo.disponibles = intervalo.disponibles + intervalo.asignadas; 
+            // TODO Remove intervalo.disponibles = intervalo.disponibles + intervalo.asignadas; 
         }
     }
     return indicadores;
@@ -251,10 +260,10 @@ function rollbackIndicadores(indicadores){
 export function mergeIndicadores(indicadoresNuevos, indicadoresPrevios){
     for (let indNuevo of indicadoresNuevos){
         for (let intervalo of indNuevo.intervalos){
-            const intEncontrado = findIntervalo(intervalo, indicadoresPrevios);
+            const intEncontrado = findIntervalo(intervalo, indNuevo, indicadoresPrevios);
             if (intEncontrado){
                 intervalo.ejecutadas = intEncontrado.ejecutadas;
-                intervalo.disponibles = intEncontrado.disponibles;
+                // TODO remove intervalo.disponibles = intEncontrado.disponibles;
             }
             
         }
@@ -262,19 +271,103 @@ export function mergeIndicadores(indicadoresNuevos, indicadoresPrevios){
     return indicadoresNuevos;
 }
 
-function findIntervalo(intervalo, indicadores){
+function findIntervalo(intervalo, indicadorNuevo, indicadoresPrevios){
     let intervaloEncontrado;
-    for (const indicador of indicadores){
-        for (const int of indicador.intervalos){
-            if (int.desde.getTime() == intervalo.desde.getTime() &&
-                int.hasta.getTime() == intervalo.hasta.getTime()){
-                    intervaloEncontrado = int;
-                    break;
-                }
+    for (const indicador of indicadoresPrevios){
+        if (indicadorNuevo.vigencia ==  indicador.vigencia){
+            for (const int of indicador.intervalos){
+                if ((!int.desde && !intervalo.desde && !int.hasta && !intervalo.hasta) ||
+                    (int.desde.getTime() == intervalo.desde.getTime() &&
+                    int.hasta.getTime() == intervalo.hasta.getTime())){
+                        intervaloEncontrado = int;
+                        break;
+                    }
+            }
         }
         if (intervaloEncontrado) break;
     }   
     return intervaloEncontrado;
+}
+
+/**
+ * Identifica el indicador mas relevante y retorna el numero maximos de dias 
+ * disponibles para el agente en ese periodo/intervalo. Es una
+ * utilidad para luego simplificar los controles sobre los dias disponibles.
+ * Asumimos que el indicador mas relevante es aquel que tiene un periodo con
+ * la mayor cantidad de intervalos y uno de esos intervalos esta dentro de la
+ * fecha de interes. Por ejemplo si el indicador tiene un periodo anual y otro
+ * mensual, entonces vamos a retornar el indicador con el periodo mensual y el
+ * intervalo mas proximo a la fecha de interes
+ * @param indicadores Listado de indicadores para un articulo en particular
+ * @param fechaInteres Es la fecha desde del ausentismo a cargar  
+ */
+export function getMaxDiasDisponibles(indicadores, fechaInteres){
+    let indicadoresFiltrados = [];
+    const limit = 999999;
+    let maxDias = limit;
+    for (let indicador of indicadores){
+        indicadoresFiltrados.push(utils.minimizarIntervalosIndicador(indicador, fechaInteres, fechaInteres));
+    }
+    for (const indicador of indicadoresFiltrados){
+        for(const intervalo of indicador.intervalos){
+            const diasDisponibles = intervalo.totales - intervalo.ejecutadas;
+            if (diasDisponibles < maxDias) maxDias = diasDisponibles;
+        }
+            
+    }
+    return (maxDias < limit)? maxDias : 0;
+}
+
+
+export async function saveIndicadores(indicadores){
+    // Actualizamos los indicadores
+    for (const indicador of indicadores){
+        for (let intervalo of indicador.intervalos){
+            intervalo.ejecutadas = intervalo.ejecutadas + intervalo.asignadas;
+            intervalo.asignadas = 0;
+        }
+        await indicador.save()
+    }
+}
+
+export async function deleteIndicadoresHistoricos(ausentismo){
+    await IndicadorAusentismoHistorico.deleteMany({
+            'ausentismo.id': Types.ObjectId(ausentismo.id)
+        });
+}
+
+
+export async function saveIndicadoresHistoricos(ausentismo, indicadores){
+    let timestamp = new Date().getTime();
+    for (const indicador of indicadores){
+        let intervalosH = [];
+        for (const int of indicador.intervalos){
+            if (int.asignadas > 0){
+                // Solo interesa guardar el historico de los indicadores
+                // que modificaron los dias asignados
+                let intHistorico = {
+                    desde: int.desde,
+                    hasta: int.hasta,
+                    totales: int.totales,
+                    ejecutadas: int.ejecutadas,
+                    asignadas: int.asignadas
+                }
+                intervalosH.push(intHistorico)
+            }
+            
+        }
+        if (intervalosH.length){
+            let indicadorHistorico = new IndicadorAusentismoHistorico({
+                timestamp: timestamp,
+                indicador: { id: Types.ObjectId(indicador._id)},
+                vigencia: indicador.vigencia,
+                ausentismo: { id: Types.ObjectId(ausentismo._id)},
+                intervalos: intervalosH
+            });
+            await indicadorHistorico.save();
+        }
+    }
+    return;
 }
 
 export const constantes = {
