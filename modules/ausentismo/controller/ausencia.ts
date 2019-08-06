@@ -80,24 +80,19 @@ export async function updateAusentismo(req, res, next){
         let ausentismoToUpdate:any = await AusenciaPeriodo.findById(id);
         if (!ausentismoToUpdate) return res.status(404).send();
         
-        let ausentismoChanged = await utils.parseAusentismo(req.body);
-        let ausentismoValidado = await editarAusentismo(
-            ausentismoToUpdate, ausentismoChanged.agente, ausentismoChanged.articulo, ausentismoChanged.fechaDesde,
-            ausentismoChanged.fechaHasta, ausentismoChanged.cantidadDias);
+        let ausentismoNewValues = await utils.parseAusentismo(req.body);
+        let ausenciasCalculadas = await editarAusentismo(
+            ausentismoToUpdate, ausentismoNewValues.agente, ausentismoNewValues.articulo, ausentismoNewValues.fechaDesde,
+            ausentismoNewValues.fechaHasta, ausentismoNewValues.cantidadDias);
         
-        if (!ausentismoValidado.warnings || !ausentismoValidado.warnings.length){
-            ausentismoToUpdate.ausencias = utils.generarDiasAusencia(ausentismoChanged, ausentismoValidado.ausencias);
-            ausentismoToUpdate.fechaDesde = ausentismoChanged.fechaDesde;
-            ausentismoToUpdate.fechaHasta = ausentismoChanged.fechaHasta;
-            ausentismoToUpdate.cantidadDias = ausentismoChanged.cantidadDias;
-            ausentismoToUpdate.articulo = ausentismoChanged.articulo;
-            
-            const ausentismoUpdated = await ausentismoToUpdate.save();
+        if (!ausenciasCalculadas.warnings || !ausenciasCalculadas.warnings.length){
+            // Todo esta ok, se procede a guardar los cambios               
+            const ausentismoUpdated = await saveAusentismoUpdated(ausentismoToUpdate, ausentismoNewValues, ausenciasCalculadas);
             return res.json(ausentismoUpdated);
         }
         else{
             // Return ausencias con warnings. No guardamos nada
-            return res.json(ausentismoValidado);    
+            return res.json(ausenciasCalculadas);    
         }
     } catch (err) {
         return next(err);
@@ -168,10 +163,18 @@ export async function updateLicencia(req, res, next){
             ausentismoNewValues.articulo, ausentismoNewValues.fechaDesde, ausentismoNewValues.fechaHasta, ausentismoNewValues.cantidadDias);
         
         if (!ausenciasCalculadas.warnings || !ausenciasCalculadas.warnings.length){
-            const ausentismoUpdated = await saveLicenciaUpdated(ausentismoToUpdate, ausentismoNewValues, ausenciasCalculadas)
-            await ind.deleteIndicadoresHistoricos(ausentismoToUpdate);
-            await ind.saveIndicadoresHistoricos(ausentismoToUpdate, ausenciasCalculadas.indicadores);
-            await ind.saveIndicadores(ausenciasCalculadas.indicadores);
+            
+            let ausentismoUpdated:any;
+            if(ausentismoToUpdate.articulo.id == ausentismoNewValues.articulo.id){
+                ausentismoUpdated = await saveAusentismoUpdated(ausentismoToUpdate, ausentismoNewValues, ausenciasCalculadas)
+                await ind.deleteIndicadoresHistoricos(ausentismoToUpdate);
+                await ind.saveIndicadoresHistoricos(ausentismoToUpdate, ausenciasCalculadas.indicadores);
+                await ind.saveIndicadores(ausenciasCalculadas.indicadores);
+            }
+            else{
+                ausentismoUpdated = await saveAusentismoUpdated(ausentismoToUpdate, ausentismoNewValues, ausenciasCalculadas)
+                await ind.deleteAndUpdateIndicadoresHistoricos(ausentismoToUpdate);
+            }
             return res.json(ausentismoUpdated);
         }
         else{
@@ -183,7 +186,7 @@ export async function updateLicencia(req, res, next){
     }
 }
 
-async function saveLicenciaUpdated(ausentismoToUpdate, ausentismoNewValues, ausenciasCalculadas){
+async function saveAusentismoUpdated(ausentismoToUpdate, ausentismoNewValues, ausenciasCalculadas){
     ausentismoToUpdate.ausencias = utils.generarDiasAusencia(ausentismoNewValues, ausenciasCalculadas.ausencias);
     ausentismoToUpdate.fechaDesde = ausentismoNewValues.fechaDesde;
     ausentismoToUpdate.fechaHasta = ausentismoNewValues.fechaHasta;
@@ -200,7 +203,7 @@ export async function editarLicencia(ausEnEdicion, agente, articulo, desde, hast
         ausencias = editarLicenciaArticuloActual(ausEnEdicion, agente, articulo, desde, hasta, dias)
     }
     else{
-        ausencias = editarAusentismoArticuloNuevo(ausEnEdicion, agente, articulo, desde, hasta, dias)
+        ausencias = editarLicenciaArticuloNuevo(ausEnEdicion, agente, articulo, desde, hasta, dias)
     }
     return ausencias;
 }
@@ -220,5 +223,19 @@ export async function editarLicenciaArticuloActual(licEnEdicion, agente, articul
     
     ausencias.warnings = warnings;
     ausencias.indicadores = indicadoresRecalculados;
+    return ausencias;
+}
+
+export async function editarLicenciaArticuloNuevo(licEnEdicion, agente, articulo, desde, hasta, dias){
+    let ausencias = utils.calcularDiasAusencias(agente, articulo, desde, hasta, dias);
+    let indicadores = await ind.getIndicadoresAusentismo(agente, articulo, ausencias.desde, ausencias.hasta);
+    let indicadoresRecalculados = await utils.distribuirAusenciasEntreIndicadores(indicadores, ausencias);  
+    
+    let warnings = [];
+    warnings = warnings.concat(utils.formatWarningsIndicadores(await utils.checkIndicadoresGuardado(indicadoresRecalculados)));
+    warnings = warnings.concat(utils.formatWarningsSuperposicion(await utils.checkSolapamientoPeriodos(agente, articulo, ausencias.desde, ausencias.hasta, licEnEdicion)));
+    
+    ausencias.warnings = warnings;
+    
     return ausencias;
 }

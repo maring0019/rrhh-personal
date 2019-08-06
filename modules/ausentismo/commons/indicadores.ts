@@ -262,7 +262,7 @@ export function mergeIndicadores(indicadoresNuevos, indicadoresPrevios){
         for (let intervalo of indNuevo.intervalos){
             const intEncontrado = findIntervalo(intervalo, indNuevo, indicadoresPrevios);
             if (intEncontrado){
-                intervalo.ejecutadas = intEncontrado.ejecutadas;
+                intervalo.ejecutadas = intervalo.ejecutadas - intEncontrado.asignadas;
                 // TODO remove intervalo.disponibles = intEncontrado.disponibles;
             }
             
@@ -330,12 +330,31 @@ export async function saveIndicadores(indicadores){
     }
 }
 
-export async function deleteIndicadoresHistoricos(ausentismo){
+export async function deleteAndUpdateIndicadoresHistoricos(ausentismo){
+    let indicadoresHistoricos:any = await IndicadorAusentismoHistorico.find({
+            'ausentismo.id': Types.ObjectId(ausentismo.id)
+        });
+    for (const indH of indicadoresHistoricos){
+        let indicador:any = await IndicadorAusentismo.findById(indH.indicador.id);
+        
+        for (const int of indicador.intervalos){
+            let intervaloInteres = findIntervalo(int, indicador, indicadoresHistoricos)
+            int.ejecutadas = int.ejecutadas - intervaloInteres.asignadas;
+        }
+        await indicador.save();
+    }
     await IndicadorAusentismoHistorico.deleteMany({
             'ausentismo.id': Types.ObjectId(ausentismo.id)
         });
 }
 
+
+
+export async function deleteIndicadoresHistoricos(ausentismo){
+    await IndicadorAusentismoHistorico.deleteMany({
+            'ausentismo.id': Types.ObjectId(ausentismo.id)
+        });
+}
 
 export async function saveIndicadoresHistoricos(ausentismo, indicadores){
     let timestamp = new Date().getTime();

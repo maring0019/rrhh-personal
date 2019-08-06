@@ -22,6 +22,7 @@ export const ArticuloSchema = new Schema({
     codigoOTI: String,
     diasCorridos: Boolean,
     diasHabiles: Boolean,                    // TODO consultar este dato
+    descuentaDiasLicencia: Boolean,
     formulas: [FormulaSchema]
 })
 
