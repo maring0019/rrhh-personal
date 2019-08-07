@@ -2,6 +2,7 @@ import { Schema, model } from 'mongoose';
 import { FormulaSchema } from './formula';
 
 export const ArticuloSchema = new Schema({
+    
     idInterno: {                         // Codigo Interno Sistema Anterior. TODO Remover si no es mas necesario
         type: Number,
         required: true

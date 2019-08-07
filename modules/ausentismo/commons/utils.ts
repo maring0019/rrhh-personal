@@ -5,6 +5,7 @@ import { Articulo } from '../schemas/articulo';
 import * as ind from './indicadores'; 
 
 import { format } from 'util';
+import { Types } from 'mongoose';
 
 export function calcularDiasAusencias(agente, articulo, desde, hasta?, dias?){
     let ausencias:any;
@@ -285,16 +286,18 @@ export async function parseAusentismo(obj){
 }
 
 export async function parseArticulo(obj){
-    const art = await Articulo.findById(obj.id).lean(); // get articulo con formulas,
-    let articulo = {
-        id: obj.id,
-        codigo: art.codigo,
-        nombre: art.nombre,
-        descripcion: art.descripcion,
-        diasCorridos:art.diasCorridos,
-        diasHabiles: art.diasHabiles,
-        formulas: art.formulas 
-    };
+    let articulo = await Articulo.findById(obj.id).lean(); // get articulo con formulas,
+    articulo.id = obj.id;
+    // let articulo = {...art};
+    //     id: obj.id,
+    //     codigo: art.codigo,
+    //     nombre: art.nombre,
+    //     descripcion: art.descripcion,
+    //     diasCorridos:art.diasCorridos,
+    //     diasHabiles: art.diasHabiles,
+    //     formulas: art.formulas ,
+    //     descuentaDiasLicencia: art.descuentaDiasLicencia
+    // };
     return articulo
 }
 
@@ -333,6 +336,22 @@ export function esDiaHabil(date){
     return esDiaHabil;
 }
 
+export async function saveAusentismoNew(ausentismo, ausenciasCalculadas){
+    ausentismo.ausencias = generarDiasAusencia(ausentismo, ausenciasCalculadas.ausencias);
+    const obj = new AusenciaPeriodo(ausentismo);
+    return await obj.save();
+}
+
+export async function saveAusentismoUpdated(ausentismoToUpdate, ausentismoNewValues, ausenciasCalculadas){
+    ausentismoToUpdate.ausencias = generarDiasAusencia(ausentismoNewValues, ausenciasCalculadas.ausencias);
+    ausentismoToUpdate.fechaDesde = ausentismoNewValues.fechaDesde;
+    ausentismoToUpdate.fechaHasta = ausentismoNewValues.fechaHasta;
+    ausentismoToUpdate.cantidadDias = ausentismoNewValues.cantidadDias;
+    ausentismoToUpdate.articulo = ausentismoNewValues.articulo;
+        
+    const ausentismoUpdated = await ausentismoToUpdate.save();
+    return ausentismoUpdated
+}
 
 export function generarDiasAusencia(ausentismo, diasAusencia){
     let ausencias = [];
@@ -346,6 +365,12 @@ export function generarDiasAusencia(ausentismo, diasAusencia){
         ausencias.push(ausencia);
     }
     return ausencias;
+}
+
+export async function findObjectById(objectId, Model){
+    if (!objectId || (objectId && !Types.ObjectId.isValid(objectId))) return;
+    return await Model.findById(objectId);
+    
 }
 
 export function getFormattedDate(date) {
