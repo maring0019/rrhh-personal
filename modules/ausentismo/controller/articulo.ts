@@ -1,18 +1,5 @@
 import { Articulo } from '../schemas/articulo';
 
-
-export async function addAgrupamiento(req, res, next) {
-    try {
-        const agrupamiento = new Articulo({
-            nombre: req.body.nombre
-        });
-        const agrupamientoNuevo = await agrupamiento.save();
-        return res.json(agrupamientoNuevo);
-    } catch (err) {
-        return next(err);
-    }
-}
-
 export async function getArticuloById(req, res, next) {
     try {
         let obj = await Articulo.findById(req.params.id);
@@ -29,7 +16,7 @@ export async function getArticulos(req, res, next) {
             query.where('nombre').equals(RegExp('^.*' + req.query.nombre + '.*$', 'i'));
         }
         if (req.query.codigo) {
-            query.where('codigo').equals(RegExp('^.*' + req.query.codigo + '.*$', 'i'));
+            query.where('codigo').equals(req.query.codigo);
         }
         let objs = await query.sort({ nombre: 1 }).exec();
         return res.json(objs);
@@ -40,7 +27,6 @@ export async function getArticulos(req, res, next) {
 
 
 export async function addArticulo(req, res, next) {
-    console.log('Agregando Articulo!!');
     try {
         const obj = new Articulo({
             idInterno: req.body.idInterno,
@@ -52,6 +38,9 @@ export async function addArticulo(req, res, next) {
             requiereInformacionAdicional: req.body.requiereInformacionAdicional,
             tituloInformacionAdicional: req.body.tituloInformacionAdicional,
             codigoOTI: req.body.codigoOTI,
+            diasCorridos: req.body.diasCorridos,
+            diasHabiles: req.body.diasHabiles,                    
+            descuentaDiasLicencia: req.body.descuentaDiasLicencia,
             formulas: req.body.formulas
         });
         const objNuevo = await obj.save();

@@ -1,5 +1,5 @@
 import { Schema, model } from 'mongoose';
-import { PeriodoSchema } from './periodo';
+// import { PeriodoSchema } from './periodo';
 
 const constantes = {
     OPERACION: {
@@ -8,7 +8,7 @@ const constantes = {
     },
     SEXO: {
         type: String,
-        enum: ['femenino', 'masculino', 'otro']
+        enum: ['femenino', 'masculino', 'otro', 'todos']
     },
     COMPARADOR: {
         type: String,
@@ -39,7 +39,7 @@ export const FormulaSchema = new Schema({
     parametro: String,                    // Representa un numero de dias
     comparador: constantes.COMPARADOR,    // 
     sexo:constantes.SEXO,                 // Indica segun el sexo del agente si se debe aplicar o no el control/formula definida
-    periodo: PeriodoSchema,               // Indica el periodo en el que se debe evaluar la formula
+    periodo: String, //PeriodoSchema,               // Indica el periodo en el que se debe evaluar la formula
     limiteAusencias: Number,
     fechaDesde: Date,                     // Indica a partir de que fecha aplicar el control
     fechaHasta:Date,                      // Indica hasta cuando aplicar el control

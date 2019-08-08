@@ -11,6 +11,7 @@ import AusenciasController from '../controller/ausencias';
 
 export const Routes = express.Router();
 
+
 let middleware = async function(req, res, next ){
     try {
         let ausentismo = await utils.parseAusentismo(req.body);

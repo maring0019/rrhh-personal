@@ -9,11 +9,16 @@ import { attachFilesToObject } from '../../../core/files/controller/file'
 import { AusenciaPeriodo } from '../../ausentismo/schemas/ausenciaPeriodo';
 
 async function getAgentes(req, res, next){
+    console.log('Buscando Agente')
     try {
         let query = Agente.find({});
         if (req.query.nombre) {
             query.where('nombre').equals(RegExp('^.*' + req.query.nombre + '.*$', 'i'));
         }
+        if (req.query.numero) {
+            query.where({ numero: req.query.numero });
+        }
+
         let agentes = await query.sort({ nombre: 1 }).exec();
         return res.json(agentes);
     } catch (err) {

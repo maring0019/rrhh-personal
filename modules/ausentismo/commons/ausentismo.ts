@@ -270,8 +270,7 @@ export async function checkSolapamientoPeriodos(agente, articulo, desde, hasta, 
 }
 
 
-export async function insertAusentismo(ausentismo, ausenciasCalculadas){
-    ausentismo.ausencias = generarDiasAusencia(ausentismo, ausenciasCalculadas.ausencias);
+export async function insertAusentismo(ausentismo){
     const obj = new AusenciaPeriodo(ausentismo);
     return await obj.save();
 }

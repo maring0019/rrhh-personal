@@ -6,15 +6,28 @@ import LicenciasController from './licencias';
 class AusenciasController {
     
     async addAusentismo(ausentismo){
-        let ausencias = await calcularAusentismo(ausentismo.agente, ausentismo.articulo,
-            ausentismo.fechaDesde, ausentismo.fechaHasta, ausentismo.cantidadDias);
-
-        if (ausencias.warnings && ausencias.warnings.length){
-            return ausencias;
+        console.log('Insertando ausentismo');
+        if (!ausentismo.ausencias.length){
+            console.log('Generando las ausencias y controles');
+            let au = await calcularAusentismo(ausentismo.agente, ausentismo.articulo,
+                ausentismo.fechaDesde, ausentismo.fechaHasta, ausentismo.cantidadDias);
+            if (au.warnings && au.warnings.length)
+                return au;
+            ausentismo.ausencias = aus.generarDiasAusencia(ausentismo, au.ausencias);
         }
         else{
-            return await aus.insertAusentismo(ausentismo, ausencias);
+            // Los dias de ausencia ya vienen calculados. No calculamos ausencias ni aplicamos
+            // ningun control o restriccion.
         }
+        return await aus.insertAusentismo(ausentismo);
+        
+
+        // if (ausencias.warnings && ausencias.warnings.length){
+        //     return ausencias;
+        // }
+        // else{
+        //     return await aus.insertAusentismo(ausentismo, ausencias);
+        // }
     }
 
        /**
@@ -33,46 +46,44 @@ class AusenciasController {
     }
 
     async updateAusentismoToAusentismo(ausToUpdate, ausNewValues){
-        let ausencias:any;
+        let au:any;
         if (ausToUpdate.articulo.id == ausNewValues.articulo.id){
-            ausencias = await recalcularAusentismoArticuloActual(ausToUpdate, ausNewValues.agente,
+            au = await recalcularAusentismoArticuloActual(ausToUpdate, ausNewValues.agente,
                     ausNewValues.articulo, ausNewValues.fechaDesde, ausNewValues.fechaHasta, ausNewValues.cantidadDias)
         }
         else{
-            ausencias = await recalcularAusentismoArticuloNuevo(ausToUpdate, ausNewValues.agente,
+            au = await recalcularAusentismoArticuloNuevo(ausToUpdate, ausNewValues.agente,
                     ausNewValues.articulo, ausNewValues.fechaDesde, ausNewValues.fechaHasta, ausNewValues.cantidadDias)
         }
 
-        if (ausencias.warnings && ausencias.warnings.length){
+        if (au.warnings && au.warnings.length){
             // Return ausencias con warnings. No guardamos nada
-            return ausencias;    
+            return au;    
         }
         else{
-            // Todo esta ok, se procede a guardar los cambios                           
+            // Todo esta ok, se procede a guardar los cambios
+            ausNewValues.ausencias = aus.generarDiasAusencia(ausNewValues, au.ausencias)                           
             await aus.deleteAusentismo(ausToUpdate);
-            return await aus.insertAusentismo(ausNewValues, ausencias);
+            return await aus.insertAusentismo(ausNewValues);
         }
     }
 
     async updateAusentismoToLicencia(ausToUpdate, ausNewValues){
         let licController = new LicenciasController();
-        // let ausencias = await licController.calcularAusentismo(ausNewValues.agente,ausNewValues.articulo,
-        //                     ausNewValues.fechaDesde, ausNewValues.fechaHasta, ausNewValues.cantidadDias)
-        let ausencias = await licController.recalcularAusentismoArticuloActual(ausToUpdate,ausNewValues.agente,ausNewValues.articulo,
+        let au = await licController.recalcularAusentismoArticuloActual(ausToUpdate,ausNewValues.agente,ausNewValues.articulo,
             ausNewValues.fechaDesde, ausNewValues.fechaHasta, ausNewValues.cantidadDias)
-        // let ausencias = await recalcularAusentismoArticuloActual(ausToUpdate, ausNewValues.agente,
-        //     ausNewValues.articulo, ausNewValues.fechaDesde, ausNewValues.fechaHasta, ausNewValues.cantidadDias);
 
-        if (ausencias.warnings && ausencias.warnings.length){
+        if (au.warnings && au.warnings.length){
             // Return ausencias con warnings. No guardamos nada
-            return ausencias;    
+            return au;    
         }
         else{
-            // Todo esta ok, se procede a guardar los cambios                           
-            let ausentismoNew = await aus.insertAusentismo(ausNewValues, ausencias);
+            // Todo esta ok, se procede a guardar los cambios
+            ausNewValues.ausencias = aus.generarDiasAusencia(ausNewValues, au);                          
+            let ausentismoNew = await aus.insertAusentismo(ausNewValues);
             await aus.deleteAusentismo(ausToUpdate);
-            await ind.insertIndicadoresHistoricos(ausentismoNew, ausencias.indicadores);
-            await ind.updateIndicadores(ausencias.indicadores);
+            await ind.insertIndicadoresHistoricos(ausentismoNew, au.indicadores);
+            await ind.updateIndicadores(au.indicadores);
         }
 
     }

@@ -23,6 +23,7 @@ export const IndicadorAusentismoSchema = new Schema({
         {
             desde: Date,       // Si el periodo es null este atributo no se requiere
             hasta: Date,
+            ejecutadas96L: Number,// TOOD Consultar este dato
             totales: Number,
             ejecutadas: Number,
             asignadas: Number, // Volatile. Atributo temporal utilizado al momento del calculo de dias

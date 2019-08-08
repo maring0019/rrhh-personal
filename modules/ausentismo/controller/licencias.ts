@@ -17,17 +17,18 @@ class LicenciasController {
      * @param ausentismo nuevo ausentismo a guardar
      */
     async addAusentismo(ausentismo){
-        let ausencias = await this.calcularAusentismo(ausentismo.agente, ausentismo.articulo,
+        let au = await this.calcularAusentismo(ausentismo.agente, ausentismo.articulo,
             ausentismo.fechaDesde, ausentismo.fechaHasta, ausentismo.cantidadDias);
 
-        if (ausencias.warnings && ausencias.warnings.length){
-            return ausencias;
+        if (au.warnings && au.warnings.length){
+            return au;
         }
         else{
             // Generamos el nuevo ausentismo y actualizamos indicadores
-            const ausentismoNew = await aus.insertAusentismo(ausentismo, ausencias);
-            await ind.insertIndicadoresHistoricos(ausentismoNew, ausencias.indicadores);
-            await ind.updateIndicadores(ausencias.indicadores);
+            ausentismo.ausencias = aus.generarDiasAusencia(ausentismo, au.ausencias)
+            const ausentismoNew = await aus.insertAusentismo(ausentismo);
+            await ind.insertIndicadoresHistoricos(ausentismoNew, au.indicadores);
+            await ind.updateIndicadores(au.indicadores);
             return ausentismoNew;
         }
     }
@@ -49,29 +50,31 @@ class LicenciasController {
     }
 
     async updateAusentismoSameArticulo(ausToUpdate, ausNewValues){
-        let ausencias = await this.recalcularAusentismoArticuloActual(ausToUpdate, 
+        let au = await this.recalcularAusentismoArticuloActual(ausToUpdate, 
                 ausNewValues.agente,ausNewValues.articulo, ausNewValues.fechaDesde,
                 ausNewValues.fechaHasta, ausNewValues.cantidadDias)
         
-        if (ausencias.warnings && ausencias.warnings.length) return ausencias; // Return ausencias con warnings. No guardamos nada
+        if (au.warnings && au.warnings.length) return au; // Return ausencias con warnings. No guardamos nada
         
-        // Si llegamos aca, esta todo ok para guardar los cambios    
-        const ausentismoNew = await aus.insertAusentismo(ausNewValues, ausencias);
+        // Si llegamos aca, esta todo ok para guardar los cambios  
+        ausNewValues.ausencias = aus.generarDiasAusencia(ausNewValues, au.ausencias)
+        const ausentismoNew = await aus.insertAusentismo(ausNewValues);
         await aus.deleteAusentismo(ausToUpdate);
         await ind.deleteIndicadoresHistoricos(ausToUpdate);
-        await ind.insertIndicadoresHistoricos(ausentismoNew, ausencias.indicadores);
-        await ind.updateIndicadores(ausencias.indicadores);
+        await ind.insertIndicadoresHistoricos(ausentismoNew, au.indicadores);
+        await ind.updateIndicadores(au.indicadores);
         return ausentismoNew;
     }
 
     async updateAusentismoChangeArticulo(ausToUpdate, ausNewValues){
-        let ausencias = await this.recalcularAusentismoArticuloNuevo(ausToUpdate, ausNewValues.agente,
+        let au = await this.recalcularAusentismoArticuloNuevo(ausToUpdate, ausNewValues.agente,
             ausNewValues.articulo, ausNewValues.fechaDesde, ausNewValues.fechaHasta, ausNewValues.cantidadDias);
         
-        if (ausencias.warnings && ausencias.warnings.length) return ausencias;// Return ausencias con warnings. No guardamos nada
+        if (au.warnings && au.warnings.length) return au;// Return ausencias con warnings. No guardamos nada
             
         // Si llegamos aca, esta todo ok para guardar los cambios
-        const ausentismoNew = await aus.insertAusentismo(ausNewValues, ausencias);
+        ausNewValues.ausencias = aus.generarDiasAusencia(ausNewValues, au.ausencias);
+        const ausentismoNew = await aus.insertAusentismo(ausNewValues);
         await aus.deleteAusentismo(ausToUpdate);
         await ind.updateIndicadoresOnDelete(ausToUpdate)
         await ind.deleteIndicadoresHistoricos(ausToUpdate);

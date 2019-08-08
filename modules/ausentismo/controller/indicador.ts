@@ -2,20 +2,15 @@ import { IndicadorAusentismo } from '../schemas/indicador';
 
 
 export async function addIndicador(req, res, next) {
+    console.log('Adding Indicador');
     try {
         const obj = new IndicadorAusentismo({
-            agente: req.body.nombre,
-            articulo: req.body.pais,
-            vigencia: 2017,
-            periodo: null,
-            intervalos:[               
-                {
-                    totales: Number,
-                    ejecutadas: Number,
-                    disponibles: Number,
-                    asignadas: Number, 
-                }
-            ]
+            agente: req.body.agente,
+            articulo: req.body.articulo,
+            vigencia: req.body.vigencia,
+            periodo: req.body.periodo,
+            vencido: req.body.vencido,
+            intervalos: req.body.intervalos
         });
         const objNuevo = await obj.save();
         return res.json(objNuevo);
@@ -23,25 +18,3 @@ export async function addIndicador(req, res, next) {
         return next(err);
     }
 }
-
-
-// {
-//     "agente" : {
-//         "id" : ObjectId("5ceee3437fb498034827221a")
-//     },
-//     "articulo" : {
-//         "codigo" : "3",
-//         "id" : ObjectId("5d442dfff3edc1c04fb71db8")
-//     },
-
-//     "vigencia": 2017,
-//     "periodo": null,
-//     "intervalos":[               
-//         {
-//             "totales": 21,
-//             "ejecutadas": 15,
-//             "disponibles": 6,
-//             "asignadas": 0
-//         }
-//     ]
-// }
