@@ -1,10 +1,11 @@
 import { Types } from 'mongoose';
 
 import { IndicadorAusentismo } from '../schemas/indicador';
+import { IndicadorAusentismoHistorico } from '../schemas/indicadorhistorico';
 import { AusenciaPeriodo } from '../schemas/ausenciaPeriodo';
 
-import * as utils from '../commons/utils';
-import { IndicadorAusentismoHistorico } from '../schemas/indicadorhistorico';
+import * as aus from '../commons/ausentismo';
+
 
 /**
  * Dado un agente y articulo recupera un listado de indicadores del agente con
@@ -108,7 +109,7 @@ export async function getIndicadoresLicencia(agente, articulo, formula, desde?, 
     let indicadores = await IndicadorAusentismo.find(
         {
             'agente.id': new Types.ObjectId(agente.id),
-            'articulo.id': new Types.ObjectId(articulo.id),
+            // 'articulo.id': new Types.ObjectId(articulo.id),
             'vencido': false
         }).sort({ vigencia: 1 });
     return indicadores;
@@ -210,7 +211,7 @@ export async function getTotalLicenciasDisponibles(agente, articulo){
         { 
             $match: { 
                 'agente.id': Types.ObjectId(agente.id),
-                'articulo.id': Types.ObjectId(articulo.id),
+                // 'articulo.id': Types.ObjectId(articulo.id),
                 'vencido': false
             }
         } ,
@@ -232,9 +233,9 @@ export async function getTotalLicenciasDisponibles(agente, articulo){
 
 
 export async function getIndicadoresHistoricos(agente, articulo, desde, hasta, dias){
-    let ausencias = utils.calcularDiasAusencias(agente, articulo, desde, hasta, dias);
+    let ausencias = aus.calcularDiasAusencias(agente, articulo, desde, hasta, dias);
     let indicadores = await getIndicadoresAusentismo(agente, articulo, ausencias.desde, ausencias.hasta);
-    let indicadoresRecalculados = utils.distribuirAusenciasEntreIndicadores(indicadores, ausencias);
+    let indicadoresRecalculados = aus.distribuirAusenciasEntreIndicadores(indicadores, ausencias);
     let indicadoresHistoricos = rollbackIndicadores(indicadoresRecalculados);
     return indicadoresHistoricos;
 }
@@ -306,7 +307,7 @@ export function getMaxDiasDisponibles(indicadores, fechaInteres){
     const limit = 999999;
     let maxDias = limit;
     for (let indicador of indicadores){
-        indicadoresFiltrados.push(utils.minimizarIntervalosIndicador(indicador, fechaInteres, fechaInteres));
+        indicadoresFiltrados.push(aus.minimizarIntervalosIndicador(indicador, fechaInteres, fechaInteres));
     }
     for (const indicador of indicadoresFiltrados){
         for(const intervalo of indicador.intervalos){
@@ -319,7 +320,7 @@ export function getMaxDiasDisponibles(indicadores, fechaInteres){
 }
 
 
-export async function saveIndicadores(indicadores){
+export async function updateIndicadores(indicadores){
     // Actualizamos los indicadores
     for (const indicador of indicadores){
         for (let intervalo of indicador.intervalos){
@@ -330,22 +331,18 @@ export async function saveIndicadores(indicadores){
     }
 }
 
-export async function deleteAndUpdateIndicadoresHistoricos(ausentismo){
+export async function updateIndicadoresOnDelete(ausentismo){
     let indicadoresHistoricos:any = await IndicadorAusentismoHistorico.find({
             'ausentismo.id': Types.ObjectId(ausentismo.id)
         });
     for (const indH of indicadoresHistoricos){
         let indicador:any = await IndicadorAusentismo.findById(indH.indicador.id);
-        
         for (const int of indicador.intervalos){
             let intervaloInteres = findIntervalo(int, indicador, indicadoresHistoricos)
             int.ejecutadas = int.ejecutadas - intervaloInteres.asignadas;
         }
         await indicador.save();
     }
-    await IndicadorAusentismoHistorico.deleteMany({
-            'ausentismo.id': Types.ObjectId(ausentismo.id)
-        });
 }
 
 
@@ -356,7 +353,7 @@ export async function deleteIndicadoresHistoricos(ausentismo){
         });
 }
 
-export async function saveIndicadoresHistoricos(ausentismo, indicadores){
+export async function insertIndicadoresHistoricos(ausentismo, indicadores){
     let timestamp = new Date().getTime();
     for (const indicador of indicadores){
         let intervalosH = [];

@@ -1,6 +1,7 @@
 import { AusenciaPeriodo } from '../schemas/ausenciaPeriodo';
 
 import * as utils from '../commons/utils';
+import * as aus from '../commons/ausentismo';
 
 import { Types } from 'mongoose';
 import { Agente } from '../../agentes/schemas/agente';
@@ -86,6 +87,7 @@ export async function updateAusentismo(req, res, next){
         return res.json(response);
         
     } catch (err) {
+        console.log(err)
         return next(err);
     }
 }
@@ -105,7 +107,7 @@ export async function sugerirDiasAusentismo(req, res, next) {
 export async function calcularAusentismo(req, res, next) {
     try {
         const ausentismo = await utils.parseAusentismo(req.body);
-        let ausencias = utils.calcularDiasAusencias(ausentismo.agente, ausentismo.articulo,
+        let ausencias = aus.calcularDiasAusencias(ausentismo.agente, ausentismo.articulo,
         ausentismo.fechaDesde, ausentismo.fechaHasta, ausentismo.cantidadDias);
     return res.json(ausencias);
     } catch (err) {
