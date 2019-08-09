@@ -7,7 +7,7 @@ import * as utils from './utils';
 
 export function calcularDiasAusencias(agente, articulo, desde, hasta?, dias?){
     let ausencias:any;
-    if (articulo.diasCorridos){
+    if ((!articulo.diasCorridos && !articulo.diaHabiles) || articulo.diasCorridos){
         ausencias = calculaDiasCorridos(desde, hasta, dias);
     }
 
@@ -158,8 +158,6 @@ export function minimizarIntervalosIndicador(indicador, desde, hasta){
 }
 
 export async function distribuirLicenciasEntreIndicadores(agente, articulo, indicadores, ausencias){
-    console.log('Llegamos a distribuir')
-    console.log(indicadores)
     let totalDiasLicencia = ausencias.dias;
     let totalDiasDisponibles = await ind.getTotalLicenciasDisponibles(agente, articulo);
     if (totalDiasDisponibles && (totalDiasDisponibles < totalDiasLicencia)){
@@ -171,20 +169,27 @@ export async function distribuirLicenciasEntreIndicadores(agente, articulo, indi
         // indicadores para reflejar cuantos dias se restan a cada anio
         for (let indicador of indicadores){
             for (const intervalo of indicador.intervalos){
-                const diasDisponibles = intervalo.totales - intervalo.ejecutadas;
-                if ( diasDisponibles ==  0 ) break;
-                if ( diasDisponibles <=  totalDiasLicencia ){
-                    totalDiasLicencia = totalDiasLicencia - diasDisponibles;
-                    intervalo.asignadas = diasDisponibles;
+                if (intervalo.totales){
+                    const diasDisponibles = intervalo.totales - intervalo.ejecutadas;
+                    if ( diasDisponibles ==  0 ) break;
+                    if ( diasDisponibles <=  totalDiasLicencia ){
+                        totalDiasLicencia = totalDiasLicencia - diasDisponibles;
+                        intervalo.asignadas = diasDisponibles;
+                    }
+                    else{
+                        intervalo.asignadas = totalDiasLicencia;
+                        totalDiasLicencia = 0;
+                    }
                 }
-                else{
+                else{ 
+                    // No habria limite de licencias. Asignamos todos los dias a este intervalo
+                    // TODO Revisar si efectivamente asi deberia ser el comportamiento correcto
                     intervalo.asignadas = totalDiasLicencia;
-                    totalDiasLicencia = 0;
                 }
+                
             }   
         } 
     }
-    console.log('Salimos a distribuir')
     return indicadores;
 }
 
@@ -193,12 +198,15 @@ export function checkIndicadoresGuardado(indicadores){
     for (const indicador of indicadores){
         let intervaloConProblemas:any;
         for (const intervalo of indicador.intervalos){
-            const diasDisponibles = intervalo.totales - intervalo.ejecutadas;
-            const restoDiasDisponibles = diasDisponibles - intervalo.asignadas;
-            if( intervalo.totales && restoDiasDisponibles < 0) {
-                intervaloConProblemas = intervalo;
-                break;
+            if ( intervalo.totales ){
+                const diasDisponibles = intervalo.totales - intervalo.ejecutadas;
+                const restoDiasDisponibles = diasDisponibles - intervalo.asignadas;
+                if( intervalo.totales && restoDiasDisponibles < 0) {
+                    intervaloConProblemas = intervalo;
+                    break;
+                }
             }
+            
         }
         if (intervaloConProblemas){
             indicador.intervalos = [intervaloConProblemas];
@@ -218,20 +226,27 @@ export function checkIndicadoresGuardado(indicadores){
  * Si no hay problemas detectados se retorna un array vacio.
  * @param indicadores Listado total de indicadores para un articulo en particular
  * @param fechaInteres Es la fecha desde del ausentismo a cargar
- * @param ausentismo Opcional. Si esta presente 
+ * @param ausentismo Opcional.
  */
 export function checkIndicadoresSugerencia(indicadores, fechaInteres, ausentismo?){
     let indicadoresConProblemas = [];
     for (const indicador of indicadores){
         let intervaloConProblemas:any;
         for (const intervalo of indicador.intervalos){
-            if (!intervalo.limiteAusencias || !intervalo.hasta || (intervalo.hasta >= fechaInteres)) {
+            if (intervalo.totales && (!intervalo.hasta || (intervalo.hasta >= fechaInteres))) {
                 const diasDisponibles = intervalo.totales - intervalo.ejecutadas;
                 if( diasDisponibles < 0) {
                     intervaloConProblemas = intervalo;
                 }
                 break;
             }
+            // if (!intervalo.limiteAusencias || !intervalo.hasta || (intervalo.hasta >= fechaInteres)) {
+            //     const diasDisponibles = intervalo.totales - intervalo.ejecutadas;
+            //     if( diasDisponibles < 0) {
+            //         intervaloConProblemas = intervalo;
+            //     }
+            //     break;
+            // }
         }
         if (intervaloConProblemas){
             indicador.intervalos = [intervaloConProblemas];

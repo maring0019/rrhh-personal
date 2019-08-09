@@ -27,15 +27,6 @@ export async function getAusentismo(req, res, next) {
         const articuloId = req.query.articuloId;
         const fechaDesde = req.query.fechaDesde;
         const fechaHasta = req.query.fechaHasta;
-        console.log('AgenteID');
-        console.log(agenteId);
-        console.log('ArticuloID');
-        console.log(articuloId);
-        console.log('fechaDesde');
-        console.log(fechaDesde);
-        console.log('fechaHasta');
-        console.log(fechaHasta)
-
         let agente:any = await utils.findObjectById(agenteId, Agente);
         if (!agente){
             return res.json(results);
@@ -52,7 +43,7 @@ export async function getAusentismo(req, res, next) {
         if (fechaHasta) {
             query.where({'fechaHasta': { $lte: fechaHasta }})
         }
-        results = await query.sort({ fechaHasta: -1 }).exec();
+        results = await query.sort({ fechaHasta: -1 }).limit(365).exec();
         return res.json(results);
     } catch (err) {
         return next(err);
@@ -87,7 +78,6 @@ export async function updateAusentismo(req, res, next){
         return res.json(response);
         
     } catch (err) {
-        console.log(err)
         return next(err);
     }
 }

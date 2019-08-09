@@ -26,7 +26,8 @@ export const AusenciaPeriodoSchema = new Schema({
     },
     fechaHasta: {
         type: Date,
-        required: true
+        required: true,
+        es_indexed: true
     },
     cantidadDias: {
         type: Number,

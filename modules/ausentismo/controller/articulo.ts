@@ -18,7 +18,7 @@ export async function getArticulos(req, res, next) {
         if (req.query.codigo) {
             query.where('codigo').equals(req.query.codigo);
         }
-        let objs = await query.sort({ nombre: 1 }).exec();
+        let objs = await query.sort({ codigo: 1 }).exec();
         return res.json(objs);
     } catch (err) {
         return next(err);

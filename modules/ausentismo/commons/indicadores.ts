@@ -106,10 +106,12 @@ export async function getIndicadoresSinPeriodo(agente, articulo, formula, desde?
 
 
 export async function getIndicadoresLicencia(agente, articulo, formula, desde?, hasta?){
+    const thisYear = new Date().getFullYear();
     let indicadores = await IndicadorAusentismo.find(
         {
             'agente.id': new Types.ObjectId(agente.id),
             // 'articulo.id': new Types.ObjectId(articulo.id),
+            'vigencia': { $gt : thisYear-3},
             'vencido': false
         }).sort({ vigencia: 1 });
     return indicadores;

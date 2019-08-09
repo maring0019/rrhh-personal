@@ -2,6 +2,7 @@ import { Articulo } from '../schemas/articulo';
 
 import { format } from 'util';
 import { Types } from 'mongoose';
+import { Feriado } from '../schemas/feriado';
 
 
 export async function parseAusentismo(obj){
@@ -36,29 +37,31 @@ export function addOneDay(fecha){
     return new Date(tomorrow.setDate(tomorrow.getDate() + 1));
 }
 
-export function esFeriado(date){
-    return false;
+export async function esFeriado(date){
+    const esFeriado = await Feriado.findOne({ fecha: date })
+    return esFeriado? true : false;
 }
 
-export function esDiaHabil(date){
-    let esDiaHabil = true;
-    let finDeSemanas = [new Date(2019,6,20), new Date(2019,6,21), new Date(2019,6,27), new Date(2019,6,28)];
-    let feriados = [new Date(2019,6,18), new Date(2019,6,23)]
-    for (let finde of finDeSemanas){
-        if (date.getTime() === finde.getTime()) {
-            esDiaHabil = false;
-            break;
-        }
-    }
-    if (esDiaHabil){
-        for (let feriado of feriados){
-            if (date.getTime() === feriado.getTime()) {
-                esDiaHabil = false;
-                break;
-            };
-        }
-    }
-    return esDiaHabil;
+export async function esDiaHabil(date){
+    return await esFeriado(date);
+    // let esDiaHabil = true;
+    // let finDeSemanas = [new Date(2019,6,20), new Date(2019,6,21), new Date(2019,6,27), new Date(2019,6,28)];
+    // let feriados = [new Date(2019,6,18), new Date(2019,6,23)]
+    // for (let finde of finDeSemanas){
+    //     if (date.getTime() === finde.getTime()) {
+    //         esDiaHabil = false;
+    //         break;
+    //     }
+    // }
+    // if (esDiaHabil){
+    //     for (let feriado of feriados){
+    //         if (date.getTime() === feriado.getTime()) {
+    //             esDiaHabil = false;
+    //             break;
+    //         };
+    //     }
+    // }
+    // return esDiaHabil;
 }
 
 
