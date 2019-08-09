@@ -6,9 +6,7 @@ import LicenciasController from './licencias';
 class AusenciasController {
     
     async addAusentismo(ausentismo){
-        console.log('Insertando ausentismo');
         if (!ausentismo.ausencias.length){
-            console.log('Generando las ausencias y controles');
             let au = await calcularAusentismo(ausentismo.agente, ausentismo.articulo,
                 ausentismo.fechaDesde, ausentismo.fechaHasta, ausentismo.cantidadDias);
             if (au.warnings && au.warnings.length)
@@ -119,7 +117,6 @@ async function calcularAusentismo(agente, articulo, desde, hasta, dias){
     let ausencias = aus.calcularDiasAusencias(agente, articulo, desde, hasta, dias);
     let indicadores = await ind.getIndicadoresAusentismo(agente, articulo, ausencias.desde, ausencias.hasta);
     let indicadoresRecalculados = aus.distribuirAusenciasEntreIndicadores(indicadores, ausencias);  
-    for (const i of indicadoresRecalculados) console.log(i.intervalos)
 
     let warnings = [];
     warnings = warnings.concat(utils.formatWarningsIndicadores(await aus.checkIndicadoresGuardado(indicadoresRecalculados)));

@@ -58,7 +58,7 @@ export async function getIndicadoresConPeriodo(agente, articulo, formula, desde,
             {
                 'agente.id': new Types.ObjectId(agente.id),
                 'articulo.id': new Types.ObjectId(articulo.id),
-                'periodo': formula.periodo.nombre, // TODO Idealmente buscar por ID???
+                'periodo': formula.periodo, // TODO Idealmente buscar por ID???
                 'vigencia': anio // TODO analizar el tema de la vigencia correctamente
             });
         if (!indicador){
@@ -132,7 +132,7 @@ export async function calcularIndicadoresAusentismo(agente, articulo, formula, a
         agente: agente,
         articulo: articulo,
         vigencia: anio,
-        periodo: formula.periodo? formula.periodo.nombre : null,
+        periodo: formula.periodo? formula.periodo: null,
         intervalos: []
     }
     indicadorAusentismo.intervalos = await calcularIndicadoresPorIntervalo(
@@ -148,34 +148,29 @@ export async function calcularIndicadoresPorIntervalo(agente, articulo, formula,
             indicadoresIntervalo = {
                 totales: formula.limiteAusencias,
                 ejecutadas: 0
-                // TODO remove disponibles: formula.limiteAusencias
             }
         }
         else{
-            // let totales = formula.limiteAusencias;
             let ejecutadas = await getTotalAusenciasPorArticulo(agente, articulo);
             indicadoresIntervalo = {
                 totales: formula.limiteAusencias,
                 ejecutadas: ejecutadas
-                // TODO Remove disponibles: totales - ejecutadas
             }
         }
         intervalos.push(indicadoresIntervalo)
     }
     else{
-        let periodoConfiguracion = constantes[formula.periodo.nombre];
+        let periodoConfiguracion = constantes[formula.periodo];
         for ( let int of periodoConfiguracion.intervalos){
             let desde = int.desde? new Date(anio, int.desde.mes, int.desde.dia) : null;
             let hasta = int.hasta? new Date(anio, int.hasta.mes, int.hasta.dia) : null;
             let totales = formula.limiteAusencias;
             let ejecutadas = await getTotalAusenciasPorArticulo(agente, articulo, desde, hasta);
-            // TODO Remove let disponibles = totales - ejecutadas;     
             indicadoresIntervalo = {
                 desde: desde,
                 hasta: hasta,
                 totales: totales,
                 ejecutadas: ejecutadas
-                // TODO Remove disponibles: disponibles
             }
             intervalos.push(indicadoresIntervalo)
         };
@@ -253,7 +248,6 @@ function rollbackIndicadores(indicadores){
     for (let indicador of indicadores){
         for (let intervalo of indicador.intervalos){
             intervalo.ejecutadas = intervalo.ejecutadas - intervalo.asignadas;
-            // TODO Remove intervalo.disponibles = intervalo.disponibles + intervalo.asignadas; 
         }
     }
     return indicadores;
@@ -266,7 +260,6 @@ export function mergeIndicadores(indicadoresNuevos, indicadoresPrevios){
             const intEncontrado = findIntervalo(intervalo, indNuevo, indicadoresPrevios);
             if (intEncontrado){
                 intervalo.ejecutadas = intervalo.ejecutadas - intEncontrado.asignadas;
-                // TODO remove intervalo.disponibles = intEncontrado.disponibles;
             }
             
         }
@@ -311,6 +304,8 @@ export function getMaxDiasDisponibles(indicadores, fechaInteres){
     for (let indicador of indicadores){
         indicadoresFiltrados.push(aus.minimizarIntervalosIndicador(indicador, fechaInteres, fechaInteres));
     }
+    console.log('Intervalos minimizados')
+    for (const i of indicadoresFiltrados) console.log(i.intervalos)
     for (const indicador of indicadoresFiltrados){
         for(const intervalo of indicador.intervalos){
             const diasDisponibles = intervalo.totales - intervalo.ejecutadas;
@@ -389,29 +384,29 @@ export async function insertIndicadoresHistoricos(ausentismo, indicadores){
 }
 
 export const constantes = {
-    PERIODO_INDETERMINADO: {
+    total: {
         intervalos: [{}]
     },
     PERIODO_CONSTANTE: {
         intervalos: [{desde: {dia:1, mes:0}, hasta:{dia:31, mes:11 } }]
     },
-    PERIODO_ANUAL: {
+    anual: {
         intervalos: [{desde: {dia:1, mes:0}, hasta:{dia:31, mes:11 } }]
     },
-    PERIODO_TRIMESTRE: {
+    trimestre: {
         intervalos: [
             {desde:{dia:1, mes:0}, hasta:{dia:31, mes:2}},
             {desde:{dia:1, mes:3}, hasta:{dia:30, mes:5}},
             {desde:{dia:1, mes:6}, hasta:{dia:30, mes:8}},
             {desde:{dia:1, mes:9}, hasta:{dia:31, mes:11}}]
     },
-    PERIODO_CUATRIMESTRE: {
+    cuatrimestre: {
         intervalos: [
             {desde:{dia:1, mes:0}, hasta:{dia:30, mes:3}},
             {desde:{dia:1, mes:4}, hasta:{dia:31, mes:7}},
             {desde:{dia:1, mes:8}, hasta:{dia:31, mes:11}}]
     },
-    PERIODO_MENSUAL: {
+    mensual: {
         intervalos: [
             {desde:{dia:1, mes:0}, hasta:{dia:31, mes:0}},
             {desde:{dia:1, mes:1}, hasta:{dia:28, mes:1}},

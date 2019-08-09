@@ -90,6 +90,7 @@ export async function sugerirDiasAusentismo(req, res, next) {
         let response = await controller.sugerirAusentismo(ausentismo.agente, ausentismo.articulo, ausentismo.fechaDesde);
         return res.json(response);
     } catch (err) {
+        console.log(err)
         return next(err);
     }
 }

@@ -44,24 +44,6 @@ export async function esFeriado(date){
 
 export async function esDiaHabil(date){
     return await esFeriado(date);
-    // let esDiaHabil = true;
-    // let finDeSemanas = [new Date(2019,6,20), new Date(2019,6,21), new Date(2019,6,27), new Date(2019,6,28)];
-    // let feriados = [new Date(2019,6,18), new Date(2019,6,23)]
-    // for (let finde of finDeSemanas){
-    //     if (date.getTime() === finde.getTime()) {
-    //         esDiaHabil = false;
-    //         break;
-    //     }
-    // }
-    // if (esDiaHabil){
-    //     for (let feriado of feriados){
-    //         if (date.getTime() === feriado.getTime()) {
-    //             esDiaHabil = false;
-    //             break;
-    //         };
-    //     }
-    // }
-    // return esDiaHabil;
 }
 
 
@@ -87,11 +69,13 @@ export function formatWarningsIndicadores(indicadores){
             for (const intervalo of indicador.intervalos){
                 const desde = getFormattedDate(intervalo.desde);
                 const hasta = getFormattedDate(intervalo.hasta);
-                textWarning = `${textControl} (${intervalo.totales} dias). ${indicador.periodo}: (${desde} - ${hasta})`;
+                textWarning = `${textControl} (${intervalo.totales} dias). Periodo ${indicador.periodo}: (${desde} - ${hasta})`;
             }
         }
         else{
-            textWarning = `${textControl}. ${textWarning} Periodo Total.`;
+            // TODO Ver si es posible mejorar el msj en este caso. Por ejemplo
+            // si se trata de una licencia, mostrar los dias disponibles por anio
+            textWarning = `${textControl}. ${textWarning}`;
         }
         warningsText.push(textWarning)
     }
