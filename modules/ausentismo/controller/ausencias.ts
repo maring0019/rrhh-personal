@@ -114,7 +114,7 @@ export default AusenciasController;
 
 
 async function calcularAusentismo(agente, articulo, desde, hasta, dias){
-    let ausencias = aus.calcularDiasAusencias(agente, articulo, desde, hasta, dias);
+    let ausencias = await aus.calcularDiasAusencias(agente, articulo, desde, hasta, dias);
     let indicadores = await ind.getIndicadoresAusentismo(agente, articulo, ausencias.desde, ausencias.hasta);
     let indicadoresRecalculados = aus.distribuirAusenciasEntreIndicadores(indicadores, ausencias);  
 
@@ -129,7 +129,7 @@ async function calcularAusentismo(agente, articulo, desde, hasta, dias){
 
 
 export async function recalcularAusentismoArticuloActual(ausEnEdicion, agente, articulo, desde, hasta, dias){
-    let ausencias = aus.calcularDiasAusencias(agente, articulo, desde, hasta, dias);
+    let ausencias = await aus.calcularDiasAusencias(agente, articulo, desde, hasta, dias);
     
     let indicadores = await ind.getIndicadoresAusentismo(agente, articulo, ausencias.desde, ausencias.hasta);
     let indicadoresRecalculados = aus.distribuirAusenciasEntreIndicadores(indicadores, ausencias);
@@ -145,7 +145,7 @@ export async function recalcularAusentismoArticuloActual(ausEnEdicion, agente, a
 }
 
 export async function recalcularAusentismoArticuloNuevo(ausEnEdicion, agente, articulo, desde, hasta, dias){
-    let ausencias = aus.calcularDiasAusencias(agente, articulo, desde, hasta, dias);
+    let ausencias = await aus.calcularDiasAusencias(agente, articulo, desde, hasta, dias);
     let indicadores = await ind.getIndicadoresAusentismo(agente, articulo, ausencias.desde, ausencias.hasta);
     let indicadoresRecalculados = aus.distribuirAusenciasEntreIndicadores(indicadores, ausencias);  
     

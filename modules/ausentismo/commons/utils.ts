@@ -3,6 +3,7 @@ import { Articulo } from '../schemas/articulo';
 import { format } from 'util';
 import { Types } from 'mongoose';
 import { Feriado } from '../schemas/feriado';
+import { Franco } from '../schemas/franco';
 
 
 export async function parseAusentismo(obj){
@@ -37,13 +38,22 @@ export function addOneDay(fecha){
     return new Date(tomorrow.setDate(tomorrow.getDate() + 1));
 }
 
+async function esFranco(agente, date){
+    const esFranco = await Franco.findOne({ fecha: date, 'agente.id': Types.ObjectId(agente.id)});
+    return esFranco? true : false;
+}
+
 export async function esFeriado(date){
-    const esFeriado = await Feriado.findOne({ fecha: date })
+    const esFeriado = await Feriado.findOne({ fecha: date });
     return esFeriado? true : false;
 }
 
-export async function esDiaHabil(date){
-    return await esFeriado(date);
+function esFinDeSemana(date){
+    return  (date.getDay() == 6 || date.getDay() == 0);
+}
+
+export async function esDiaHabil(agente, date){
+    return  (!(await esFeriado(date)) && !esFinDeSemana(date) && !(await esFranco(agente, date)));
 }
 
 

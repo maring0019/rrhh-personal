@@ -85,6 +85,8 @@ class LicenciasController {
         let indicadores = await ind.getIndicadoresLicencia(agente, articulo, desde);
         let totalDiasDisponibles = await ind.getTotalLicenciasDisponibles(agente, articulo);
         let ausencias = await aus.calcularDiasAusencias(agente, articulo, desde, null, totalDiasDisponibles);
+        console.log('Aca estamos!!!!!!');
+        console.log(ausencias)
         
         let warnings = [];
         warnings = warnings.concat(utils.formatWarningsIndicadores(await aus.checkIndicadoresSugerencia(indicadores, desde)));
@@ -95,7 +97,7 @@ class LicenciasController {
     }
 
     async calcularAusentismo(agente, articulo, desde, hasta, dias){
-        let ausencias = aus.calcularDiasAusencias(agente, articulo, desde, hasta, dias);
+        let ausencias = await aus.calcularDiasAusencias(agente, articulo, desde, hasta, dias);
         let indicadores = await ind.getIndicadoresLicencia(agente, articulo, ausencias.desde, ausencias.hasta);
         let indicadoresRecalculados = await aus.distribuirLicenciasEntreIndicadores(agente, articulo, indicadores, ausencias);  
     
@@ -110,7 +112,7 @@ class LicenciasController {
     
     
     async recalcularAusentismoArticuloActual(licEnEdicion, agente, articulo, desde, hasta, dias){
-        let ausencias = aus.calcularDiasAusencias(agente, articulo, desde, hasta, dias);
+        let ausencias = await aus.calcularDiasAusencias(agente, articulo, desde, hasta, dias);
         
         let indicadoresActuales = await ind.getIndicadoresLicencia(agente, articulo, ausencias.desde, ausencias.hasta);
         let indicadoresHistoricos = await ind.getIndicadoresLicenciaHistoricos(licEnEdicion);
@@ -127,7 +129,7 @@ class LicenciasController {
     }
     
     async recalcularAusentismoArticuloNuevo(licEnEdicion, agente, articulo, desde, hasta, dias){
-        let ausencias = aus.calcularDiasAusencias(agente, articulo, desde, hasta, dias);
+        let ausencias = await aus.calcularDiasAusencias(agente, articulo, desde, hasta, dias);
         let indicadores = await ind.getIndicadoresAusentismo(agente, articulo, ausencias.desde, ausencias.hasta);
         let indicadoresRecalculados = await aus.distribuirAusenciasEntreIndicadores(indicadores, ausencias);  
         

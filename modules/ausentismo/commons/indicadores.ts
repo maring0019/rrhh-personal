@@ -230,7 +230,7 @@ export async function getTotalLicenciasDisponibles(agente, articulo){
 
 
 export async function getIndicadoresHistoricos(agente, articulo, desde, hasta, dias){
-    let ausencias = aus.calcularDiasAusencias(agente, articulo, desde, hasta, dias);
+    let ausencias = await aus.calcularDiasAusencias(agente, articulo, desde, hasta, dias);
     let indicadores = await getIndicadoresAusentismo(agente, articulo, ausencias.desde, ausencias.hasta);
     let indicadoresRecalculados = aus.distribuirAusenciasEntreIndicadores(indicadores, ausencias);
     let indicadoresHistoricos = rollbackIndicadores(indicadoresRecalculados);

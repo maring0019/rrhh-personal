@@ -5,14 +5,14 @@ import * as ind from './indicadores';
 import * as utils from './utils';
 
 
-export function calcularDiasAusencias(agente, articulo, desde, hasta?, dias?){
+export async function calcularDiasAusencias(agente, articulo, desde, hasta?, dias?){
     let ausencias:any;
     if ((!articulo.diasCorridos && !articulo.diaHabiles) || articulo.diasCorridos){
         ausencias = calculaDiasCorridos(desde, hasta, dias);
     }
 
     if (articulo.diasHabiles){
-        ausencias = calculaDiasHabiles(desde, hasta, dias);
+        ausencias = await calculaDiasHabiles(agente, desde, hasta, dias);
     }
     return ausencias;
 }
@@ -48,13 +48,13 @@ export function calculaDiasCorridos(desde:Date, hasta?:Date, dias?:number){
 }
 
 
-export function calculaDiasHabiles(desde:Date, hasta?:Date, dias?){
+export async function calculaDiasHabiles(agente, desde:Date, hasta?:Date, dias?){
     let ausencias = [];
     let totalDias = 0;
     if (hasta && !dias){
         let fechaAusencia = desde;
         while(fechaAusencia <= hasta){
-            if (utils.esDiaHabil(fechaAusencia)){
+            if (await utils.esDiaHabil(agente, fechaAusencia)){
                 totalDias = totalDias + 1;
                 ausencias.push(new Date(fechaAusencia));
             }
@@ -65,8 +65,10 @@ export function calculaDiasHabiles(desde:Date, hasta?:Date, dias?){
         let fechaAusencia = desde;
         let i = 0;
         while (i < dias){
-            while (!utils.esDiaHabil(fechaAusencia)){
+            let esDiaHabil = await utils.esDiaHabil(agente, fechaAusencia)
+            while (!esDiaHabil){
                 fechaAusencia = utils.addOneDay(fechaAusencia);    
+                esDiaHabil = await utils.esDiaHabil(agente, fechaAusencia)
             }        
             hasta = fechaAusencia;
             ausencias.push(new Date(fechaAusencia));

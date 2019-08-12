@@ -98,7 +98,7 @@ export async function sugerirDiasAusentismo(req, res, next) {
 export async function calcularAusentismo(req, res, next) {
     try {
         const ausentismo = await utils.parseAusentismo(req.body);
-        let ausencias = aus.calcularDiasAusencias(ausentismo.agente, ausentismo.articulo,
+        let ausencias = await aus.calcularDiasAusencias(ausentismo.agente, ausentismo.articulo,
         ausentismo.fechaDesde, ausentismo.fechaHasta, ausentismo.cantidadDias);
     return res.json(ausencias);
     } catch (err) {
