@@ -1,3 +1,5 @@
+import * as path from 'path';
+
 // Habilita/deshabilita módulos de la API
 export const modules = {
     tm: {
@@ -10,6 +12,12 @@ export const modules = {
         active: true,
         path: './core/files/routes',
         route: '/core/files',
+        middleware: null,
+    },
+    descargas:{
+        active: true,
+        path: './core/descargas/routes',
+        route: '/core/descargas',
         middleware: null,
     },
     organigrama: {
@@ -36,3 +44,8 @@ export const modules = {
 export const defaultLimit = 50;
 export const maxLimit = 1000;
 export const uploadFilesPath = 'tempUploads'
+
+// Templates html para generar pdfs
+export const templateRootPath = path.join(__dirname, './templates');
+
+
