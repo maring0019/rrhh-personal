@@ -73,6 +73,7 @@ class LicenciasController {
         if (au.warnings && au.warnings.length) return au;// Return ausencias con warnings. No guardamos nada
             
         // Si llegamos aca, esta todo ok para guardar los cambios
+        // TODO Update fileinfo
         ausNewValues.ausencias = aus.generarDiasAusencia(ausNewValues, au.ausencias);
         const ausentismoNew = await aus.insertAusentismo(ausNewValues);
         await aus.deleteAusentismo(ausToUpdate);

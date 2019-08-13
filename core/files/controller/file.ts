@@ -158,6 +158,35 @@ export async function getFiles(req, res, next){
 }
 
 export async function readFile(req, res, next){
+    console.log('Estamos aca##################################')
+    try {
+        const id = req.params.id;
+        if (!id || (id && !Types.ObjectId.isValid(id))) return next(404);
+        const filesModel = FilesModel();
+        const file = await filesModel.findById(id); // ({ 'metadata.objID': new Types.ObjectId(id)});
+        if (file){
+            console.log('Hay un fucking archivo##################################')
+            file.read((err, buffer) => {
+                if (err) {
+                    console.log('ERROR!!')
+                    return next(err);
+                }
+                else{
+                    res.setHeader('Content-Type', file.contentType);
+                    res.setHeader('Content-Length', file.length);
+                    res.setHeader('Content-Disposition', `attachment; filename=${file.filename}`);
+                    return res.send(buffer);
+                }
+            });
+        }
+        else{
+            return res.send(null);
+        }
+    } catch (err) {
+        return next(err);
+    }
+
+    
 
 }
 

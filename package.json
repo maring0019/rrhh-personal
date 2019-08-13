@@ -48,12 +48,14 @@
     "typescript": "^3.3.1"
   },
   "dependencies": {
+    "@types/ejs": "^2.6.3",
     "@types/html-pdf": "^2.1.2",
     "@types/node-sass": "^4.11.0",
     "base64-stream": "1.0.0",
     "body-parser": "^1.18.3",
     "debug": "^4.1.1",
     "dotenv": "^6.2.0",
+    "ejs": "^2.6.2",
     "express": "^4.16.4",
     "express-query-boolean": "^2.0.0",
     "html-pdf": "^2.2.0",

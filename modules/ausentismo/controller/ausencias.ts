@@ -77,6 +77,7 @@ class AusenciasController {
         }
         else{
             // Todo esta ok, se procede a guardar los cambios
+            // TODO Update fileinfo
             ausNewValues.ausencias = aus.generarDiasAusencia(ausNewValues, au);                          
             let ausentismoNew = await aus.insertAusentismo(ausNewValues);
             await aus.deleteAusentismo(ausToUpdate);

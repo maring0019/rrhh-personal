@@ -3,6 +3,8 @@ import * as pdf from 'html-pdf';
 import * as scss from 'node-sass';
 import * as path from 'path';
 
+import * as ejs from 'ejs';
+
 import * as config from '../../config';
 
 /**
@@ -12,7 +14,7 @@ export class DocumentoPDF {
 
     templateName:any;
     template:any;
-    HTML:any = '';
+    html:any = '';
     ctx:any = {};
     outputFilename = 'documento.pdf';
     
@@ -94,11 +96,8 @@ export class DocumentoPDF {
     }
 
     protected parseHTML(htmlTemplate, ctx){
-        let html = this.HTML? this.HTML : htmlTemplate ;
-        Object.keys(ctx).forEach(function(key) {
-            html = html.replace(key, ctx[key])
-          })
-          return html;
+        let htmlStr = this.html? this.html : htmlTemplate ;
+        return ejs.render(htmlStr, ctx);
     }
 
     async generarHTML() {
@@ -121,7 +120,7 @@ export class DocumentoPDF {
         });
     }
 
-    async generarPDF(req) {
+    async getPDF(req) {
         try {
             this.request  = req;
             let html = await this.generarHTML();
@@ -131,6 +130,12 @@ export class DocumentoPDF {
         catch(err){
             return err;
         }
+    }
+
+    async getHTML(req) {
+            this.request  = req;
+            let html = await this.generarHTML();
+            return html;
     }
 
 }

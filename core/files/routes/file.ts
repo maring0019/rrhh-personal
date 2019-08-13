@@ -13,6 +13,6 @@ Routes.post('/objects/:id/upload', FileController.multerUploader.single('archivo
 Routes.post('/objects/:objId/attach', FileController.attachFiles);
 Routes.post('/objects/:objId/dettach', FileController.dettachFiles);
 Routes.get('/objects/:id/files', FileController.getFiles);
-Routes.get('/:fileId/objects/:objId/download', FileController.readFile);
+Routes.get('/objects/:objId/files/:id/download', FileController.readFile);
 Routes.delete('/:fileId/objects/:objId/delete', FileController.removeFile);
 

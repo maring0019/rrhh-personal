@@ -56,6 +56,12 @@ export const AgenteSchema = new Schema({
     antiguedadPago: Date
 });
 
+AgenteSchema.methods.nombreCompleto = function(cb) {
+    const apellido = this.apellido || '';
+    const nombre = this.nombre || '';
+    return `${apellido}, ${nombre}`
+  };
+
 /**
  * Indice para la busquedas de texto libre en los campos definidos
  */

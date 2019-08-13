@@ -46,6 +46,6 @@ export const maxLimit = 1000;
 export const uploadFilesPath = 'tempUploads'
 
 // Templates html para generar pdfs
-export const templateRootPath = path.join(__dirname, './templates');
+export const templateRootPath = path.join(__dirname, './views');
 
 
