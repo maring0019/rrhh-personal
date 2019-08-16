@@ -158,14 +158,12 @@ export async function getFiles(req, res, next){
 }
 
 export async function readFile(req, res, next){
-    console.log('Estamos aca##################################')
     try {
         const id = req.params.id;
         if (!id || (id && !Types.ObjectId.isValid(id))) return next(404);
         const filesModel = FilesModel();
-        const file = await filesModel.findById(id); // ({ 'metadata.objID': new Types.ObjectId(id)});
+        const file = await filesModel.findById(id);
         if (file){
-            console.log('Hay un fucking archivo##################################')
             file.read((err, buffer) => {
                 if (err) {
                     console.log('ERROR!!')

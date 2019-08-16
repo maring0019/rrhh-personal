@@ -14,4 +14,6 @@ export const FrancoSchema = new Schema({
     } 
 })
 
+// FrancoSchema.index({ 'agente.id': 1, fecha: 1}, {unique: true});
+
 export const Franco = model('Franco', FrancoSchema, 'francos');

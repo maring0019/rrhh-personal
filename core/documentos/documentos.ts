@@ -53,6 +53,7 @@ export class DocumentoPDF {
         
     }
 
+    
     protected async getContextData(){
         return this.ctx;
     }
