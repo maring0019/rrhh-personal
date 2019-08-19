@@ -35,8 +35,18 @@ export async function addFranco(req, res, next) {
     }
 }
 
-export async function addFrancos(req, res, next) {
-    // TODO Filtrar elementos duplicados previamente (NO insertar dos francos el mismo dia)
+
+
+/**
+ * Inserta en forma masiva un conjunto de francos recibidos por parametro en
+ * el body del request.
+ * Previo a insertar verificamos que no se inserten francos duplicados para
+ * un mismo dia y agente
+ * @param req 
+ * @param res 
+ * @param next 
+ */
+export async function addManyFrancos(req, res, next) {
     try {
         let francos = req.body;
         let newFrancos:any = [];
@@ -46,9 +56,50 @@ export async function addFrancos(req, res, next) {
                     agente: f.agente,
                     fecha: utils.parseDate(new Date(f.fecha)),
                 }));
+            const weekend = francos.map(f=>f.fecha);
+            const agente = francos[0].agente;
+            const francosExistentes = await Franco.find(
+                {
+                    'agente.id': Types.ObjectId(agente.id), 
+                    'fecha': { $in: weekend }
+                }).lean();
+            
+            francos = francos.filter(x => !francosExistentes.filter( y => y.fecha.getTime() === x.fecha.getTime()).length);
             newFrancos = await Franco.insertMany(francos);
         }
         return res.json(newFrancos);
+    } catch (err) {
+        return next(err);
+    }
+}
+
+
+/**
+ * Elimina en forma masiva un conjunto de francos. Los ids de los francos 
+ * eliminar se reciben por parametro en el body del request.
+ * @param req 
+ * @param res 
+ * @param next 
+ */
+export async function deleteManyFrancos(req, res, next) {
+    try {
+        const ids = req.body;
+        let francosIds = ids.map(id=>Types.ObjectId(id))
+        await Franco.deleteMany({ _id: { $in : francosIds } });
+        return res.status(200).send();
+    } catch (err) {
+        return next(err);
+    }
+}
+
+
+export async function deleteFranco(req, res, next) {
+    try {
+        const id = req.params.id;
+        let franco:any = await Franco.findById(id);
+        if (!franco) return res.status(404).send("Not found");
+        const objRemoved = await franco.remove();
+        return res.json(objRemoved);
     } catch (err) {
         return next(err);
     }
