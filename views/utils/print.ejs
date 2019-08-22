@@ -1,0 +1,43 @@
+<%
+
+print = function(value, arg1) {
+    if(!value){
+        return '---';
+    }
+
+    if (value instanceof Date) {
+        return formatDate(new Date(value)); // Es una fecha
+    }
+
+    if (typeof value === 'string' || typeof value === 'number'){
+        return titleCase(''+value); // Es una cadena de caracteres
+    }
+    else{
+        if (arg1 && arg1 in value){
+            return print(value[arg1]); // Es un atributo de un objeto
+        }
+        else{
+            console.log(value)
+            return titleCase(''+value);
+        }
+    }
+    return 'Unknow format value';
+}
+
+
+titleCase = function(str) {
+    const title =str.toLowerCase().split(' ').map(function (word) {
+        return (word.charAt(0).toUpperCase() + word.slice(1));
+    }).join(' ');
+    return title;
+}
+
+formatDate = function(date) {
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const year = date.getFullYear();
+    return  day + "/" + month + "/" + year;
+}
+
+%>
+

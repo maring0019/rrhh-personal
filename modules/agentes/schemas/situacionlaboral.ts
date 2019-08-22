@@ -16,7 +16,7 @@ export const SituacionLaboralSchema = new Schema({
     cargo: CargoSchema,
     regimen: RegimenSchema,
     inactivo:{
-        type: Boolean,
+        type: Boolean, 
         default: false
     }
 })

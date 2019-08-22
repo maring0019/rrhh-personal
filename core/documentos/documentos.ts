@@ -49,8 +49,11 @@ export class DocumentoPDF {
             else{
                 throw new Error('No HTML Template to read');
             }
-        }
-        
+        }   
+    }
+
+    private getFilePath(){
+        return path.join(config.templateRootPath, this.getTemplateName());
     }
 
     
@@ -98,7 +101,7 @@ export class DocumentoPDF {
 
     protected parseHTML(htmlTemplate, ctx){
         let htmlStr = this.html? this.html : htmlTemplate ;
-        return ejs.render(htmlStr, ctx);
+        return ejs.render(htmlStr, ctx, { filename: this.getFilePath()});
     }
 
     async generarHTML() {

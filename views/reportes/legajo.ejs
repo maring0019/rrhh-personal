@@ -26,23 +26,102 @@
             .m0{margin: 0px}
             .bold {font-weight:bold}
             </style>
-            <% for (const legajo of legajos) { %>
+            <%- include("../utils/print") %>
+            <% for (const agente of agentes) { %>
             <table class="tg tgw">
-                <tr>
-                    <th class="tg-266k" colspan="2"><h2 class="m0"><%= legajo.header %></h2></th>
+                <tr> <!-- HEADER  -->
+                    <th class="tg-266k" colspan="2">
+                        <h2 class="m0"><%= agente.apellido %>, <%= agente.nombre %></h2>
+                    </th>
                 </tr>
-                 <% for (const info of legajo.datos) { %>
+                
+                <!-- DATOS PERSONALES --> 
+                <tr> 
+                    <td class="tg-xq07" colspan="2"><h3 class="m0">Datos Personales</h3></td>
+                </tr>
+                <tr>
+                    <td class="tg-0pky">Numero de Agente: <span class="bold"><%= agente.numero %></span></td>
+                    <td class="tg-0pky">Estado:<span class="bold"><%= agente.activo? 'Activo': 'Baja' %></span></td>
+                </tr>
+                <tr>
+                    <td class="tg-0pky">Nombre: <span class="bold"><%= agente.nombre %></span></td>
+                    <td class="tg-0pky"></td>
+                </tr>
+                <tr>
+                    <td class="tg-0pky">Documento: <span class="bold"><%= agente.documento %></span></td>
+                    <td class="tg-0pky"></td>
+                </tr>
+                <tr>
+                    <td class="tg-0pky">CUIL: <span class="bold"><%= agente.cuil %></span></td>
+                    <td class="tg-0pky"></td>
+                </tr>
+                <tr>
+                    <td class="tg-0pky">Estado Civil: <span class="bold"><%= print(agente.estadoCivil) %></span></td>
+                    <td class="tg-0pky">Nacionalidad: <span class="bold"><%= print(agente.nacionalidad, 'nombre')  %></span></td>
+                </tr>
+                <tr>
+                    <td class="tg-0pky">Sexo: <span class="bold"><%= print(agente.sexo) %></span></td>
+                    <td class="tg-0pky">Fecha de Nacimiento: <span class="bold"><%= print(agente.fechaNacimiento) %></span></td>
+                </tr>
+
+                <!-- DATOS DOMICILIO -->
+                <% const direccion = agente.direccion %>
+                <tr> 
+                    <td class="tg-xq07" colspan="2"><h3 class="m0">Datos Domicilio</h3></td>
+                </tr>
+                <tr>
+                    <td class="tg-0pky">Direccion: <span class="bold"><%= direccion.valor %></span></td>
+                    <td class="tg-0pky"></td>
+                </tr>
+                <tr>
+                    <td class="tg-0pky">Localidad: <span class="bold"><%= print(direccion.localidad, 'nombre') %></span></td>
+                    <td class="tg-0pky">Provincia: <span class="bold"><%= direccion.localidad? print(direccion.localidad.provincia, 'nombre'):'---' %></span></td>
+                </tr>
+                <tr>
+                    <td class="tg-0pky">Barrio: <span class="bold"><%= direccion.barrio %></span></td>
+                    <td class="tg-0pky">CP:  <span class="bold"><%= print(direccion.codigoPostal) %></span></td>
+                </tr>
+                
+                <!-- DATOS DE CONTACTO -->
+                <tr> 
+                    <td class="tg-xq07" colspan="2"><h3 class="m0">Datos de Contacto</h3></td>
+                </tr>
+                <% for (const contacto of agente.contactos) { %>    
                     <tr>
-                        <td class="tg-xq07" colspan="2"><h3 class="m0"><%= info.subheader %></h3></td>
+                        <td class="tg-0pky"><%= print(contacto.tipo) %>: <span class="bold"><%= contacto.valor %></span></td>
+                        <td class="tg-0pky"></td>
                     </tr>
-                    <% for (const row of info.rows) { %>
-                        <tr>
-                            <% for (const col of row.cols) { %>
-                                <td class="tg-0pky"><%= col.key %> <span class="bold"><%= col.valor %></span></td>
-                            <% } %>  
-                            </tr>
-                    <% } %> 
                 <% } %>
+
+                <!-- DATOS DE EDUCACION -->
+                <tr> 
+                    <td class="tg-xq07" colspan="2"><h3 class="m0">Estudios completados</h3></td>
+                </tr>
+                <% for (const estudio of agente.educacion) { %>    
+                    <tr>
+                        <td class="tg-0pky">Titulo <%= print(estudio.tipoEducacion) %>: <span class="bold"><%= estudio.titulo %></span></td>
+                        <td class="tg-0pky"></td>
+                    </tr>
+                <% } %>
+
+                 <!-- DATOS SITUACION EN PLANTA -->
+                <% const situacion = agente.direccion %>
+                <tr> 
+                    <td class="tg-xq07" colspan="2"><h3 class="m0">Situacion en Planta (a definir)</h3></td>
+                </tr>
+
+                <!-- DATOS CARGO ACTUAL -->
+                <% const cargo = agente.situacionLaboral %>
+                <tr> 
+                    <td class="tg-xq07" colspan="3"><h3 class="m0">Cargo Actual</h3></td>
+                </tr>
+                <tr>
+                    <td class="tg-0pky">Norma: <span class="bold"><%= print(cargo.tipoNormaLegal,'nombre') %> <%= print(cargo.numeroNormaLegal) %></span></td>
+                    <td class="tg-0pky">Fecha de la Norma:<span class="bold"><%= print(cargo.fechaNormaLegal) %></span></td>
+                    <td class="tg-0pky">Categoria:<span class="bold"></span></td>
+                </tr>
+                
+
             </table>
             <br>
         <% } %>
