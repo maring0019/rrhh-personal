@@ -1,4 +1,5 @@
-import { DocumentoLegajoAgente } from "../../../core/documentos/reportes/legajo";
+import { DocumentoLegajoAgente } from "../../../core/documentos/reportes/legajoAgentes";
+import { DocumentoListadoAgentes } from "../../../core/documentos/reportes/listadoAgentes";
 
 
 export async function legajoAgente(req, res, next){
@@ -26,6 +27,23 @@ export async function downloadLegajoAgente(req, res, next, options = null) {
 export async function getLegajoAgente(req, res, next) {
     try {
         let doc = new DocumentoLegajoAgente();
+        let html = await doc.getHTML(req);
+        res.writeHead(200, {
+            'Content-Type': 'text/html'
+        });
+        res.write(html);
+        res.end();
+    }
+    catch(err){
+        return next(err);
+    }
+    
+}
+
+
+export async function getListadoAgente(req, res, next) {
+    try {
+        let doc = new DocumentoListadoAgentes();
         let html = await doc.getHTML(req);
         res.writeHead(200, {
             'Content-Type': 'text/html'

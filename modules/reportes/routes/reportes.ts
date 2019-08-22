@@ -5,5 +5,7 @@ import * as ReportesController from '../controller/reportes';
 export const Routes = express.Router();
 
 
-Routes.get('/legajo', ReportesController.getLegajoAgente);
-Routes.get('/legajo/download', ReportesController.downloadLegajoAgente);
+Routes.get('/agentes/legajo', ReportesController.getLegajoAgente);
+Routes.get('/agentes/legajo/download', ReportesController.downloadLegajoAgente);
+
+Routes.get('/agentes/listado', ReportesController.getListadoAgente);

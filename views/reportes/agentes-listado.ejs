@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+        table {
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        </style>
+    </head>
+    <body style="margin:30px 25px;">
+        <h1>Listados de Agentes</h1>
+        
+            <!-- Datos Personale --> 
+            <style type="text/css">
+            .tgw  {width: 100%;}
+            .tg  {border-collapse:collapse;border-spacing:0;}
+            .tg td{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;}
+            .tg th{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;}
+            .tg .tg-xq07{background-color:#efefef;border-color:inherit;text-align:left;vertical-align:top}
+            .tg .tg-266k{background-color:#9b9b9b;border-color:inherit;text-align:left;vertical-align:top}
+            .tg .tg-0pky{border-color:inherit;text-align:left;vertical-align:top}
+            .tg .tg-tf2e{text-align:left;vertical-align:top}
+            .m0{margin: 0px}
+            .bold {font-weight:bold}
+            </style>
+            <%- include("../utils/print") %>
+            <% for (const grupo of gruposAgente) { %>
+            <table class="tg tgw">
+                <tr> <!-- HEADER  -->
+                    <th class="tg-266k" colspan="5">
+                        <h2 class="m0">Sexo: <%= print(grupo._id) %></h2>
+                    </th>
+                </tr>
+                
+                <tr> 
+                    <td class="tg-xq07"><h3 class="m0">Numero</h3></td>
+                    <td class="tg-xq07"><h3 class="m0">Documento</h3></td>
+                    <td class="tg-xq07"><h3 class="m0">Nombre</h3></td>
+                    <td class="tg-xq07"><h3 class="m0">Lugar de Trabajo</h3></td>
+                    <td class="tg-xq07"><h3 class="m0">Servicio</h3></td>
+                </tr>
+                <% for (const agente of grupo.agentes) { %>
+                <tr>
+                    <td class="tg-0pky"><%= print(agente.numero) %></td>
+                    <td class="tg-0pky"><%= print(agente.documento) %></td>
+                    <td class="tg-0pky"><%= print(agente.apellido) %>, <%= print(agente.nombre) %></td>
+                    <td class="tg-0pky"></td>
+                    <td class="tg-0pky"></td>
+                </tr>
+                <% } %>
+            </table>
+            <br>
+        <% } %>
+    </body>
+</html>
