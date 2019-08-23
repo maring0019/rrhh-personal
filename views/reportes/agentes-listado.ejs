@@ -31,7 +31,7 @@
             <table class="tg tgw">
                 <tr> <!-- HEADER  -->
                     <th class="tg-266k" colspan="5">
-                        <h2 class="m0">Sexo: <%= print(grupo._id) %></h2>
+                        <h2 class="m0">Sexo: <%= value(grupo._id) %></h2>
                     </th>
                 </tr>
                 
@@ -43,13 +43,19 @@
                     <td class="tg-xq07"><h3 class="m0">Servicio</h3></td>
                 </tr>
                 <% for (const agente of grupo.agentes) { %>
-                <tr>
-                    <td class="tg-0pky"><%= print(agente.numero) %></td>
-                    <td class="tg-0pky"><%= print(agente.documento) %></td>
-                    <td class="tg-0pky"><%= print(agente.apellido) %>, <%= print(agente.nombre) %></td>
-                    <td class="tg-0pky"></td>
-                    <td class="tg-0pky"></td>
-                </tr>
+                   
+                    <tr>
+                        <td class="tg-0pky"><%= value(agente.numero) %></td>
+                        <td class="tg-0pky"><%= value(agente.documento) %></td>
+                        <td class="tg-0pky"><%= value(agente.apellido) %>, <%= value(agente.nombre) %></td>
+                        <td class="tg-0pky"></td>
+                        <td class="tg-0pky"></td>
+                    </tr>
+                    <% for (const field of extraFields) { %>
+                        <tr>
+                            <td class="tg-0pky" colspan="5"><%= label(field) %>: <%= value(agente, field) %></td>
+                        </tr>
+                    <% } %>
                 <% } %>
             </table>
             <br>

@@ -9,3 +9,4 @@ Routes.get('/agentes/legajo', ReportesController.getLegajoAgente);
 Routes.get('/agentes/legajo/download', ReportesController.downloadLegajoAgente);
 
 Routes.get('/agentes/listado', ReportesController.getListadoAgente);
+Routes.get('/agentes/listado/download', ReportesController.downloadListadoAgente);

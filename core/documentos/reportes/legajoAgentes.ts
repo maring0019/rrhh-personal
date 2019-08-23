@@ -20,7 +20,7 @@ export class DocumentoLegajoAgente extends DocumentoPDF {
               },
               castParams: {
                 '_id': 'documentoId',
-                'situacionLaboral.cargo._id': 'documentoId'
+                'situacionLaboral.cargo.sector._id': 'documentoId'
               }
         })
         // Search Pipeline

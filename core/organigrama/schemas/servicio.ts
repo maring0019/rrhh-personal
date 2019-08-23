@@ -21,4 +21,8 @@ export const ServicioSchema = new Schema({
     nombreViejo: String
 })
 
+ServicioSchema.methods._str_ = function(cb) {
+    return `${this.nombre}`
+  };
+
 export const Servicio = model('Servicio', ServicioSchema, 'servicios');

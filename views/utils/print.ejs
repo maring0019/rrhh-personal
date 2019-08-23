@@ -1,29 +1,44 @@
 <%
 
-print = function(value, arg1) {
-    if(!value){
+value = function(val, arg1) {
+    if(!val){
         return '---';
     }
 
-    if (value instanceof Date) {
-        return formatDate(new Date(value)); // Es una fecha
+    if (val instanceof Date) {
+        return formatDate(new Date(val)); // Es una fecha
     }
 
-    if (typeof value === 'string' || typeof value === 'number'){
-        return titleCase(''+value); // Es una cadena de caracteres
+    if (typeof val === 'string' || typeof val === 'number'){
+        return titleCase(''+val);
     }
-    else{
-        if (arg1 && arg1 in value){
-            return print(value[arg1]); // Es un atributo de un objeto
+    if (arg1){
+        const accesors = arg1.split('.');
+        if (accesors.length) {
+            const field = accesors.shift();
+            if (field in val){
+                return value(val[field], accesors.join('.'));
+            }    
         }
-        else{
-            console.log(value)
-            return titleCase(''+value);
+        else{ // Caso base
+            if (arg1 in value){
+                return value(val[arg1]); // Es un atributo de un objeto
+            }    
         }
     }
-    return 'Unknow format value';
+    if (typeof val._str_ === 'function'){
+        return titleCase(val._str_())
+    }
+    return titleCase(''+val);
 }
 
+label = function(value) {
+    if(!value){
+        return '---';
+    } 
+    const label = (((value.split('.')).pop()).match(/[A-Z]+[^A-Z]*|[^A-Z]+/g)).join(' ');
+    return titleCase(label)
+}
 
 titleCase = function(str) {
     const title =str.toLowerCase().split(' ').map(function (word) {

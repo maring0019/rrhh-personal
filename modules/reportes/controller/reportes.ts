@@ -56,3 +56,22 @@ export async function getListadoAgente(req, res, next) {
     }
     
 }
+
+
+export async function downloadListadoAgente(req, res, next, options = null) {
+    try {
+        let doc = new DocumentoListadoAgentes();
+        let file = await doc.getPDF(req);
+        res.download((file as string), (err) => {
+            if (err) {
+                next(err);
+            } else {
+                next();
+            }
+        });
+    }
+    catch(err){
+        return next(err);
+    }
+    
+}

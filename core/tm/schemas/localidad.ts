@@ -11,4 +11,8 @@ export const LocalidadSchema = new Schema({
     codigo: String // Se mantiene solo por compatibilidad con el sistema anterior
 });
 
+LocalidadSchema.methods._str_ = function(cb) {
+    return `${this.nombre}`
+  };
+
 export const Localidad = model('Localidad', LocalidadSchema, 'localidades');
