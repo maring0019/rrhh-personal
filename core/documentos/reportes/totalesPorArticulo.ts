@@ -1,8 +1,9 @@
-import { DocumentoPDF } from "../documentos";
-import { Agente } from "../../../modules/agentes/schemas/agente";
 import { Types } from "mongoose";
 import * as aqp from 'api-query-params';
 
+import { DocumentoPDF } from "../documentos";
+import { Agente } from "../../../modules/agentes/schemas/agente";
+import { Articulo } from "../../../modules/ausentismo/schemas/articulo";
 
 export class DocumentoAusenciasTotalesPorArticulo extends DocumentoPDF {
     templateName = 'reportes/agentes-ausencias-por-articulo.ejs';
@@ -24,91 +25,66 @@ export class DocumentoAusenciasTotalesPorArticulo extends DocumentoPDF {
                 'articulos': 'documentoId'
               }
         })
-        // 5d4c39d2b49d352384756dfc
         // Identificamos el campo por el cual agrupar. Si no se especifico agregamos
         // uno por defecto
         let groupField = this.getFilterField(query.filter, '$group');
         if (!groupField) groupField = 'situacionLaboral.cargo.sector.nombre';
         const groupCondition = { _id : `$${groupField}`, agentes: { $push: "$$ROOT" } }
-  
+        
+        // Filtros para el ausentismo
         let fechaDesde = this.getFilterField(query.filter, 'fechaDesde'); // Format 2016-01-01
         let fechaHasta = this.getFilterField(query.filter, 'fechaHasta');
-        let articulos = this.getFilterField(query.filter, 'articulos');
-        let articulosIds = [];
-        console.log(articulosIds)
-        if (articulos){
-            articulosIds = articulos.$in? articulos.$in: [articulos];
+        let articulosIds = this.getFilterField(query.filter, 'articulos');
+        if (articulosIds) {
+            articulosIds = articulosIds.$in? articulosIds.$in: [articulosIds];
         }
-    
-        // Preparamos las opciones de filtrado. Removemos filtros no requeridos
+        else{
+            articulosIds = [];
+        }
+        // Preparamos las opciones de filtrado sobre el agente. Removemos filtros no requeridos
         let filterCondition = this.cleanFilters(query.filter);
-
         
         // Aggregation Framework Pipeline
         let pipeline:any = [
-            { 
-                $match: filterCondition || {}
-            } ,
-            { 
-                $lookup: {
+            { $match: filterCondition || {}} ,
+            { $lookup: {
                     from: "ausenciasperiodo",
                     let: { agente_id: "$_id", fecha_desde: fechaDesde, fecha_hasta: fechaHasta},
-                    pipeline: [
-                        {
-                            $match: 
-                                {
-                                    $expr: {
-                                        $and:
-                                            [ 
-                                                { $eq: ["$$agente_id", "$agente.id"]}, // Join con agente id
-                                                { $gte: ["$fechaDesde", "$$fecha_desde"]},
-                                                { $lte: ["$fechaHasta", "$$fecha_hasta"]},
-                                                // { $in: ["$articulo.id", articulosIds ] }
-                                            ]
+                    pipeline: 
+                        [{ 
+                            $match: { 
+                                $expr: {
+                                    $and: [ 
+                                        { $eq: ["$$agente_id", "$agente.id"]}, // Join con agente id
+                                        { $gte: ["$fechaDesde", "$$fecha_desde"]},
+                                        { $lte: ["$fechaHasta", "$$fecha_hasta"]},
+                                        (articulosIds.length)?{ $in: ["$articulo.id", articulosIds ]}:{}
+                                        ]
                                     },
-                                
                                 }
-                        },
-                        {
-                            $group:{ _id: "$articulo", total: { $sum: "$cantidadDias"} }
-                        }
-                    ],
+                            },
+                            { $group: { _id: "$articulo.id", ausenciasPorArticulo: { $sum: "$cantidadDias"} } },
+                            { $group: { _id : null, ausenciasTotales: { $sum: "$ausenciasPorArticulo"}, articulos: { $push: "$$ROOT" } } },
+
+                        ],
                     as: "ausentismo"
                  }
             } ,
-            { 
-                $group : groupCondition
-            },
-            {
-                $sort: query.sort || { apellido: 1 }
-            }
+            { $group: groupCondition},
+            { $sort: query.sort || { apellido: 1 }}
         ]
 
         let gruposAgentes = await Agente.aggregate(pipeline);
+        let articulos = await Articulo.find((articulosIds.length)?{"_id": { $in: articulosIds }}:{}).sort({ codigo: 1});
 
-        // console.log(gruposAgentes[0]);
-        console.log('###############################################')
-        console.log(gruposAgentes[0].agentes[0].ausentismo);
-        // Cast agentes into Agente type !Malisimo
-        // gruposAgentes = gruposAgentes.map(grupo => {
-        //     grupo.agentes = grupo.agentes.map(a=>new Agente(a));
-        //     return grupo;
-        // });
-        // return { 
-        //         gruposAgente: gruposAgentes,
-        //         extraFields: this.projectionToArray(query.projection)
-        //     }
-        return {};
+        return { 
+                gruposAgente: gruposAgentes,
+                articulos: articulos,
+            }
     }
 
-    /**
-     * La libreria api-query-params no cuenta con la opcion de definir un campo
-     * para agrupamiento. Por este motivo utilizamos el campo especial $group
-     * para esta opcion. El campo por defecto se agrega al listado de filtros,
-     * por eso lo obtenemos con esta utilidad. Posteriormente hay que eliminar
-     * el campo manualmente de los filtros
-     * @param query 
-     */
+
+
     getFilterField(filter, filterCondition ){
         let filterField;
         if (filter && filter[filterCondition]){

@@ -54,5 +54,21 @@ formatDate = function(date) {
     return  day + "/" + month + "/" + year;
 }
 
+existArticulo = function(element){
+    return element._id.toString() == this._id.toString() ;
+}
+
+mapTotalesPorArticulos = function(articulos, articulosAusencias){
+    articulos = articulos.map(art => {
+        const idx = articulosAusencias.findIndex(existArticulo, art);
+        art = { 
+            ausencias: (idx >= 0)? articulosAusencias[idx].ausenciasPorArticulo : 0,
+            _id: art._id    
+        }
+        return art;
+     })
+     return articulos;
+}
+
 %>
 
