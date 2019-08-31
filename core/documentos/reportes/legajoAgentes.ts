@@ -5,7 +5,7 @@ import * as aqp from 'api-query-params';
 
 
 export class DocumentoLegajoAgente extends DocumentoPDF {
-    templateName = 'reportes/legajo.ejs';
+    templateName = 'reportes/agentes-legajo.ejs';
     outputFilename = './legajo.pdf';
 
     generarCSS() {

@@ -1,6 +1,7 @@
 import { DocumentoLegajoAgente } from "../../../core/documentos/reportes/legajoAgentes";
 import { DocumentoListadoAgentes } from "../../../core/documentos/reportes/listadoAgentes";
 import { DocumentoAusenciasTotalesPorArticulo } from "../../../core/documentos/reportes/totalesPorArticulo";
+import { DocumentoAusenciasPorAgente } from "../../../core/documentos/reportes/ausenciasPorAgente";
 
 
 export async function downloadLegajoAgente(req, res, next, options = null) {
@@ -27,6 +28,11 @@ export async function downloadListadoAgente(req, res, next, options = null) {
 
 export async function getTotalesPorArticulo(req, res, next) {
     let doc = new DocumentoAusenciasTotalesPorArticulo();
+    return await getReporte(req, res, next, doc);
+}
+
+export async function getAusenciasPorAgente(req, res, next) {
+    let doc = new DocumentoAusenciasPorAgente();
     return await getReporte(req, res, next, doc);
 }
 

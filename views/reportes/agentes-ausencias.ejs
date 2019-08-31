@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+        table {
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        </style>
+    </head>
+    <body style="margin:30px 25px;">
+        <h1>Ausencias. Listados por Agente</h1>
+        <style type="text/css">
+            .tgw  {width: 100%;}
+            .tg  {border-collapse:collapse;border-spacing:0;}
+            .tg td{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;}
+            .tg th{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;}
+            .tg .tg-xq07{background-color:#efefef;border-color:inherit;text-align:left;vertical-align:top}
+            .tg .tg-266k{background-color:#9b9b9b;border-color:inherit;text-align:left;vertical-align:top}
+            .tg .tg-0pky{border-color:inherit;text-align:left;vertical-align:top}
+            .tg .tg-tf2e{text-align:left;vertical-align:top}
+            .m0{margin: 0px}
+            .bold {font-weight:bold}
+            </style>
+            <%- include("../utils/print") %>
+            <% for (const grupo of gruposAgente) { %>
+                <table class="tg tgw">
+                    <!-- HEADER  -->
+                    <tr> 
+                        <th class="tg-266k" colspan="8">
+                            <h2 class="m0">Agrupamiento: <%= value(grupo._id) %></h2>
+                        </th>
+                    </tr>
+                    <!-- SUBHEADER  -->
+                    <tr> 
+                        <td class="tg-xq07"><h3 class="m0">Numero</h3></td>
+                        <td class="tg-xq07"><h3 class="m0">Documento</h3></td>
+                        <td class="tg-xq07"><h3 class="m0">Nombre y Apellido</h3></td>
+                        <td class="tg-xq07"><h3 class="m0">Desde</h3></td>
+                        <td class="tg-xq07"><h3 class="m0">Hasta</h3></td>
+                        <td class="tg-xq07"><h3 class="m0">Dias</h3></td>
+                        <td class="tg-xq07"><h3 class="m0">Articulo</h3></td>
+                        <td class="tg-xq07"><h3 class="m0">Obs</h3></td>
+                    </tr>
+                    <!-- DATA  -->     
+                    <% for (const agente of grupo.agentes) { %>
+                        <% let rowSpan = agente.ausentismo.length? agente.ausentismo.length : 1 %>
+                        <% let aus = agente.ausentismo; %>
+                        <% for (index = 0; index < aus.length; index++) { %>
+                            <% if (index == 0) { %>
+                                <tr>
+                                    <td class="tg-0pky" rowspan="<%= rowSpan %>"><%= value(agente.numero) %></td>
+                                    <td class="tg-0pky" rowspan="<%= rowSpan %>">DNI <%= value(agente.documento) %></td>
+                                    <td class="tg-0pky" rowspan="<%= rowSpan %>"><%= value(agente.apellido) %>, <%= value(agente.nombre) %></td>
+                                    <td class="tg-0pky"><%= value(aus[index].fechaDesde) %></td>
+                                    <td class="tg-0pky"><%= value(aus[index].fechaHasta) %></td>
+                                    <td class="tg-0pky"><%= aus[index].cantidadDias %></td>
+                                    <td class="tg-0pky"><%= aus[index].articulo.codigo %></td>
+                                    <td class="tg-0pky"><%= aus[index].extra %></td>
+                                </tr>
+                            <% } else { %>        
+                                <tr>
+                                    <td class="tg-0pky"><%= value(aus[index].fechaDesde) %></td>
+                                    <td class="tg-0pky"><%= value(aus[index].fechaHasta) %></td>
+                                    <td class="tg-0pky"><%= aus[index].cantidadDias %></td>
+                                    <td class="tg-0pky"><%= aus[index].articulo.codigo %></td>
+                                    <td class="tg-0pky"><%= aus[index].extra %></td>
+                                </tr>
+                            <% } %>    
+                        <% } %>    
+                    <% } %>
+                </table>
+            <br>
+            <% } %>
+
+    </body>
+</html>

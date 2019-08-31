@@ -56,12 +56,12 @@
                     <td class="tg-0pky"></td>
                 </tr>
                 <tr>
-                    <td class="tg-0pky">Estado Civil: <span class="bold"><%= print(agente.estadoCivil) %></span></td>
-                    <td class="tg-0pky">Nacionalidad: <span class="bold"><%= print(agente.nacionalidad, 'nombre')  %></span></td>
+                    <td class="tg-0pky">Estado Civil: <span class="bold"><%= value(agente.estadoCivil) %></span></td>
+                    <td class="tg-0pky">Nacionalidad: <span class="bold"><%= value(agente.nacionalidad, 'nombre')  %></span></td>
                 </tr>
                 <tr>
-                    <td class="tg-0pky">Sexo: <span class="bold"><%= print(agente.sexo) %></span></td>
-                    <td class="tg-0pky">Fecha de Nacimiento: <span class="bold"><%= print(agente.fechaNacimiento) %></span></td>
+                    <td class="tg-0pky">Sexo: <span class="bold"><%= value(agente.sexo) %></span></td>
+                    <td class="tg-0pky">Fecha de Nacimiento: <span class="bold"><%= value(agente.fechaNacimiento) %></span></td>
                 </tr>
 
                 <!-- DATOS DOMICILIO -->
@@ -74,12 +74,12 @@
                     <td class="tg-0pky"></td>
                 </tr>
                 <tr>
-                    <td class="tg-0pky">Localidad: <span class="bold"><%= print(direccion.localidad, 'nombre') %></span></td>
-                    <td class="tg-0pky">Provincia: <span class="bold"><%= direccion.localidad? print(direccion.localidad.provincia, 'nombre'):'---' %></span></td>
+                    <td class="tg-0pky">Localidad: <span class="bold"><%= value(direccion.localidad, 'nombre') %></span></td>
+                    <td class="tg-0pky">Provincia: <span class="bold"><%= direccion.localidad? value(direccion.localidad.provincia, 'nombre'):'---' %></span></td>
                 </tr>
                 <tr>
                     <td class="tg-0pky">Barrio: <span class="bold"><%= direccion.barrio %></span></td>
-                    <td class="tg-0pky">CP:  <span class="bold"><%= print(direccion.codigoPostal) %></span></td>
+                    <td class="tg-0pky">CP:  <span class="bold"><%= value(direccion.codigoPostal) %></span></td>
                 </tr>
                 
                 <!-- DATOS DE CONTACTO -->
@@ -88,7 +88,7 @@
                 </tr>
                 <% for (const contacto of agente.contactos) { %>    
                     <tr>
-                        <td class="tg-0pky"><%= print(contacto.tipo) %>: <span class="bold"><%= contacto.valor %></span></td>
+                        <td class="tg-0pky"><%= value(contacto.tipo) %>: <span class="bold"><%= contacto.valor %></span></td>
                         <td class="tg-0pky"></td>
                     </tr>
                 <% } %>
@@ -99,7 +99,7 @@
                 </tr>
                 <% for (const estudio of agente.educacion) { %>    
                     <tr>
-                        <td class="tg-0pky">Titulo <%= print(estudio.tipoEducacion) %>: <span class="bold"><%= estudio.titulo %></span></td>
+                        <td class="tg-0pky">Titulo <%= value(estudio.tipoEducacion) %>: <span class="bold"><%= estudio.titulo %></span></td>
                         <td class="tg-0pky"></td>
                     </tr>
                 <% } %>
@@ -116,8 +116,8 @@
                     <td class="tg-xq07" colspan="3"><h3 class="m0">Cargo Actual</h3></td>
                 </tr>
                 <tr>
-                    <td class="tg-0pky">Norma: <span class="bold"><%= print(cargo.tipoNormaLegal,'nombre') %> <%= print(cargo.numeroNormaLegal) %></span></td>
-                    <td class="tg-0pky">Fecha de la Norma:<span class="bold"><%= print(cargo.fechaNormaLegal) %></span></td>
+                    <td class="tg-0pky">Norma: <span class="bold"><%= value(cargo.tipoNormaLegal,'nombre') %> <%= value(cargo.numeroNormaLegal) %></span></td>
+                    <td class="tg-0pky">Fecha de la Norma:<span class="bold"><%= value(cargo.fechaNormaLegal) %></span></td>
                     <td class="tg-0pky">Categoria:<span class="bold"></span></td>
                 </tr>
                 

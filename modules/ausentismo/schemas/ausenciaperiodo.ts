@@ -41,4 +41,7 @@ export const AusenciaPeriodoSchema = new Schema({
     ausencias: [AusenciaSchema]
 });
 
+// TODO CREATE INDEX!!!!!
+//db.getCollection('ausenciasperiodo').createIndex( { "agente.id": 1, "articulo.id": 1, "fechaDesde":1, "fechaHasta":1, } )
+
 export const AusenciaPeriodo = model('AusenciaPeriodo', AusenciaPeriodoSchema, 'ausenciasperiodo');

@@ -3,11 +3,10 @@ import * as aqp from 'api-query-params';
 
 import { DocumentoPDF } from "../documentos";
 import { Agente } from "../../../modules/agentes/schemas/agente";
-import { Articulo } from "../../../modules/ausentismo/schemas/articulo";
 
-export class DocumentoAusenciasTotalesPorArticulo extends DocumentoPDF {
-    templateName = 'reportes/agentes-ausencias-por-articulo.ejs';
-    outputFilename = './totalesporarticulo.pdf';
+export class DocumentoAusenciasPorAgente extends DocumentoPDF {
+    templateName = 'reportes/agentes-ausencias.ejs';
+    outputFilename = './ausenciasporagente.pdf';
 
     generarCSS() {
         return '';
@@ -62,10 +61,7 @@ export class DocumentoAusenciasTotalesPorArticulo extends DocumentoPDF {
                                         ]
                                     },
                                 }
-                            },
-                            { $group: { _id: "$articulo.id", ausenciasPorArticulo: { $sum: "$cantidadDias"} } },
-                            { $group: { _id : null, ausenciasTotales: { $sum: "$ausenciasPorArticulo"}, articulos: { $push: "$$ROOT" } } },
-
+                            }
                         ],
                     as: "ausentismo"
                  }
@@ -75,11 +71,15 @@ export class DocumentoAusenciasTotalesPorArticulo extends DocumentoPDF {
         ]
 
         let gruposAgentes = await Agente.aggregate(pipeline);
-        let articulos = await Articulo.find((articulosIds.length)?{"_id": { $in: articulosIds }}:{}).sort({ codigo: 1});
+        // console.log('Resultados##############')
+        
+        // for(const g of gruposAgentes) {
+        //     for(const a of g.agentes) console.log(a.ausentismo)
+        // } 
+        // let articulos = await Articulo.find((articulosIds.length)?{"_id": { $in: articulosIds }}:{}).sort({ codigo: 1});
 
         return { 
-                gruposAgente: gruposAgentes,
-                articulos: articulos
+                gruposAgente: gruposAgentes
             }
     }
 

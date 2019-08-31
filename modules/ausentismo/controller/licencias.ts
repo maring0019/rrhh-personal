@@ -17,20 +17,29 @@ class LicenciasController {
      * @param ausentismo nuevo ausentismo a guardar
      */
     async addAusentismo(ausentismo){
-        let au = await this.calcularAusentismo(ausentismo.agente, ausentismo.articulo,
-            ausentismo.fechaDesde, ausentismo.fechaHasta, ausentismo.cantidadDias);
-
-        if (au.warnings && au.warnings.length){
-            return au;
+        if (!ausentismo.ausencias.length){
+            let au = await this.calcularAusentismo(ausentismo.agente, ausentismo.articulo,
+                ausentismo.fechaDesde, ausentismo.fechaHasta, ausentismo.cantidadDias);
+    
+            if (au.warnings && au.warnings.length){
+                return au;
+            }
+            else{
+                // Generamos el nuevo ausentismo y actualizamos indicadores
+                ausentismo.ausencias = aus.generarDiasAusencia(ausentismo, au.ausencias)
+                const ausentismoNew = await aus.insertAusentismo(ausentismo);
+                await ind.insertIndicadoresHistoricos(ausentismoNew, au.indicadores);
+                await ind.updateIndicadores(au.indicadores);
+                return ausentismoNew;
+            } 
         }
         else{
-            // Generamos el nuevo ausentismo y actualizamos indicadores
-            ausentismo.ausencias = aus.generarDiasAusencia(ausentismo, au.ausencias)
+            // Los dias de ausencia ya vienen calculados. No calculamos ausencias ni aplicamos
+            // ningun control o restriccion.
             const ausentismoNew = await aus.insertAusentismo(ausentismo);
-            await ind.insertIndicadoresHistoricos(ausentismoNew, au.indicadores);
-            await ind.updateIndicadores(au.indicadores);
             return ausentismoNew;
         }
+        
     }
 
     /**
