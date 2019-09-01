@@ -14,3 +14,5 @@ Routes.get('/agentes/listado/download', ReportesController.downloadListadoAgente
 Routes.get('/agentes/ausentismo/totalesporarticulo', ReportesController.getTotalesPorArticulo);
 
 Routes.get('/agentes/ausentismo', ReportesController.getAusenciasPorAgente);
+
+Routes.get('/agentes/licencias', ReportesController.getLicenciasPorAgente);

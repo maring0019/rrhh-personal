@@ -2,28 +2,57 @@ import { DocumentoLegajoAgente } from "../../../core/documentos/reportes/legajoA
 import { DocumentoListadoAgentes } from "../../../core/documentos/reportes/listadoAgentes";
 import { DocumentoAusenciasTotalesPorArticulo } from "../../../core/documentos/reportes/totalesPorArticulo";
 import { DocumentoAusenciasPorAgente } from "../../../core/documentos/reportes/ausenciasPorAgente";
+import { DocumentoLicenciasPorAgente } from "../../../core/documentos/reportes/licenciasPorAgente";
 
-
+/**
+ * PDF
+ * @param req 
+ * @param res 
+ * @param next 
+ * @param options 
+ */
 export async function downloadLegajoAgente(req, res, next, options = null) {
     let doc = new DocumentoLegajoAgente();
     return await downloadReporte(req, res, next, doc, options);
 }
 
+
+/**
+ * PDF
+ * @param req 
+ * @param res 
+ * @param next 
+ * @param options 
+ */
+export async function downloadListadoAgente(req, res, next, options = null) {
+    let doc = new DocumentoListadoAgentes();
+    return await downloadReporte(req, res, next, doc, options);
+}
+
+
+/**
+ * PDF
+ * @param req 
+ * @param res 
+ * @param next 
+ * @param options 
+ */
 export async function getLegajoAgente(req, res, next) {
     let doc = new DocumentoLegajoAgente();
     return await getReporte(req, res, next, doc);
 }
 
 
+/**
+ * HTML
+ * @param req 
+ * @param res 
+ * @param next 
+ * @param options 
+ */
 export async function getListadoAgente(req, res, next) {
     let doc = new DocumentoListadoAgentes();
     return await getReporte(req, res, next, doc);
-}
-
-
-export async function downloadListadoAgente(req, res, next, options = null) {
-    let doc = new DocumentoListadoAgentes();
-    return await downloadReporte(req, res, next, doc, options);
 }
 
 export async function getTotalesPorArticulo(req, res, next) {
@@ -33,6 +62,11 @@ export async function getTotalesPorArticulo(req, res, next) {
 
 export async function getAusenciasPorAgente(req, res, next) {
     let doc = new DocumentoAusenciasPorAgente();
+    return await getReporte(req, res, next, doc);
+}
+
+export async function getLicenciasPorAgente(req, res, next) {
+    let doc = new DocumentoLicenciasPorAgente();
     return await getReporte(req, res, next, doc);
 }
 
