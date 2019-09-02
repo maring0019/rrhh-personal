@@ -59,9 +59,6 @@ export class DocumentoLicenciasPorAgente extends DocumentoPDF {
                                 }
                             },
                             { $sort: { vigencia: 1 }}
-                            // { $group: { _id: "$articulo.id", ausenciasPorArticulo: { $sum: "$cantidadDias"} } },
-                            // { $group: { _id : null, ausenciasTotales: { $sum: "$ausenciasPorArticulo"}, articulos: { $push: "$$ROOT" } } },
-
                         ],
                     as: "ausentismo"
                  }
@@ -71,10 +68,7 @@ export class DocumentoLicenciasPorAgente extends DocumentoPDF {
         ]
 
         let gruposAgentes = await Agente.aggregate(pipeline);
-        for (const g of gruposAgentes){
-            for (const agente of g.agentes) console.log(agente.ausentismo);
-        } 
-
+        
         return { 
                 gruposAgente: gruposAgentes,
                 anios: anios

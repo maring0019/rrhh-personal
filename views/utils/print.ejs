@@ -1,7 +1,7 @@
 <%
 
 value = function(val, arg1) {
-    if(!val){
+    if(val==null || val=='undefined'){
         return '---';
     }
 
@@ -68,6 +68,39 @@ mapTotalesPorArticulos = function(articulos, articulosAusencias){
         return art;
      })
      return articulos;
+}
+
+existAnio = function(element){
+    const vigencia = ''+element.vigencia;
+    const anio = ''+this;
+    return vigencia == anio;
+}
+
+mapLicenciasPorAnio = function(anios, ausentismo){
+    let totalAcumulado = 0;
+    let totalResto = 0;
+    anios = anios.map(anio => {
+        const idx = ausentismo.findIndex(existAnio, anio);
+        if (idx >= 0){
+            const totales = ausentismo[idx].intervalos[0].totales;
+            const ejecutadas = ausentismo[idx].intervalos[0].ejecutadas;
+            anio = { 
+                tomados: totales,
+                resto: totales - ejecutadas
+            }
+            totalAcumulado = totalAcumulado + anio.tomados;
+            totalResto = totalResto + anio.resto;
+        }
+        else{
+            anio = { 
+                tomados: '--',
+                resto: '--'
+            }
+        }
+        return anio;
+     })
+     anios.push({ tomados: totalAcumulado, resto: totalResto })
+     return anios;
 }
 
 %>
