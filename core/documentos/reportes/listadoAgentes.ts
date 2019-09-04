@@ -30,8 +30,9 @@ export class DocumentoListadoAgentes extends DocumentoPDF {
             'documento':1,
             'nombre': 1,
             'apellido': 1, 
-            'situacionLaboral.cargo.sector.nombre': 1,
-            'situacionLaboral.cargo.servicio': 1,
+            // 'situacionLaboral.cargo.sector.nombre': 1,
+            'situacionLaboral': 1,
+            // 'situacionLaboral.cargo.servicio.nombre': 1,
             }
         // Identificamos el campo por el cual agrupar. Si no se especifico agregamos
         // uno por defecto
@@ -45,26 +46,32 @@ export class DocumentoListadoAgentes extends DocumentoPDF {
         
         // Aggregation Framework Pipeline
         let pipeline:any = [
-            { 
+            {
                 $match: filterCondition || {}
             } ,
+            {
+                $sort: query.sort || { apellido:1 }
+            },
             { 
-                $project: { ...query.projection, ...defaultProjection, ...{ [groupField]: 1}  }
+                $project: defaultProjection // { ...query.projection, ...defaultProjection, ...{ [groupField]: 1}  }
             } ,
             { 
                 $group : groupCondition
             },
             {
-                $sort: query.sort || { apellido: 1 }
+                $sort: query.sort || { _id:1 }
             }
         ]
 
         let gruposAgentes = await Agente.aggregate(pipeline);
+
+        // console.log(gruposAgentes)
         // Cast agentes into Agente type !Malisimo
-        gruposAgentes = gruposAgentes.map(grupo => {
-            grupo.agentes = grupo.agentes.map(a=>new Agente(a));
-            return grupo;
-        });
+        // gruposAgentes = gruposAgentes.map(grupo => {
+        //     grupo.agentes = grupo.agentes.map(a=>new Agente(a));
+        //     return grupo;
+        // });
+        console.log(gruposAgentes[1].agentes[0])
         return { 
                 gruposAgente: gruposAgentes,
                 extraFields: this.projectionToArray(query.projection)

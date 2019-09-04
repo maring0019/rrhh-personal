@@ -28,7 +28,7 @@
             </style>
             <%- include("../utils/print") %>
             <% for (const grupo of gruposAgente) { %>
-            <table class="tg tgw">
+            <table class="tg tgw" style="width:100%">
                 <tr> <!-- HEADER  -->
                     <th class="tg-266k" colspan="5">
                         <h2 class="m0">Agrupamiento: <%= value(grupo._id) %></h2>
@@ -36,11 +36,11 @@
                 </tr>
                 
                 <tr> 
-                    <td class="tg-xq07"><h3 class="m0">Numero</h3></td>
-                    <td class="tg-xq07"><h3 class="m0">Documento</h3></td>
-                    <td class="tg-xq07"><h3 class="m0">Nombre</h3></td>
-                    <td class="tg-xq07"><h3 class="m0">Lugar de Trabajo</h3></td>
-                    <td class="tg-xq07"><h3 class="m0">Servicio</h3></td>
+                    <td class="tg-xq07" style="width:10%"><h3 class="m0">Numero</h3></td>
+                    <td class="tg-xq07" style="width:10%"><h3 class="m0">Documento</h3></td>
+                    <td class="tg-xq07" style="width:40%"><h3 class="m0">Nombre</h3></td>
+                    <td class="tg-xq07" style="width:20%"><h3 class="m0">Lugar de Trabajo</h3></td>
+                    <td class="tg-xq07" style="width:20%"><h3 class="m0">Servicio</h3></td>
                 </tr>
                 <% for (const agente of grupo.agentes) { %>
                    
@@ -48,8 +48,8 @@
                         <td class="tg-0pky"><%= value(agente.numero) %></td>
                         <td class="tg-0pky"><%= value(agente.documento) %></td>
                         <td class="tg-0pky"><%= value(agente.apellido) %>, <%= value(agente.nombre) %></td>
-                        <td class="tg-0pky"></td>
-                        <td class="tg-0pky"></td>
+                        <td class="tg-0pky"><%= value(agente, 'situacionLaboral.cargo.sector.nombre') %> </td>
+                        <td class="tg-0pky"><%= value(agente, 'situacionLaboral.cargo.servicio.nombre') %></td>
                     </tr>
                     <% for (const field of extraFields) { %>
                         <tr>

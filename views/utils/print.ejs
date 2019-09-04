@@ -16,9 +16,10 @@ value = function(val, arg1) {
         const accesors = arg1.split('.');
         if (accesors.length) {
             const field = accesors.shift();
-            if (field in val){
-                return value(val[field], accesors.join('.'));
-            }    
+            return value(val[field], accesors.join('.'));
+            //if (field in val){
+            //    return value(val[field], accesors.join('.'));
+            //}
         }
         else{ // Caso base
             if (arg1 in value){
