@@ -13,7 +13,8 @@ export async function getSector(req, res, next) {
     try {
         let query = Sector.find({});
         if (req.query.nombre) {
-            query.where('nombre').equals(RegExp('^.*' + req.query.nombre + '.*$', 'i'));
+            query.where('nombre').equals(req.query.nombre);
+            // query.where('nombre').equals(RegExp('^.*' + req.query.nombre + '.*$', 'i'));
         }
         let sector = await query.sort({ nombre: 1 }).exec();
         return res.json(sector);

@@ -13,7 +13,8 @@ export async function getSubPuesto(req, res, next) {
     try {
         let query = SubPuesto.find({});
         if (req.query.nombre) {
-            query.where('nombre').equals(RegExp('^.*' + req.query.nombre + '.*$', 'i'));
+            query.where('nombre').equals(req.query.nombre);
+            // query.where('nombre').equals(RegExp('^.*' + req.query.nombre + '.*$', 'i'));
         }
         let subpuesto = await query.sort({ nombre: 1 }).exec();
         return res.json(subpuesto);

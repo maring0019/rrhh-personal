@@ -81,6 +81,7 @@ async function addAgente(req, res, next){
             // TODO Test insert de estas relaciones
             contactos: req.body.contactos,
             educacion: req.body.educacion,
+            situacionLaboral: req.body.situacionLaboral,
             historiaLaboral: req.body.historiaLaboral,
         });
         // Con el objetivo de facilitar el testing de funciones que invocan

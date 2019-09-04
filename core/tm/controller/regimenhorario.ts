@@ -6,7 +6,8 @@ export async function getRegimenHorario(req, res, next) {
     try {
         let query = RegimenHorario.find({});
         if (req.query.nombre) {
-            query.where('nombre').equals(RegExp('^.*' + req.query.nombre + '.*$', 'i'));
+            // query.where('nombre').equals(RegExp('^.*' + req.query.nombre + '.*$', 'i'));
+            query.where('nombre').equals(req.query.nombre);
         }
         let regimenHorarios = await query.sort({ nombre: 1 }).exec();
         return res.json(regimenHorarios);

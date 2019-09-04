@@ -10,16 +10,17 @@ import { SituacionLaboralSchema } from './situacionlaboral';
 
 
 export const AgenteSchema = new Schema({
-    numero: String, // En el alta aun no esta disponible este dato
+    numero: String,        // En el alta aun no esta disponible este dato
     tipoDocumento: String, // No deberia utilizarse mas. Solo DU
     documento: {
         type: String,
         required: true,
         es_indexed: true
     },
+    foto: String, // Encode64
     cuil: {
         type: String,
-        required: false, // No todos los agentes tienen CUIL en SQLServer
+        required: false,   // No todos los agentes tienen CUIL en SQLServer
         es_indexed: true
     },
     nombre: {
@@ -44,17 +45,10 @@ export const AgenteSchema = new Schema({
     contactos: [ContactoSchema],
     educacion: [EducacionSchema],
     especialidad: EspecialidadSchema, // TODO Ver especialidadSchema
-
-    foto: String, // Encode64
-    codigoFichado: String,
-    activo: Boolean,
     situacionLaboral: SituacionLaboralSchema,
-    historiaLaboral: [SituacionLaboralSchema],
-    // TODO: Analizar si traer estos datos aqui desde SchemaSituacion
-    situacionFechaIngresoEstado: Date,
-    situacionFechaIngresoHospital: Date,
-    antiguedadVacaciones: Date,
-    antiguedadPago: Date
+    historiaLaboral: [],
+    activo: Boolean,
+    
 });
 
 AgenteSchema.methods.nombreCompleto = function(cb) {

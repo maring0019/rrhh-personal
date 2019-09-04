@@ -19,10 +19,6 @@ export const CargoSchema = new Schema({
     sector: SectorSchema,         // Alias Lugar de Trabajo
     servicio: ServicioSchema,
     observaciones: String,
-    inactivo:{
-        type: Boolean,
-        default: false
-    }
 })
 
 export const Cargo = model('Cargo', CargoSchema, 'cargos');
