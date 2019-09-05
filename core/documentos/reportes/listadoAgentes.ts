@@ -54,7 +54,7 @@ export class DocumentoListadoAgentes extends DocumentoPDF {
             { $sort: query.sort || { apellido:1 }},
             { $project: { ...(query.projection || {}),...defaultProjection, ...{ [groupField]: 1}}} ,
             { $group : groupCondition },
-            { $sort: query.sort || { _id:1 }}
+            { $sort: { _id:1 }}
         ]
 
         let gruposAgentes = await Agente.aggregate(pipeline);

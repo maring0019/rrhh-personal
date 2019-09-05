@@ -3,6 +3,7 @@ import * as aqp from 'api-query-params';
 
 import { DocumentoPDF } from "../documentos";
 import { Agente } from "../../../modules/agentes/schemas/agente";
+import * as utils from "../utils";
 
 export class DocumentoLicenciasPorAgente extends DocumentoPDF {
     templateName = 'reportes/agentes-licencias.ejs';
@@ -26,12 +27,12 @@ export class DocumentoLicenciasPorAgente extends DocumentoPDF {
         })
         // Identificamos el campo por el cual agrupar. Si no se especifico agregamos
         // uno por defecto
-        let groupField = this.getFilterField(query.filter, '$group');
+        let groupField = utils.getQueryParam(query.filter, '$group');
         if (!groupField) groupField = 'situacionLaboral.cargo.sector.nombre';
         const groupCondition = { _id : `$${groupField}`, agentes: { $push: "$$ROOT" } }
         
         // Filtros para las licencias
-        let anios = this.getFilterField(query.filter, 'anios');
+        let anios = utils.getQueryParam(query.filter, 'anios');
         if (anios) {
             anios = anios.$in? anios.$in: [anios];
         }
@@ -44,6 +45,7 @@ export class DocumentoLicenciasPorAgente extends DocumentoPDF {
         // Aggregation Framework Pipeline
         let pipeline:any = [
             { $match: filterCondition || {}} ,
+            { $sort: query.sort || { apellido: 1 }},
             { $lookup: {
                     from: "indicadoresAusentismo",
                     let: { agente_id: "$_id"},
@@ -64,7 +66,7 @@ export class DocumentoLicenciasPorAgente extends DocumentoPDF {
                  }
             } ,
             { $group: groupCondition},
-            { $sort: query.sort || { apellido: 1 }}
+            { $sort: { _id:1 }}
         ]
 
         let gruposAgentes = await Agente.aggregate(pipeline);

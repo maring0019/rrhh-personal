@@ -4,6 +4,7 @@ import * as aqp from 'api-query-params';
 import { DocumentoPDF } from "../documentos";
 import { Agente } from "../../../modules/agentes/schemas/agente";
 import { Articulo } from "../../../modules/ausentismo/schemas/articulo";
+import * as utils from "../utils";
 
 export class DocumentoAusenciasTotalesPorArticulo extends DocumentoPDF {
     templateName = 'reportes/agentes-ausencias-por-articulo.ejs';
@@ -13,7 +14,7 @@ export class DocumentoAusenciasTotalesPorArticulo extends DocumentoPDF {
         return '';
     }
     
-    async getContextData(){
+    async getContextData(){ 
         // Recuperamos todas las opciones para el reporte (filtros, orden, etc)
         let query = aqp(this.request.query, {
             casters: {
@@ -27,14 +28,14 @@ export class DocumentoAusenciasTotalesPorArticulo extends DocumentoPDF {
         })
         // Identificamos el campo por el cual agrupar. Si no se especifico agregamos
         // uno por defecto
-        let groupField = this.getFilterField(query.filter, '$group');
+        let groupField = utils.getQueryParam(query.filter, '$group');
         if (!groupField) groupField = 'situacionLaboral.cargo.sector.nombre';
         const groupCondition = { _id : `$${groupField}`, agentes: { $push: "$$ROOT" } }
         
         // Filtros para el ausentismo
-        let fechaDesde = this.getFilterField(query.filter, 'fechaDesde'); // Format 2016-01-01
-        let fechaHasta = this.getFilterField(query.filter, 'fechaHasta');
-        let articulosIds = this.getFilterField(query.filter, 'articulos');
+        let fechaDesde = utils.getQueryParam(query.filter, 'fechaDesde'); // Format 2016-01-01
+        let fechaHasta = utils.getQueryParam(query.filter, 'fechaHasta');
+        let articulosIds = utils.getQueryParam(query.filter, 'articulos');
         if (articulosIds) {
             articulosIds = articulosIds.$in? articulosIds.$in: [articulosIds];
         }
@@ -46,7 +47,8 @@ export class DocumentoAusenciasTotalesPorArticulo extends DocumentoPDF {
         
         // Aggregation Framework Pipeline
         let pipeline:any = [
-            { $match: filterCondition || {}} ,
+            { $match: filterCondition || {}},
+            { $sort: query.sort || { apellido: 1 }},
             { $lookup: {
                     from: "ausenciasperiodo",
                     let: { agente_id: "$_id", fecha_desde: fechaDesde, fecha_hasta: fechaHasta},
@@ -71,7 +73,7 @@ export class DocumentoAusenciasTotalesPorArticulo extends DocumentoPDF {
                  }
             } ,
             { $group: groupCondition},
-            { $sort: query.sort || { apellido: 1 }}
+            { $sort: { _id:1 }}
         ]
 
         let gruposAgentes = await Agente.aggregate(pipeline);
@@ -84,15 +86,6 @@ export class DocumentoAusenciasTotalesPorArticulo extends DocumentoPDF {
     }
 
 
-
-    getFilterField(filter, filterCondition ){
-        let filterField;
-        if (filter && filter[filterCondition]){
-            filterField = filter[filterCondition];
-        }
-        return filterField;
-    }
-
     cleanFilters(filter){
         let whitelist = ['_id']
         Object.keys(filter).forEach(field => {
@@ -101,11 +94,4 @@ export class DocumentoAusenciasTotalesPorArticulo extends DocumentoPDF {
         return filter;
     }
 
-    projectionToArray(extraFields){
-        let output = [];
-        Object.keys(extraFields).forEach(field => {
-            output.push(field);
-        });
-        return output;
-    }
 }

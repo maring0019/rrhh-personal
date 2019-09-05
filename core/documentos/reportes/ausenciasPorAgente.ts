@@ -48,6 +48,7 @@ export class DocumentoAusenciasPorAgente extends DocumentoPDF {
         // Aggregation Framework Pipeline
         let pipeline:any = [
             { $match: filterCondition || {}} ,
+            { $sort: query.sort || { apellido: 1 }},
             { $lookup: {
                     from: "ausenciasperiodo",
                     let: { agente_id: "$_id", fecha_desde: fechaDesde, fecha_hasta: fechaHasta},
@@ -69,23 +70,13 @@ export class DocumentoAusenciasPorAgente extends DocumentoPDF {
                  }
             } ,
             { $group: groupCondition},
-            { $sort: query.sort || { apellido: 1 }}
+            { $sort: { _id:1 }}
         ]
 
         let gruposAgentes = await Agente.aggregate(pipeline);
-        // console.log('Resultados##############')
-        
-        // for(const g of gruposAgentes) {
-        //     for(const a of g.agentes) console.log(a.ausentismo)
-        // } 
-        // let articulos = await Articulo.find((articulosIds.length)?{"_id": { $in: articulosIds }}:{}).sort({ codigo: 1});
 
         return { 
                 gruposAgente: gruposAgentes
             }
     }
-
-
-
-    
 }
