@@ -4,7 +4,10 @@ value = function(val, arg1) {
     if(val==null || val=='undefined'){
         return '---';
     }
-
+    if (val instanceof Boolean || typeof val === 'boolean') {
+        return val? 'Si':'No';
+    }
+    
     if (val instanceof Date) {
         return formatDate(new Date(val)); // Es una fecha
     }

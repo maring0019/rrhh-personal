@@ -3,6 +3,8 @@ import { Agente } from "../../../modules/agentes/schemas/agente";
 import { Types } from "mongoose";
 import * as aqp from 'api-query-params';
 
+// TODO Falta implementar el tema de las bajas!!!
+// Faltan crear los indices por defecto
 
 export class DocumentoLegajoAgente extends DocumentoPDF {
     templateName = 'reportes/agentes-legajo.ejs';
@@ -25,12 +27,8 @@ export class DocumentoLegajoAgente extends DocumentoPDF {
         })
         // Search Pipeline
         let pipeline:any = [
-            { 
-                $match: query.filter || {}
-            } ,
-            {
-                $sort: query.sort || { apellido: 1 }
-            }
+            { $match: query.filter || {}} ,
+            { $sort: query.sort || { apellido: 1 }}
         ]
 
         let agentes = await Agente.aggregate(pipeline);

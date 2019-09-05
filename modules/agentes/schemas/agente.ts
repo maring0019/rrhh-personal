@@ -28,7 +28,7 @@ export const AgenteSchema = new Schema({
         required: true,
         es_indexed: true
     },
-    apellido: {
+    apellido: { 
         type: String,
         required: true,
         es_indexed: true

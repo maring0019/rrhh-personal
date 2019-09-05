@@ -1,31 +1,8 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <style>
-        table {
-            border-collapse: collapse;
-        }
-        table, th, td {
-            border: 1px solid black;
-        }
-        </style>
-    </head>
+    <%- include("base-header") %>
     <body style="margin:30px 25px;">
         <h1>Listados de Agentes</h1>
-        
-            <!-- Datos Personale --> 
-            <style type="text/css">
-            .tgw  {width: 100%;}
-            .tg  {border-collapse:collapse;border-spacing:0;}
-            .tg td{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;}
-            .tg th{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;}
-            .tg .tg-xq07{background-color:#efefef;border-color:inherit;text-align:left;vertical-align:top}
-            .tg .tg-266k{background-color:#9b9b9b;border-color:inherit;text-align:left;vertical-align:top}
-            .tg .tg-0pky{border-color:inherit;text-align:left;vertical-align:top}
-            .tg .tg-tf2e{text-align:left;vertical-align:top}
-            .m0{margin: 0px}
-            .bold {font-weight:bold}
-            </style>
             <%- include("../utils/print") %>
             <% for (const grupo of gruposAgente) { %>
             <table class="tg tgw" style="width:100%">
@@ -42,14 +19,15 @@
                     <td class="tg-xq07" style="width:20%"><h3 class="m0">Lugar de Trabajo</h3></td>
                     <td class="tg-xq07" style="width:20%"><h3 class="m0">Servicio</h3></td>
                 </tr>
+                <% let rowClass= (extraFields && extraFields.length)?'tg-xq07':'tg-0pky'; %>
                 <% for (const agente of grupo.agentes) { %>
                    
                     <tr>
-                        <td class="tg-0pky"><%= value(agente.numero) %></td>
-                        <td class="tg-0pky"><%= value(agente.documento) %></td>
-                        <td class="tg-0pky"><%= value(agente.apellido) %>, <%= value(agente.nombre) %></td>
-                        <td class="tg-0pky"><%= value(agente, 'situacionLaboral.cargo.sector.nombre') %> </td>
-                        <td class="tg-0pky"><%= value(agente, 'situacionLaboral.cargo.servicio.nombre') %></td>
+                        <td class="<%= rowClass %>"><%= value(agente.numero) %></td>
+                        <td class="<%= rowClass %>"><%= value(agente.documento) %></td>
+                        <td class="<%= rowClass %>"><%= value(agente.apellido) %>, <%= value(agente.nombre) %></td>
+                        <td class="<%= rowClass %>"><%= value(agente, 'situacionLaboral.cargo.sector.nombre') %> </td>
+                        <td class="<%= rowClass %>"><%= value(agente, 'situacionLaboral.cargo.servicio.nombre') %></td>
                     </tr>
                     <% for (const field of extraFields) { %>
                         <tr>

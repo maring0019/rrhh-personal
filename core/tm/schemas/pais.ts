@@ -10,4 +10,8 @@ export const PaisSchema = new Schema({
     gentilicio: String //Nacionalidad
 });
 
+PaisSchema.methods._str_ = function(cb) {
+    return `${this.nombre}`
+  };
+
 export const Pais = model('Pais', PaisSchema, 'paises');

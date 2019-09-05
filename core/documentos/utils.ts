@@ -23,3 +23,30 @@ export function titleCase(str) {
     }).join(' ');
     return title;
 }
+
+
+
+
+export function getQueryParam(filter, filterCondition ){
+    let filterField;
+    if (filter && filter[filterCondition]){
+        filterField = filter[filterCondition];
+    }
+    return filterField;
+}
+
+export function cleanFilters(filter){
+    let whitelist = ['_id']
+    Object.keys(filter).forEach(field => {
+        if (whitelist.indexOf(field)<0) delete filter[field];        
+    });
+    return filter;
+}
+
+export function projectionToArray(extraFields){
+    let output = [];
+    Object.keys(extraFields).forEach(field => {
+        output.push(field);
+    });
+    return output;
+}

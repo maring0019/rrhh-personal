@@ -4,6 +4,8 @@ import * as aqp from 'api-query-params';
 import { DocumentoPDF } from "../documentos";
 import { Agente } from "../../../modules/agentes/schemas/agente";
 
+import * as utils from "../utils";
+
 export class DocumentoAusenciasPorAgente extends DocumentoPDF {
     templateName = 'reportes/agentes-ausencias.ejs';
     outputFilename = './ausenciasporagente.pdf';
@@ -26,14 +28,14 @@ export class DocumentoAusenciasPorAgente extends DocumentoPDF {
         })
         // Identificamos el campo por el cual agrupar. Si no se especifico agregamos
         // uno por defecto
-        let groupField = this.getFilterField(query.filter, '$group');
+        let groupField = utils.getQueryParam(query.filter, '$group');
         if (!groupField) groupField = 'situacionLaboral.cargo.sector.nombre';
         const groupCondition = { _id : `$${groupField}`, agentes: { $push: "$$ROOT" } }
         
         // Filtros para el ausentismo
-        let fechaDesde = this.getFilterField(query.filter, 'fechaDesde'); // Format 2016-01-01
-        let fechaHasta = this.getFilterField(query.filter, 'fechaHasta');
-        let articulosIds = this.getFilterField(query.filter, 'articulos');
+        let fechaDesde = utils.getQueryParam(query.filter, 'fechaDesde'); // Format 2016-01-01
+        let fechaHasta = utils.getQueryParam(query.filter, 'fechaHasta');
+        let articulosIds = utils.getQueryParam(query.filter, 'articulos');
         if (articulosIds) {
             articulosIds = articulosIds.$in? articulosIds.$in: [articulosIds];
         }
@@ -41,7 +43,7 @@ export class DocumentoAusenciasPorAgente extends DocumentoPDF {
             articulosIds = [];
         }
         // Preparamos las opciones de filtrado sobre el agente. Removemos filtros no requeridos
-        let filterCondition = this.cleanFilters(query.filter);
+        let filterCondition = utils.cleanFilters(query.filter);
         
         // Aggregation Framework Pipeline
         let pipeline:any = [
@@ -85,27 +87,5 @@ export class DocumentoAusenciasPorAgente extends DocumentoPDF {
 
 
 
-    getFilterField(filter, filterCondition ){
-        let filterField;
-        if (filter && filter[filterCondition]){
-            filterField = filter[filterCondition];
-        }
-        return filterField;
-    }
-
-    cleanFilters(filter){
-        let whitelist = ['_id']
-        Object.keys(filter).forEach(field => {
-            if (whitelist.indexOf(field)<0) delete filter[field];        
-        });
-        return filter;
-    }
-
-    projectionToArray(extraFields){
-        let output = [];
-        Object.keys(extraFields).forEach(field => {
-            output.push(field);
-        });
-        return output;
-    }
+    
 }
