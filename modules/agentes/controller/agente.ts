@@ -1,9 +1,10 @@
 import { Types } from 'mongoose';
+import jimp = require("jimp")
 
 import { Readable } from 'stream';
 
 import { Agente } from '../schemas/agente';
-// import { Ausencia } from '../../ausentismo/schemas/ausencia';
+
 import { makeFs } from '../../../core/tm/schemas/imagenes';
 import { attachFilesToObject } from '../../../core/files/controller/file'
 import { AusenciaPeriodo } from '../../ausentismo/schemas/ausenciaPeriodo';
@@ -83,6 +84,7 @@ async function addAgente(req, res, next){
             educacion: req.body.educacion,
             situacionLaboral: req.body.situacionLaboral,
             historiaLaboral: req.body.historiaLaboral,
+            activo: (req.body.activo==null || req.body.activo=='undefined')? true:req.body.activo
         });
         // Con el objetivo de facilitar el testing de funciones que invocan
         // otras funciones internas dentro del mismo modulo es que se realiza
@@ -93,9 +95,9 @@ async function addAgente(req, res, next){
         const agenteExistente = await AgenteController._findAgente(agente);
         if (_isEmpty(agenteExistente)){
             const agenteNuevo = await agente.save();
-            // if (req.body.foto){
-            //     await AgenteController._saveImage(req, res, req.body.foto, agenteNuevo);
-            // }
+            if (req.body.foto){
+                await AgenteController._saveImage(req.body.foto, agenteNuevo._id);
+            }
             return res.json(agenteNuevo);
         }
         else{
@@ -156,27 +158,7 @@ async function uploadFotoPerfil(req, res, next){
         const imagen = req.body.imagen;
         if (!id || (id && !Types.ObjectId.isValid(id))) return res.status(404).send();
         if (!imagen) return res.status(200).send();
-        // Se eliminan las fotos anteriores si es necesario
-        const agenteFotoModel = makeFs();
-        const fotosPrevias = await agenteFotoModel.find({ 'metadata.agenteID': new Types.ObjectId(id)});
-        fotosPrevias.forEach(foto => {
-            foto.unlink((error, unlinkedAttachment) => { });
-        });
-        // Insertamos la nueva imagen
-        let imagenBase64 = imagen.toString().replace(/^data:image\/(png|jpg|jpeg);base64,/, "");
-        let buffer = Buffer.from(imagenBase64, 'base64');
-        let stream = new Readable();
-        stream.push(buffer);
-        stream.push(null);
-
-        const options = ({
-                filename: 'fotoCredencialNueva.jpg',
-                contentType: 'image/jpg',
-                metadata: {
-                    agenteID: new Types.ObjectId(id)
-                }
-            });
-        await agenteFotoModel.write(options, stream); // , (error, file) => { }
+        await AgenteController._saveImage(imagen, Types.ObjectId(id));        
         return res.status(200).send();
 
     }
@@ -301,26 +283,28 @@ async function _findFotoPerfil(agenteID){
 
 }
 
-async function _saveImage(req, res, imagen, agente){
+async function _saveImage(imagen, agenteID){
     // Se eliminan las fotos anteriores si es necesario
     const agenteFotoModel = makeFs();
-    const fotosPrevias = await agenteFotoModel.find({ 'metadata.agenteID': agente._id });
+    const fotosPrevias = await agenteFotoModel.find({ 'metadata.agenteID': agenteID });
     fotosPrevias.forEach(foto => {
         agenteFotoModel.unlinkById(foto._id, (error, unlinkedAttachment) => { });
     });
-
-    // Se almacena la nueva imagen
-    let stream = new Readable();
+    // Remove extra data if necesary
+    imagen = imagen.toString().replace(/^data:image\/(png|jpg|jpeg);base64,/, "");
     let buffer = Buffer.from(imagen, 'base64');
+    let jimage = await jimp.read(buffer);
+    jimage.resize(256, jimp.AUTO).quality(90); // Resize and set JPEG quality
+    buffer = await jimage.getBufferAsync(jimp.MIME_JPEG);
+    
+    let stream = new Readable();
     stream.push(buffer);
     stream.push(null);
-
-    // stream.pipe()
     const options = ({
             filename: 'fotoCredencialNueva.jpg',
             contentType: 'image/jpg',
             metadata: {
-                agenteID: agente._id
+                agenteID: agenteID
             }
         });
     agenteFotoModel.write(options, stream, (error, file) => { });

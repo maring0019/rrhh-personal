@@ -6,7 +6,7 @@ const gridfs = require('mongoose-gridfs');
 
 export function makeFs() {
     const AgentesImagenesSchema = gridfs({
-        collection: 'AgentesImagenes',
+        collection: 'imagenesagente',
         model: 'AgentesImagenes',
         mongooseConnection: mongoose.connection
     });
