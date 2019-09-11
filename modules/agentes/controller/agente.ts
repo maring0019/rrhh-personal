@@ -84,6 +84,7 @@ async function addAgente(req, res, next){
             educacion: req.body.educacion,
             situacionLaboral: req.body.situacionLaboral,
             historiaLaboral: req.body.historiaLaboral,
+            bajas: req.body.bajas,
             activo: (req.body.activo==null || req.body.activo=='undefined')? true:req.body.activo
         });
         // Con el objetivo de facilitar el testing de funciones que invocan
