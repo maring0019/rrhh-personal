@@ -19,5 +19,6 @@ Routes.post('/agentes/:id/files', AgenteController.uploadFilesAgente);
 // 5cfea24202890c22fcad0e46
 
 Routes.put('/agentes/:id', AgenteController.updateAgente);
+Routes.put('/agentes/:id/baja', AgenteController.bajaAgente);
 Routes.delete('/agentes/:id', AgenteController.deleteAgente);
 

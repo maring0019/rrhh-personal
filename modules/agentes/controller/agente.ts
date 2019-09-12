@@ -153,6 +153,22 @@ async function deleteAgente(req, res, next) {
 }
 
 
+async function bajaAgente(req, res, next) {
+    try {
+        const id = req.params.id;
+        if (!id || (id && !Types.ObjectId.isValid(id))) return res.status(404).send();
+        let agente:any = await Agente.findById(id);
+        if (!agente) return res.status(404).send("Not found");
+        let baja = req.body;
+        agente.activo = false;
+        agente.bajas.push(baja);
+        let agenteActualizado = await agente.save();
+        return res.json(agenteActualizado);
+    } catch (err) {
+        return next(err);
+    }
+}
+
 async function uploadFotoPerfil(req, res, next){
     try {
         const id = req.params.id;
@@ -292,7 +308,7 @@ async function _saveImage(imagen, agenteID){
         agenteFotoModel.unlinkById(foto._id, (error, unlinkedAttachment) => { });
     });
     // Remove extra data if necesary
-    imagen = imagen.toString().replace(/^data:image\/(png|jpg|jpeg);base64,/, "");
+    // imagen = imagen.toString().replace(/^data:image\/(png|jpg|jpeg);base64,/, "");
     let buffer = Buffer.from(imagen, 'base64');
     let jimage = await jimp.read(buffer);
     jimage.resize(256, jimp.AUTO).quality(90); // Resize and set JPEG quality
@@ -335,6 +351,7 @@ async function uploadFilesAgente(req, res, next){
 const AgenteController = {
     getAgentes,
     addAgente,
+    bajaAgente,
     updateAgente,
     deleteAgente,
     searchAgentes,
