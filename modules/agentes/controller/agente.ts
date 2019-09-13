@@ -158,10 +158,24 @@ async function bajaAgente(req, res, next) {
         const id = req.params.id;
         if (!id || (id && !Types.ObjectId.isValid(id))) return res.status(404).send();
         let agente:any = await Agente.findById(id);
-        if (!agente) return res.status(404).send("Not found");
+        if (!agente) return res.status(404).send({message:"Agente not found"});
         let baja = req.body;
         agente.activo = false;
         agente.bajas.push(baja);
+        let agenteActualizado = await agente.save();
+        return res.json(agenteActualizado);
+    } catch (err) {
+        return next(err);
+    }
+}
+
+async function reactivarAgente(req, res, next) {
+    try {
+        const id = req.params.id;
+        if (!id || (id && !Types.ObjectId.isValid(id))) return res.status(404).send();
+        let agente:any = await Agente.findById(id);
+        if (!agente) return res.status(404).send("Not found");
+        agente.activo = true;
         let agenteActualizado = await agente.save();
         return res.json(agenteActualizado);
     } catch (err) {
@@ -352,6 +366,7 @@ const AgenteController = {
     getAgentes,
     addAgente,
     bajaAgente,
+    reactivarAgente,
     updateAgente,
     deleteAgente,
     searchAgentes,
