@@ -1,5 +1,6 @@
 import { Types } from 'mongoose';
 import jimp = require("jimp")
+import * as aqp from 'api-query-params';
 
 import { Readable } from 'stream';
 
@@ -54,10 +55,10 @@ async function getAgenteByID(req, res, next){
 
 // TODO Implementar testing
 async function searchAgentes(req, res, next){
-    try {
-        console.log('Searching...' + req.query.cadenaInput)
-        let query = Agente.find({$text: { $search: req.query.cadenaInput }});
-        let agentes = await query.exec();
+    try { 
+        // let query = Agente.find({$text: { $search: req.query.cadenaInput }});
+        const params = aqp(req.query);
+        let agentes = await Agente.find(params.filter).sort({apellido:1}).exec();
         return res.json(agentes);
     } catch (err) {
         return next(err);
