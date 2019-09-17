@@ -2,6 +2,7 @@ import * as utils from '../commons/utils';
 import * as aus from '../commons/ausentismo';
 import * as ind from '../commons/indicadores';
 import LicenciasController from './licencias';
+import { changeFileObjectRef } from '../../../core/files/controller/file';
 
 class AusenciasController {
     
@@ -35,12 +36,20 @@ class AusenciasController {
      * @param ausNewValues 
      */
     async updateAusentismo(ausToUpdate, ausNewValues){
+        let ausUpdated;
         if(!ausNewValues.articulo.descuentaDiasLicencia){
-            return await this.updateAusentismoToAusentismo(ausToUpdate, ausNewValues);
+            ausUpdated = await this.updateAusentismoToAusentismo(ausToUpdate, ausNewValues);
         }
         else {
-            return await this.updateAusentismoToLicencia(ausToUpdate, ausNewValues);
+            ausUpdated = await this.updateAusentismoToLicencia(ausToUpdate, ausNewValues);
         }
+        if (ausUpdated.warnings && ausUpdated.warnings.length){
+            // Return ausencias con warnings. No guardamos nada
+            return ausUpdated;    
+        }
+        // Actualizamos finalmente cualquier referencia a archivos adjuntos
+        changeFileObjectRef(ausToUpdate._id, ausUpdated._id);
+        return ausUpdated;
     }
 
     async updateAusentismoToAusentismo(ausToUpdate, ausNewValues){

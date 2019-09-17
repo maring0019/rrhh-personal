@@ -258,6 +258,22 @@ export async function dettachFilesFromObject(fileIds, objID){
     });
 }
 
+/**
+ * Identifica los archivos 'pertenecientes' a un objeto (a traves del metadata.objID) y
+ * actualiza sus referencias hacia un nuevo objeto. (Es decir los archivos cambian de
+ * propietario)
+ * @param objID id del objeto anterior
+ * @param newObjID id del nuevo objeto
+ */
+export async function changeFileObjectRef(objID, newObjID){
+    const filesModel = FilesModel();
+    const files = await filesModel.find({ 'metadata.objID': new Types.ObjectId(objID)});
+    for (const f of files){
+        filesModel.update({ _id: f._id },
+            { $set: { 'metadata.objID': new Types.ObjectId(newObjID) } });
+    }
+}
+
 export function _writeFileFromFsToMongo(file:FileDescriptorDocument, objectId):Promise<any>{
     const filesModel = FilesModel();
     return new Promise(function(resolve, reject) {

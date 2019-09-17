@@ -1,6 +1,7 @@
 import * as aus from '../commons/ausentismo';
 import * as utils from '../commons/utils';
 import * as ind from '../commons/indicadores';
+import { changeFileObjectRef } from '../../../core/files/controller/file';
 
 
 class LicenciasController {
@@ -49,13 +50,21 @@ class LicenciasController {
      * @param ausNewValues 
      */
     async updateAusentismo(ausToUpdate, ausNewValues){
+        let ausUpdated;
         if(ausNewValues.articulo.descuentaDiasLicencia ||
             (ausToUpdate.articulo.id == ausNewValues.articulo.id)){
-            return await this.updateAusentismoSameArticulo(ausToUpdate, ausNewValues);
+            ausUpdated = await this.updateAusentismoSameArticulo(ausToUpdate, ausNewValues);
         }
         else {
-            return await this.updateAusentismoChangeArticulo(ausToUpdate, ausNewValues);
+            ausUpdated = await this.updateAusentismoChangeArticulo(ausToUpdate, ausNewValues);
         }
+        if (ausUpdated.warnings && ausUpdated.warnings.length){
+            // Return ausencias con warnings. No guardamos nada
+            return ausUpdated;    
+        }
+        // Actualizamos finalmente cualquier referencia a archivos adjuntos
+        changeFileObjectRef(ausToUpdate._id, ausUpdated._id);
+        return ausUpdated;
     }
 
     async updateAusentismoSameArticulo(ausToUpdate, ausNewValues){
@@ -95,8 +104,6 @@ class LicenciasController {
         let indicadores = await ind.getIndicadoresLicencia(agente, articulo, desde);
         let totalDiasDisponibles = await ind.getTotalLicenciasDisponibles(agente, articulo);
         let ausencias = await aus.calcularDiasAusencias(agente, articulo, desde, null, totalDiasDisponibles);
-        console.log('Aca estamos!!!!!!');
-        console.log(ausencias)
         
         let warnings = [];
         warnings = warnings.concat(utils.formatWarningsIndicadores(await aus.checkIndicadoresSugerencia(indicadores, desde)));
