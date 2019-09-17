@@ -129,6 +129,7 @@ async function updateAgente(req, res, next) {
         // TODO Test
         agente.contactos= req.body.contactos;
         agente.educacion= req.body.educacion;
+        agente.situacionLaboral= req.body.situacionLaboral;
         agente.historiaLaboral= req.body.historiaLaboral;
 
         const agenteActualizado = await agente.save();
