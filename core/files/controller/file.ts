@@ -2,9 +2,13 @@ import { Types } from 'mongoose';
 
 import { FilesModel } from  '../../tm/schemas/imagenes';
 import { FileDescriptor, IFileDescriptor, FileDescriptorDocument } from '../schemas/filedescriptor';
+
 import * as config from '../../../config';
 import * as multer from 'multer';
+import * as aqp from 'api-query-params';
+
 import FileSystemStorage from '../storage/FileSystemStorage'
+import { processImage } from '../utils';
 
 const fs = require('fs');
 const path = require('path');
@@ -159,21 +163,27 @@ export async function getFiles(req, res, next){
 
 export async function readFile(req, res, next){
     try {
+        const options = aqp(req.query);
         const id = req.params.id;
         if (!id || (id && !Types.ObjectId.isValid(id))) return next(404);
         const filesModel = FilesModel();
-        const file = await filesModel.findById(id);
+        const file = await filesModel.findById(id);       
         if (file){
-            file.read((err, buffer) => {
-                if (err) {
-                    console.log('ERROR!!')
-                    return next(err);
-                }
-                else{
+            file.read(async (err, buffer) => {
+                try {
+                    if (err) throw err;
+                    // Si estamos descargando una imagen podemos preprocesar la misma
+                    // a traves de queryparams. Por ejemplo reducir el tamaño
+                    if (file.contentType == 'image/jpeg' && options){
+                        buffer = await processImage(buffer, options.filter);
+                    }
                     res.setHeader('Content-Type', file.contentType);
                     res.setHeader('Content-Length', file.length);
                     res.setHeader('Content-Disposition', `attachment; filename=${file.filename}`);
                     return res.send(buffer);
+                } catch (err) {
+                    console.log('Encontramos un error'); // TODO Procesar correctamente
+                    return next(err);
                 }
             });
         }
@@ -181,11 +191,9 @@ export async function readFile(req, res, next){
             return res.send(null);
         }
     } catch (err) {
+        console.log('Encontramos un error')
         return next(err);
     }
-
-    
-
 }
 
 

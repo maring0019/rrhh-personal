@@ -7,6 +7,7 @@ import config from './confg';
 
 // Inicializa express
 const app = express();
+app.use(express.static('public'));
 initAPI(app);
 
 // Inicia el servidor HTTP

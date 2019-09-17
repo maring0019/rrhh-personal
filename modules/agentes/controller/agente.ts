@@ -1,5 +1,4 @@
 import { Types } from 'mongoose';
-import jimp = require("jimp")
 import * as aqp from 'api-query-params';
 
 import { Readable } from 'stream';
@@ -9,9 +8,9 @@ import { Agente } from '../schemas/agente';
 import { makeFs } from '../../../core/tm/schemas/imagenes';
 import { attachFilesToObject } from '../../../core/files/controller/file'
 import { AusenciaPeriodo } from '../../ausentismo/schemas/ausenciaPeriodo';
+import { processImage } from '../../../core/files/utils';
 
 async function getAgentes(req, res, next){
-    console.log('Buscando Agente')
     try {
         let query = Agente.find({});
         if (req.query.nombre) {
@@ -323,12 +322,9 @@ async function _saveImage(imagen, agenteID){
         agenteFotoModel.unlinkById(foto._id, (error, unlinkedAttachment) => { });
     });
     // Remove extra data if necesary
-    // imagen = imagen.toString().replace(/^data:image\/(png|jpg|jpeg);base64,/, "");
+    imagen = imagen.toString().replace(/^data:image\/(png|jpg|jpeg);base64,/, ""); // TODO No es necesario en la migracion!
     let buffer = Buffer.from(imagen, 'base64');
-    let jimage = await jimp.read(buffer);
-    jimage.resize(256, jimp.AUTO).quality(90); // Resize and set JPEG quality
-    buffer = await jimage.getBufferAsync(jimp.MIME_JPEG);
-    
+    buffer = await processImage(buffer, {quality: 90, w: 256});
     let stream = new Readable();
     stream.push(buffer);
     stream.push(null);

@@ -25,8 +25,6 @@ export function titleCase(str) {
 }
 
 
-
-
 export function getQueryParam(filter, filterCondition ){
     let filterField;
     if (filter && filter[filterCondition]){

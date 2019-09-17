@@ -11,6 +11,7 @@
         </style>
     </head>
     <body style="margin:30px 25px;">
+        <%- include("../utils/print") %>
         <div>
             <div style="text-align:right;">
                 <h5>Neuquen, <%= fechaHora %></h5>
@@ -19,19 +20,26 @@
 
         <% if (agente) { %>
             <div>
-                <p>Recibi a la fecha y hora, certificado medico correspondiente al agente
-                <span> <%= agente.nombreCompleto() %> </span> (Revista nro <%= agente.numero %>),
-                Documento: <%= agente.documento %>)</p>
+                <p>Recibí a la fecha y hora, certificado médico correspondiente al agente
+                <span> <%= value(agente.apellido) %>, <%= value(agente.nombre) %> </span> (Revista nro <%= agente.numero %>),
+                Documento: <%= agente.documento %>)
                 
-                <img src='<%= srcImgCertificado %>' />
-            
+                <% if (extraInfo) { %>
+                    con fechas <%= extraInfo.fechaInicio %> al <%= extraInfo.fechaFin %> por el médico
+                    tratante <%= extraInfo.medico %>, prestador médico <%= extraInfo.prestador %>
+                <% } %>
+                
+            </p>
             </div>
         <% } %>
         <div style="text-align:left; width: 50%">
-            <p>Nota: LA APROBACION ESTA SUPEDITADA A CONTROL DE MEDICINA LABORAL</p>
+            <p>Nota: LA APROBACIÓN ESTA SUPEDITADA A CONTROL DE MEDICINA LABORAL</p>
         </div>
         <div style="text-align:right;">
-            <p><strong>Firma de recepcion Serv. de Personal</strong></p>
+            <p><strong>Firma de recepción Serv. de Personal</strong></p>
         </div>
+        <% if (srcImgCertificado) { %>
+            <img src='<%= srcImgCertificado %>' />
+        <% } %>
     </body>
 </html>

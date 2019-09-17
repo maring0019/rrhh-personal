@@ -4,6 +4,8 @@ import { AusenciaPeriodo } from '../../modules/ausentismo/schemas/ausenciaPeriod
 import { Agente } from '../../modules/agentes/schemas/agente';
 import { FilesModel } from '../tm/schemas/imagenes';
 
+import * as config from '../../config';
+
 
 export class DocumentoConstanciaCertificado extends DocumentoPDF {
 
@@ -19,38 +21,45 @@ export class DocumentoConstanciaCertificado extends DocumentoPDF {
         const id = this.request.params.id;
         if (!id || (id && !Types.ObjectId.isValid(id))) return {}
         
-        console.log('Buscando Ausentismo')
         const ausentismo = await AusenciaPeriodo.findById(id).lean();
-        console.log(ausentismo)
         if(!ausentismo) return {}
 
-        console.log('Buscando Agente')
         const agente = await Agente.findById(ausentismo.agente.id);
-        console.log(agente)
         if(!agente) return {}
 
-        console.log('Buscando Imagen')
-        const filesModel = FilesModel();
-        const files = await filesModel.find({ 'metadata.objID': new Types.ObjectId(ausentismo._id)});
-        console.log(files)
-        let file:any;
-        if (files && files.length){
-            file = files[0]
+        let srcImgCertificado;
+        if (ausentismo.extraInfo){
+            // Vamos a intentar obtener la info del medico y demas dato
+            // del certificado (sin imagen/escaneo del certificado) para
+            // incluirla en la impresion
         }
-
-        
+        else{
+            // Vamos a intentar recuperar si existe el certificado adjunto
+            // para incluirlo en la impresion
+            const filesModel = FilesModel();
+            const files = await filesModel.find({ 'metadata.objID': new Types.ObjectId(ausentismo._id)});
+            let file:any;
+            if (files && files.length){
+                for (const f of files){
+                    if (f.contentType =='image/jpeg'){
+                        file = f;
+                    } 
+                }
+            }
+            if (file){
+                const opts = '?w=256&h=256'
+                srcImgCertificado  =`${config.urlRoot}/api/core/files/objects/${ausentismo._id}/files/${file._id}/download${opts}`;
+            }  
+        }
         const fechaHora = this.todayFormatted();
-
-        const srcImgCertificado  = `/api/core/files/objects/${ausentismo._id}/files/${file._id}/download`;
-        console.log('Imagen de descarga');
-        console.log(srcImgCertificado);  
-
         return {
             fechaHora: fechaHora,
             agente: agente,
+            extraInfo: ausentismo.extraInfo,
             srcImgCertificado: srcImgCertificado
         }
     }
+
 
     todayFormatted():String{
         let date = new Date();
