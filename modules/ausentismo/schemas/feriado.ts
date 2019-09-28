@@ -4,7 +4,8 @@ export const FeriadoSchema = new Schema({
     fecha:{
         type: Date,
         required: true
-    } 
+    },
+    descripcion:String
 })
 
 export const Feriado = model('Feriado', FeriadoSchema, 'feriados');

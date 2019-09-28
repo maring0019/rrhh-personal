@@ -1,5 +1,6 @@
 // import { Types } from "mongoose";
 import * as aqp from 'api-query-params';
+import { Types } from 'mongoose';
 
 class BaseController {
     /**
@@ -12,7 +13,10 @@ class BaseController {
     constructor(model) {
        this._model = model;
        this.add = this.add.bind(this);
+       this.update = this.update.bind(this);
+       this.delete = this.delete.bind(this);
        this.get = this.get.bind(this);
+       this.getById = this.getById.bind(this);
     }
 
 
@@ -27,6 +31,34 @@ class BaseController {
         }
     }
 
+    async update(req, res, next) {
+        try {
+            const id = req.params.id;
+            if (!id || (id && !Types.ObjectId.isValid(id))) return res.status(404).send();
+            let object:any = await this._model.findById(id);
+            if (!object) return res.status(404).send();
+            let objToUpdate = req.body;
+            objToUpdate = {...objToUpdate, ...object}; // Merge properties
+            const objectUpdated = await objToUpdate.save();
+            return res.json(objectUpdated);
+        } catch (err) {
+            return next(err);
+        }
+    }
+
+    async delete(req, res, next) {
+        try {
+            const id = req.params.id;
+            if (!id || (id && !Types.ObjectId.isValid(id))) return res.status(404).send();
+            let object:any = await this._model.findById(id);
+            if (!object) return res.status(404).send("Not found");
+            const objRemoved = await object.remove();
+            return res.json(objRemoved);
+        } catch (err) {
+            return next(err);
+        }
+    }
+
     async get(req, res, next) {
         try {
             const params = this.getQueryParams(req);
@@ -35,6 +67,15 @@ class BaseController {
                 .sort(params.sort)
                 .exec();
             return res.json(objs);
+        } catch (err) {
+            return next(err);
+        }
+    }
+
+    async getById(req, res, next) {
+        try {
+            let obj = await this._model.findById(req.params.id);
+            return res.json(obj);
         } catch (err) {
             return next(err);
         }
