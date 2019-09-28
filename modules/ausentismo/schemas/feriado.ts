@@ -3,7 +3,8 @@ import { Schema, model } from 'mongoose';
 export const FeriadoSchema = new Schema({
     fecha:{
         type: Date,
-        required: true
+        required: true,
+        unique: true
     },
     descripcion:String
 })

@@ -1,4 +1,3 @@
-// import { Types } from "mongoose";
 import * as aqp from 'api-query-params';
 import { Types } from 'mongoose';
 
@@ -35,12 +34,11 @@ class BaseController {
         try {
             const id = req.params.id;
             if (!id || (id && !Types.ObjectId.isValid(id))) return res.status(404).send();
-            let object:any = await this._model.findById(id);
-            if (!object) return res.status(404).send();
-            let objToUpdate = req.body;
-            objToUpdate = {...objToUpdate, ...object}; // Merge properties
-            const objectUpdated = await objToUpdate.save();
-            return res.json(objectUpdated);
+            let objToUpdate:any = await this._model.findById(id);
+            if (!objToUpdate) return res.status(404).send();
+            let objWithChanges = req.body;
+            const objUpdated = await objToUpdate.update({ $set: objWithChanges });
+            return res.json(objUpdated);
         } catch (err) {
             return next(err);
         }
