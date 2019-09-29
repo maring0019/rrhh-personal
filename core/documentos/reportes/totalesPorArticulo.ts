@@ -43,7 +43,7 @@ export class DocumentoAusenciasTotalesPorArticulo extends DocumentoPDF {
             articulosIds = [];
         }
         // Preparamos las opciones de filtrado sobre el agente. Removemos filtros no requeridos
-        let filterCondition = this.cleanFilters(query.filter);
+        let filterCondition = utils.cleanFilters(query.filter);
         
         // Aggregation Framework Pipeline
         let pipeline:any = [
@@ -83,15 +83,6 @@ export class DocumentoAusenciasTotalesPorArticulo extends DocumentoPDF {
                 gruposAgente: gruposAgentes,
                 articulos: articulos
             }
-    }
-
-
-    cleanFilters(filter){
-        let whitelist = ['_id']
-        Object.keys(filter).forEach(field => {
-            if (whitelist.indexOf(field)<0) delete filter[field];        
-        });
-        return filter;
     }
 
 }

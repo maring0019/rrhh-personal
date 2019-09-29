@@ -34,9 +34,9 @@ export function getQueryParam(filter, filterCondition ){
 }
 
 export function cleanFilters(filter){
-    let whitelist = ['_id']
+    let blacklist = ['$group', 'fechaDesde', 'fechaHasta', 'articulos', 'anios'];
     Object.keys(filter).forEach(field => {
-        if (whitelist.indexOf(field)<0) delete filter[field];        
+        if (blacklist.indexOf(field)>=0) delete filter[field];        
     });
     return filter;
 }

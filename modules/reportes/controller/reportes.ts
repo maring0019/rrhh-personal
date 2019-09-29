@@ -30,6 +30,24 @@ export async function downloadListadoAgente(req, res, next, options = null) {
 }
 
 
+export async function downloadTotalesPorArticulo(req, res, next, options = null) {
+    let doc = new DocumentoAusenciasTotalesPorArticulo();
+    return await downloadReporte(req, res, next, doc, options);
+}
+
+
+export async function downloadAusenciasPorAgente(req, res, next, options = null) {
+    let doc = new DocumentoAusenciasPorAgente();
+    return await downloadReporte(req, res, next, doc, options);
+}
+
+
+export async function downloadLicenciasPorAgente(req, res, next, options = null) {
+    let doc = new DocumentoLicenciasPorAgente();
+    return await downloadReporte(req, res, next, doc, options);
+}
+
+
 /**
  * PDF
  * @param req 
