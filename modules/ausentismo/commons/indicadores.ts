@@ -304,8 +304,8 @@ export function getMaxDiasDisponibles(indicadores, fechaInteres){
     for (let indicador of indicadores){
         indicadoresFiltrados.push(aus.minimizarIntervalosIndicador(indicador, fechaInteres, fechaInteres));
     }
-    console.log('Intervalos minimizados')
-    for (const i of indicadoresFiltrados) console.log(i.intervalos)
+    // console.log('Intervalos minimizados')
+    // for (const i of indicadoresFiltrados) console.log(i.intervalos)
     for (const indicador of indicadoresFiltrados){
         for(const intervalo of indicador.intervalos){
             const diasDisponibles = intervalo.totales - intervalo.ejecutadas;
@@ -321,8 +321,10 @@ export async function updateIndicadores(indicadores){
     // Actualizamos los indicadores
     for (const indicador of indicadores){
         for (let intervalo of indicador.intervalos){
-            intervalo.ejecutadas = intervalo.ejecutadas + intervalo.asignadas;
-            intervalo.asignadas = 0;
+            if( intervalo.asignadas){
+                intervalo.ejecutadas = intervalo.ejecutadas + intervalo.asignadas;
+                intervalo.asignadas = 0;
+            }
         }
         await indicador.save()
     }
