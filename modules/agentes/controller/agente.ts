@@ -9,6 +9,7 @@ import { makeFs } from '../../../core/tm/schemas/imagenes';
 import { attachFilesToObject } from '../../../core/files/controller/file'
 import { AusenciaPeriodo } from '../../ausentismo/schemas/ausenciaPeriodo';
 import { processImage } from '../../../core/files/utils';
+import { IndicadorAusentismo } from '../../ausentismo/schemas/indicador';
 
 async function getAgentes(req, res, next){
     try {
@@ -230,11 +231,27 @@ async function getAusencias(req, res, next){
         const pipeline = [
             { $match: { 'agente.id': Types.ObjectId(agente.id) } },
             { $unwind: '$ausencias'},
-            // { $sort : { 'ausencias.fecha' : 1 } }
         ]
-        // let ausencias = await Ausencia.find({ 'agente.id': new Types.ObjectId(agente.id)}).sort({ fecha: 1 }).exec();
         let ausencias = await AusenciaPeriodo.aggregate(pipeline)
         return res.json(ausencias);
+    } catch (err) {
+        return next(err);
+    }
+}
+
+
+async function getLicenciasTotales(req, res, next){
+    try {
+        const id = req.params.id;
+        if (!id || (id && !Types.ObjectId.isValid(id))) return next(404);
+        let agente:any = await Agente.findById(id);
+        if (!agente) return next(404);
+        const pipeline = [
+            { $match: { 'agente.id': Types.ObjectId(agente._id), vigencia: { $gte: 2017} }},
+            { $unwind: '$intervalos'},
+            { $group: { _id:null, totales: { $sum: "$intervalos.totales"}, ejecutadas: { $sum: "$intervalos.ejecutadas"} }}]
+        let licenciasTotales = await IndicadorAusentismo.aggregate(pipeline)
+        return res.json(licenciasTotales);
     } catch (err) {
         return next(err);
     }
@@ -371,6 +388,7 @@ const AgenteController = {
     getAgenteByID,
     getFotoPerfil,
     getAusencias,
+    getLicenciasTotales,
     uploadFotoPerfil,
     uploadFilesAgente,
     _findFotoPerfil,
