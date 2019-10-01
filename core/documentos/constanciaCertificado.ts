@@ -1,6 +1,6 @@
 import { DocumentoPDF } from './documentos';
 import { Types } from 'mongoose';
-import { AusenciaPeriodo } from '../../modules/ausentismo/schemas/ausenciaPeriodo';
+import { AusenciaPeriodo } from '../../modules/ausentismo/schemas/ausenciaperiodo';
 import { Agente } from '../../modules/agentes/schemas/agente';
 import { FilesModel } from '../tm/schemas/imagenes';
 

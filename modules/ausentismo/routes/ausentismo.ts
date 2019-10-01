@@ -2,7 +2,7 @@ import * as express from 'express';
 import * as utils from '../commons/utils';
 
 import { Types } from 'mongoose';
-import { AusenciaPeriodo } from '../schemas/ausenciaPeriodo';
+import { AusenciaPeriodo } from '../schemas/ausenciaperiodo';
 
 import  * as AusentismoController from '../controller/ausentismo';
 import LicenciasController from '../controller/licencias';

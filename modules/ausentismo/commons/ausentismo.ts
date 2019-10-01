@@ -1,5 +1,5 @@
 import { Ausencia } from '../schemas/ausencia';
-import { AusenciaPeriodo } from '../schemas/ausenciaPeriodo';
+import { AusenciaPeriodo } from '../schemas/ausenciaperiodo';
 
 import * as ind from './indicadores'; 
 import * as utils from './utils';

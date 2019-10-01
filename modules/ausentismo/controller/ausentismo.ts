@@ -1,4 +1,4 @@
-import { AusenciaPeriodo } from '../schemas/ausenciaPeriodo';
+import { AusenciaPeriodo } from '../schemas/ausenciaperiodo';
 
 import * as utils from '../commons/utils';
 import * as aus from '../commons/ausentismo';

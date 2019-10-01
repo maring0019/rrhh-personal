@@ -2,7 +2,7 @@ import { Types } from 'mongoose';
 
 import { IndicadorAusentismo } from '../schemas/indicador';
 import { IndicadorAusentismoHistorico } from '../schemas/indicadorhistorico';
-import { AusenciaPeriodo } from '../schemas/ausenciaPeriodo';
+import { AusenciaPeriodo } from '../schemas/ausenciaperiodo';
 
 import * as aus from '../commons/ausentismo';
 

@@ -7,7 +7,7 @@ import { Agente } from '../schemas/agente';
 
 import { makeFs } from '../../../core/tm/schemas/imagenes';
 import { attachFilesToObject } from '../../../core/files/controller/file'
-import { AusenciaPeriodo } from '../../ausentismo/schemas/ausenciaPeriodo';
+import { AusenciaPeriodo } from '../../ausentismo/schemas/ausenciaperiodo';
 import { processImage } from '../../../core/files/utils';
 import { IndicadorAusentismo } from '../../ausentismo/schemas/indicador';
 
