@@ -3,7 +3,7 @@ import { Types } from 'mongoose';
 import { FilesModel } from  '../../tm/schemas/imagenes';
 import { FileDescriptor, IFileDescriptor, FileDescriptorDocument } from '../schemas/filedescriptor';
 
-import * as config from '../../../config';
+import config from '../../../confg';
 import * as multer from 'multer';
 import * as aqp from 'api-query-params';
 
@@ -13,7 +13,7 @@ import { processImage } from '../utils';
 const fs = require('fs');
 const path = require('path');
 
-export const storage = FileSystemStorage({ destination: config.uploadFilesPath });
+export const storage = FileSystemStorage({ destination: config.app.uploadFilesPath });
 export const multerUploader = multer({ storage: storage });
 
 
@@ -277,7 +277,7 @@ export async function changeFileObjectRef(objID, newObjID){
 export function _writeFileFromFsToMongo(file:FileDescriptorDocument, objectId):Promise<any>{
     const filesModel = FilesModel();
     return new Promise(function(resolve, reject) {
-        let stream = fs.createReadStream(path.join(config.uploadFilesPath, file.real_id));
+        let stream = fs.createReadStream(path.join(config.app.uploadFilesPath, file.real_id));
         stream.on('error', function()
         { 
             resolve({ok:false, filename:file.filename, id:file.id}) 
@@ -303,7 +303,7 @@ export function _writeFileFromFsToMongo(file:FileDescriptorDocument, objectId):P
 export async function _removeFilesFromFs(filesToRemove:FileDescriptorDocument[]){
     filesToRemove.forEach(file => {
         try{
-            const filePath = path.join(config.uploadFilesPath, file.real_id);
+            const filePath = path.join(config.app.uploadFilesPath, file.real_id);
             fs.unlink(filePath, (err) => {
             });
         }

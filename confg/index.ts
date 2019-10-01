@@ -1,3 +1,5 @@
+import * as path from 'path';
+
 function env(key, _default, type = 's') {
     if (!!process.env[key] === false) {
         return _default;
@@ -17,7 +19,10 @@ export default {
     app: {
         key: env('JWT_KEY', 'l5lPkNgTL+uiGKg+aJvljKtKhuS0NhWu1ZCo+Ft6s0w='),
         port: env('APP_PORT', 3004, 'n'),
-        expiresIn: env('EXPIRS_IN', 1000 * 60 * 60 * 24 * 10, 'n')
+        expiresIn: env('EXPIRS_IN', 1000 * 60 * 60 * 24 * 10, 'n'),
+        uploadFilesPath: env('UPLOADS_FOLDER', 'tempUploads'),
+        url: env('APP_URL', 'http://localhost'),
+        templateRootPath: env('TEMPLATES_ROOT', path.join(__dirname, '../views'))
     },
     auth: {
         method: env('AUTH', 'ldap'),
@@ -29,5 +34,5 @@ export default {
     },
     database: {
         mongo: env('MONGO_HOST', 'mongodb://localhost:27017/recursosHumanos')
-    }
+    },
 };

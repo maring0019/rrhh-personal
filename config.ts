@@ -1,5 +1,3 @@
-import * as path from 'path';
-
 // Habilita/deshabilita módulos de la API
 export const modules = {
     tm: {
@@ -49,10 +47,5 @@ export const modules = {
 // Cotas de consumo de APIs
 export const defaultLimit = 50;
 export const maxLimit = 1000;
-export const uploadFilesPath = 'tempUploads'
-export const urlRoot = 'http://localhost:3004'
-
-// Templates html para generar pdfs
-export const templateRootPath = path.join(__dirname, './views');
 
 

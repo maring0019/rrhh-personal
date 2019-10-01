@@ -4,13 +4,13 @@ import { AusenciaPeriodo } from '../../modules/ausentismo/schemas/ausenciaperiod
 import { Agente } from '../../modules/agentes/schemas/agente';
 import { FilesModel } from '../tm/schemas/imagenes';
 
-import * as config from '../../config';
+import config from '../../confg';
 
 
 export class DocumentoConstanciaCertificado extends DocumentoPDF {
 
     templateName = 'ausentismo/constancia-certificado.ejs';
-    outputFilename = './constanciaCertificado.pdf';
+    outputFilename = `${config.app.uploadFilesPath}/constanciaCertificado.pdf`;
 
     generarCSS() {
         return '';
@@ -48,7 +48,7 @@ export class DocumentoConstanciaCertificado extends DocumentoPDF {
             }
             if (file){
                 const opts = '?w=256&h=256'
-                srcImgCertificado  =`${config.urlRoot}/api/core/files/objects/${ausentismo._id}/files/${file._id}/download${opts}`;
+                srcImgCertificado  =`${config.app.url}:${config.app.port}/api/core/files/objects/${ausentismo._id}/files/${file._id}/download${opts}`;
             }  
         }
         const fechaHora = this.todayFormatted();

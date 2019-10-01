@@ -5,7 +5,7 @@ import * as path from 'path';
 
 import * as ejs from 'ejs';
 
-import * as config from '../../config';
+import config from '../../confg';
 
 /**
  * Base Class para generar dpcumentos PDF. 
@@ -39,7 +39,7 @@ export class DocumentoPDF {
             // Try to read template from filesystem
             if (this.getTemplateName()){
                 try {
-                    let template = fs.readFileSync(path.join(config.templateRootPath, this.getTemplateName()), 'utf8');
+                    let template = fs.readFileSync(path.join(config.app.templateRootPath, this.getTemplateName()), 'utf8');
                     return template;
                 }
                 catch(fileError){
@@ -53,7 +53,7 @@ export class DocumentoPDF {
     }
 
     private getFilePath(){
-        return path.join(config.templateRootPath, this.getTemplateName());
+        return path.join(config.app.templateRootPath, this.getTemplateName());
     }
 
     
@@ -90,7 +90,7 @@ export class DocumentoPDF {
     }
 
     protected generarCSS() {
-         let scssFile = path.join(config.templateRootPath, 'styles/main.scss');
+         let scssFile = path.join(config.app.templateRootPath, 'styles/main.scss');
          let css = '<style>\n\n';
          css += scss.renderSync({ // SCSS => CSS
              file: scssFile
