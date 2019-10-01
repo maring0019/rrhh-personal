@@ -8,7 +8,7 @@ import * as multer from 'multer';
 import * as aqp from 'api-query-params';
 
 import FileSystemStorage from '../storage/FileSystemStorage'
-import { processImage } from '../utils';
+// import { processImage } from '../utils';
 
 const fs = require('fs');
 const path = require('path');
@@ -164,6 +164,7 @@ export async function getFiles(req, res, next){
 export async function readFile(req, res, next){
     try {
         const options = aqp(req.query);
+        console.log(options);
         const id = req.params.id;
         if (!id || (id && !Types.ObjectId.isValid(id))) return next(404);
         const filesModel = FilesModel();
@@ -174,9 +175,9 @@ export async function readFile(req, res, next){
                     if (err) throw err;
                     // Si estamos descargando una imagen podemos preprocesar la misma
                     // a traves de queryparams. Por ejemplo reducir el tamaño
-                    if (file.contentType == 'image/jpeg' && options){
-                        buffer = await processImage(buffer, options.filter);
-                    }
+                    // if (file.contentType == 'image/jpeg' && options){
+                    //     buffer = await processImage(buffer, options.filter);
+                    // }
                     res.setHeader('Content-Type', file.contentType);
                     res.setHeader('Content-Length', file.length);
                     res.setHeader('Content-Disposition', `attachment; filename=${file.filename}`);
