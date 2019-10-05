@@ -15,6 +15,8 @@ export const ArticuloSchema = new Schema({
         required: true
     },
     descripcion: String,
+    //Aributos visuales
+    color: String,   // Verde claro=#5cb85c, rojo= #d9534f
     grupo: Number,                         // TODO Consultar este dato
     limitado: Boolean,                     // TODO consultar este dato
     requiereInformacionAdicional: Boolean, // TODO consultar este dato

@@ -18,7 +18,8 @@ export const AusenciaPeriodoSchema = new Schema({
             type: String,
             required: true
         },
-        descripcion: String
+        descripcion: String,
+        color: String
     },
     fechaDesde: {
         type: Date,
