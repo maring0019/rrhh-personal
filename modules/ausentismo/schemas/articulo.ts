@@ -3,7 +3,7 @@ import { FormulaSchema } from './formula';
 
 export const ArticuloSchema = new Schema({
     
-    idInterno: {                         // Codigo Interno Sistema Anterior. TODO Remover si no es mas necesario
+    idInterno: {                        // Codigo Interno Sistema Anterior. TODO Remover si no es mas necesario
         type: Number
     },
     codigo: {
@@ -15,17 +15,19 @@ export const ArticuloSchema = new Schema({
         required: true
     },
     descripcion: String,
-    //Aributos visuales
-    color: String,   // Verde claro=#5cb85c, rojo= #d9534f
+    color: String,                     // Verde claro=#5cb85c, rojo= #d9534f
+    diasCorridos: Boolean,
+    diasHabiles: Boolean,
+    descuentaDiasLicencia: Boolean,
+    formulas: [FormulaSchema],
+    
+    // Los siguientes atributos se mantienen como parte legacy del sistema
+    // anterior, pero no son utilizados actualmente. 
     grupo: Number,                         // TODO Consultar este dato
     limitado: Boolean,                     // TODO consultar este dato
     requiereInformacionAdicional: Boolean, // TODO consultar este dato
     tituloInformacionAdicional: String,
-    codigoOTI: String,
-    diasCorridos: Boolean,
-    diasHabiles: Boolean,                    // TODO consultar este dato
-    descuentaDiasLicencia: Boolean,
-    formulas: [FormulaSchema]
+    codigoOTI: String
 })
 
 export const Articulo = model('Articulo', ArticuloSchema, 'articulos');
