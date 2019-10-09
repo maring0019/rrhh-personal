@@ -60,10 +60,11 @@ class BaseController {
     async get(req, res, next) {
         try {
             const params = this.getQueryParams(req);
-            let objs = await this._model
-                .find(params.filter)
-                .sort(params.sort)
-                .exec();
+            let objs = await this.search(params);
+            // let objs = await this._model
+            //     .find(params.filter)
+            //     .sort(params.sort)
+            //     .exec();
             return res.json(objs);
         } catch (err) {
             return next(err);
@@ -81,16 +82,15 @@ class BaseController {
 
     protected getQueryParams(req){
         let queryParams = aqp(req.query);
-        // aqp(req.query, {
-        //     casters: {
-        //         id: val => Types.ObjectId(val),
-        //     },
-        //     castParams: {
-        //         // '_id': 'id',
-        //         'id': 'id'
-        //     }
-        // })
         return queryParams;
+    }
+
+    protected async search(params){
+        let objs = await this._model
+            .find(params.filter)
+            .sort(params.sort)
+            .exec();
+        return objs;
     }
  
     /**

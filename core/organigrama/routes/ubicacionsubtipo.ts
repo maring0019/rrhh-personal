@@ -1,9 +1,9 @@
 import * as express from 'express';
-import { Parte } from '../schemas/parte';
-import ParteController from '../controller/parte';
+import { UbicacionSubtipo } from '../schemas/ubicacionsubtipo';
+import UbicacionSubtipoController from '../controller/ubicacionsubtipo';
 
-const controller = new ParteController(Parte); 
-const baseUrl = '/partes';
+const controller = new UbicacionSubtipoController(UbicacionSubtipo); 
+const baseUrl = '/ubicacionessubtipo';
 
 export const Routes = express.Router();
 
