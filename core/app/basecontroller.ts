@@ -61,10 +61,6 @@ class BaseController {
         try {
             const params = this.getQueryParams(req);
             let objs = await this.search(params);
-            // let objs = await this._model
-            //     .find(params.filter)
-            //     .sort(params.sort)
-            //     .exec();
             return res.json(objs);
         } catch (err) {
             return next(err);
