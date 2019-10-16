@@ -1,4 +1,6 @@
+import { Types } from 'mongoose';
 import BaseController from '../../../core/app/basecontroller';
+import { Parte } from '../schemas/parte';
 
 class ParteController extends BaseController {
 
@@ -15,6 +17,45 @@ class ParteController extends BaseController {
         // } catch (err) {
         //     return next(err);
         // }
+    }
+
+    async getPartesAgentes(req, res, next){
+        try {
+            const id = req.params.id;
+            if (!id || (id && !Types.ObjectId.isValid(id))) return next(404);
+            let parte:any = await Parte.findById(id);
+            if (!parte) return next(404);
+                    
+            const pipeline = [
+                { $match: { 'parte.id': Types.ObjectId(parte.id) } },
+                { $lookup: {
+                    from: "fichadacache",
+                    let: { agente_parte: "$agente.id", fecha_parte: "$fecha"},
+                    pipeline: [
+                        { $match:
+                            { $expr:
+                                { $and:
+                                    [
+                                        { $eq: [ "$agente.id",  "$$agente_parte" ] }, // Join con agente y fecha
+                                        { $eq: [ "$fecha", "$$fecha_parte" ] }
+                                    ]
+                                }
+                            }
+                        },
+                        { $project: { entrada: 1, salida: 1 } } // Solo interesa entrada y salida
+                    ],
+                    as: "fichadas"
+                    }
+                },
+                { $unwind: "$fichadas" },
+                // { $pro}
+            ]
+            let partes = await Parte.aggregate(pipeline);
+            console.log(partes);
+            return res.json(partes);
+        } catch (err) {
+            return next(err);
+        }
     }
 
     getQueryParams(req){

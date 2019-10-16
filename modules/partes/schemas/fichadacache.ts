@@ -18,4 +18,4 @@ export const FichadaCacheSchema = new Schema({
 
 })
 
-export const FichadaCache = model('FichadaCache', FichadaCacheSchema, 'fichadas');
+export const FichadaCache = model('FichadaCache', FichadaCacheSchema, 'fichadascache');

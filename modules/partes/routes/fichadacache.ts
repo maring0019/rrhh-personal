@@ -1,14 +1,13 @@
 import * as express from 'express';
-import { Parte } from '../schemas/parte';
-import ParteController from '../controller/parte';
+import { FichadaCache } from '../schemas/fichadacache';
+import BaseController from '../../../core/app/basecontroller';
 
-const controller = new ParteController(Parte); 
-const baseUrl = '/partes';
+const controller = new BaseController(FichadaCache); 
+const baseUrl = '/fichadascache';
 
 export const Routes = express.Router();
 
 Routes.get(`${baseUrl}`, controller.get);
-Routes.get(`${baseUrl}/:id/partesagentes`, controller.getPartesAgentes);
 Routes.get(`${baseUrl}/:id`, controller.getById);
 
 Routes.post(`${baseUrl}`, controller.add);

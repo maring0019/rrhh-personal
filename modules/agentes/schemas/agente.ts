@@ -11,6 +11,7 @@ import { BajaSchema } from './baja';
 
 
 export const AgenteSchema = new Schema({
+    idLegacy: Number,      // ID Sistema anterior.
     numero: String,        // En el alta aun no esta disponible este dato
     tipoDocumento: String, // No deberia utilizarse mas. Solo DU
     documento: {
