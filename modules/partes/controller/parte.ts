@@ -1,23 +1,10 @@
 import { Types } from 'mongoose';
 import BaseController from '../../../core/app/basecontroller';
 import { Parte } from '../schemas/parte';
+import { ParteAgente } from '../schemas/parteagente';
 
 class ParteController extends BaseController {
 
-    async get(req, res, next) {
-        console.log('Estamos buscando!!!');
-        return super.get(req, res, next);
-        // try {
-        //     const params = this.getQueryParams(req);
-        //     let objs = await this._model
-        //         .find(params.filter)
-        //         .sort(params.sort)
-        //         .exec();
-        //     return res.json(objs);
-        // } catch (err) {
-        //     return next(err);
-        // }
-    }
 
     async getPartesAgentes(req, res, next){
         try {
@@ -25,18 +12,18 @@ class ParteController extends BaseController {
             if (!id || (id && !Types.ObjectId.isValid(id))) return next(404);
             let parte:any = await Parte.findById(id);
             if (!parte) return next(404);
-                    
             const pipeline = [
-                { $match: { 'parte.id': Types.ObjectId(parte.id) } },
+                { $match: { 'parte.id': Types.ObjectId(parte._id) } },
+                // Join con fichadascache sobre agente y fecha
                 { $lookup: {
-                    from: "fichadacache",
+                    from: "fichadascache",
                     let: { agente_parte: "$agente.id", fecha_parte: "$fecha"},
                     pipeline: [
                         { $match:
                             { $expr:
                                 { $and:
                                     [
-                                        { $eq: [ "$agente.id",  "$$agente_parte" ] }, // Join con agente y fecha
+                                        { $eq: [ "$agente.id",  "$$agente_parte" ] }, 
                                         { $eq: [ "$fecha", "$$fecha_parte" ] }
                                     ]
                                 }
@@ -47,11 +34,31 @@ class ParteController extends BaseController {
                     as: "fichadas"
                     }
                 },
-                { $unwind: "$fichadas" },
-                // { $pro}
+                { $unwind: { path: "$fichadas", preserveNullAndEmptyArrays: true }},
+                // Join con ausenciasperiodo sobre agente y fecha
+                { $lookup: {
+                    from: "ausenciasperiodo",
+                    let: { agente_parte: "$agente.id", fecha_parte: "$fecha"},
+                    pipeline: [
+                        { $match:
+                            { $expr:
+                                { $and:
+                                    [
+                                        { $eq: [ "$agente.id",  "$$agente_parte" ] },
+                                        { $lte: ["$fechaDesde", "$$fecha_parte"]},
+                                        { $gte: ["$fechaHasta", "$$fecha_parte"]}
+                                    ]
+                                }
+                            }
+                        },
+                        { $project: { articulo: 1 } } // Solo interesa el articulo en caso de ausencia
+                    ],
+                    as: "ausencia"
+                    }
+                },
+                { $unwind: { path: "$ausencia", preserveNullAndEmptyArrays: true} }
             ]
-            let partes = await Parte.aggregate(pipeline);
-            console.log(partes);
+            let partes = await ParteAgente.aggregate(pipeline);
             return res.json(partes);
         } catch (err) {
             return next(err);
@@ -72,7 +79,6 @@ class ParteController extends BaseController {
                 {"fecha": {$lt: tomorrow}}
                 ];
         }
-        console.log(queryParams);
         return queryParams;
     }
 

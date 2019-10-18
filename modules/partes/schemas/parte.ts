@@ -1,6 +1,7 @@
 import { Schema, Types, model } from 'mongoose';
 
 export const ParteSchema = new Schema({
+    idLegacy: Number,              // ID Sistema anterior.
     fecha: {
         type: Date,
         required: true,

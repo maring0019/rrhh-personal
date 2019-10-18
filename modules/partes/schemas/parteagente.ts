@@ -1,5 +1,5 @@
 import { Schema, Types, model } from 'mongoose';
-import { ParteJustificacion } from './partejustificacion';
+import { ParteJustificacionSchema } from './partejustificacion';
 
 export const ParteAgenteSchema = new Schema({
     parte: {
@@ -20,17 +20,22 @@ export const ParteAgenteSchema = new Schema({
     },
     fecha:{
         type: Date,
-        required: true,
         index: true
-    }, 
-    fechaHoraEntrada: Date,
-    fechaHoraSalida: Date,
-    horasTrabajadas: String,
-    articulo: { 
-        id: Types.ObjectId,
-        codigo: String
     },
-    justificacion: ParteJustificacion
+    fichadas: {
+        entrada: Date,
+        salida: Date,
+        horasTrabajadas: String,
+    },
+    ausencia: {
+        articulo: { 
+            id: Types.ObjectId,
+            codigo: String,
+            descripcion: String
+        }
+    },
+    justificacion: ParteJustificacionSchema,
+    observaciones: String
 })
 
 export const ParteAgente = model('ParteAgente', ParteAgenteSchema, 'partesagentes');
