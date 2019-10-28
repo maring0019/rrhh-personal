@@ -24,12 +24,22 @@ class ParteController extends BaseController {
                                 { $and:
                                     [
                                         { $eq: [ "$agente.id",  "$$agente_parte" ] }, 
-                                        { $eq: [ "$fecha", "$$fecha_parte" ] }
+                                        { $eq: [
+                                             // Busqueda solo por fecha, sin importar la hora o tz
+                                             { $dateToString: { date: "$fecha", format:"%Y-%m-%d"}} ,
+                                             { $dateToString: { date: "$$fecha_parte", format:"%Y-%m-%d"}}
+                                            ] }
                                     ]
                                 }
                             }
                         },
-                        { $project: { entrada: 1, salida: 1 } } // Solo interesa entrada y salida
+                        { $project: 
+                            {
+                                entrada: 1,
+                                salida: 1,
+                                horasTrabajadas:  { "$subtract": [ "$salida", "$entrada" ] } // dif en milisegundos
+                            }
+                        } 
                     ],
                     as: "fichadas"
                     }
@@ -45,8 +55,16 @@ class ParteController extends BaseController {
                                 { $and:
                                     [
                                         { $eq: [ "$agente.id",  "$$agente_parte" ] },
-                                        { $lte: ["$fechaDesde", "$$fecha_parte"]},
-                                        { $gte: ["$fechaHasta", "$$fecha_parte"]}
+                                        // Busqueda solo por fecha, sin importar la hora o tz
+                                        { $lte: [
+                                            { $dateToString: { date: "$fechaDesde", format:"%Y-%m-%d"}} ,
+                                            { $dateToString: { date: "$$fecha_parte", format:"%Y-%m-%d"}}
+                                            ]
+                                        },
+                                        { $gte: [
+                                            { $dateToString: { date: "$fechaHasta", format:"%Y-%m-%d"}} ,
+                                            { $dateToString: { date: "$$fecha_parte", format:"%Y-%m-%d"}}
+                                        ]}
                                     ]
                                 }
                             }
