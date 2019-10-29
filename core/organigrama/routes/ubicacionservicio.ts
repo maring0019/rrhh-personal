@@ -8,7 +8,9 @@ const baseUrl = '/ubicaciones';
 export const Routes = express.Router();
 
 Routes.get(`${baseUrl}`, controller.get);
+Routes.get(`${baseUrl}/usuario/:id`, controller.getByUserId);
 Routes.get(`${baseUrl}/:id`, controller.getById);
+
 
 Routes.post(`${baseUrl}`, controller.add);
 Routes.put(`${baseUrl}/:id`, controller.update);
