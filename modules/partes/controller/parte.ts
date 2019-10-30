@@ -128,29 +128,25 @@ class ParteController extends BaseController {
 
     getQueryParams(req){
         let queryParams = super.getQueryParams(req);
-        if (queryParams.filter && queryParams.filter.fecha){
-            // Ajustamos el filtro fecha para considerar solo 
-            // el dia, descartando horas y minutos
-            const fecha = queryParams.filter.fecha;
-            let fechaSinHora = this.parseOnlyDate(fecha)
-            let tomorrow = this.parseOnlyDate(this.addOneDay(fecha)); 
-            delete queryParams.filter['fecha'];
-            queryParams.filter.$and = [
-                {"fecha": {$gte: fechaSinHora}},
-                {"fecha": {$lt: tomorrow}}
-                ];
-        }
+        // Los parametros de busqueda fechaDesde y fechaHasta son obligatorios
+        // Estos parametros vienen en url como fecha> y fecha< respectivamente
+        const fechaDesde = queryParams.filter.fecha? queryParams.filter.fecha.$gte: null;
+        const fechaHasta = queryParams.filter.fecha? queryParams.filter.fecha.$lte: null;
+        delete queryParams.filter['fecha'];
+        queryParams.filter.$expr = { $and:
+            [   // Busqueda solo por fecha, sin importar la hora o tz
+                { $lte: [
+                    { $dateToString: { date: "$fecha", format:"%Y-%m-%d"}} ,
+                    { $dateToString: { date: fechaHasta, format:"%Y-%m-%d"}}
+                    ]
+                },
+                { $gte: [
+                    { $dateToString: { date: "$fecha", format:"%Y-%m-%d"}} ,
+                    { $dateToString: { date: fechaDesde, format:"%Y-%m-%d"}}
+                ]}
+            ]}
         return queryParams;
-    }
-
-    addOneDay(fecha){
-        let tomorrow = new Date(fecha);
-        return new Date(tomorrow.setDate(tomorrow.getDate() + 1));
-    }
-
-    parseOnlyDate(date){
-        return new Date(date.getFullYear(), date.getMonth(), date.getDate());
-    }
+    } 
 }
 
 export default ParteController; 
