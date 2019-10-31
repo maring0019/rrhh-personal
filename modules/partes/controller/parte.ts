@@ -128,11 +128,26 @@ class ParteController extends BaseController {
 
     getQueryParams(req){
         let queryParams = super.getQueryParams(req);
-        // Los parametros de busqueda fechaDesde y fechaHasta son obligatorios
-        // Estos parametros vienen en url como fecha> y fecha< respectivamente
-        const fechaDesde = queryParams.filter.fecha? queryParams.filter.fecha.$gte: null;
-        const fechaHasta = queryParams.filter.fecha? queryParams.filter.fecha.$lte: null;
-        delete queryParams.filter['fecha'];
+        // El parametro fecha puede venir de dos formas diferentes en la url:
+        //  - como una fecha en particular fecha=valor
+        //  - como un rango de fechas fecha>=valor&fecha<=valor
+        // Los parametros de busqueda de partes por fecha por lo tanto se deben
+        // ajustar segun sea el caso.
+        let fechaDesde:Date;
+        let fechaHasta:Date;
+        if ( queryParams.filter && queryParams.filter.fecha){
+            const paramFecha = queryParams.filter.fecha;
+            if (paramFecha instanceof Date){
+                fechaDesde = paramFecha;
+                fechaHasta = paramFecha;
+            }
+            else{
+                fechaDesde = paramFecha.$gte || null;
+                fechaHasta = paramFecha.$lte || null;
+            }
+            delete queryParams.filter['fecha'];
+        }
+
         queryParams.filter.$expr = { $and:
             [   // Busqueda solo por fecha, sin importar la hora o tz
                 { $lte: [

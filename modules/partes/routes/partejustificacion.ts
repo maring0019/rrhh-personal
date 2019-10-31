@@ -3,7 +3,7 @@ import { ParteJustificacion } from '../schemas/partejustificacion';
 import ParteJustificacionController from '../controller/partejustificacion';
 
 const controller = new ParteJustificacionController(ParteJustificacion); 
-const baseUrl = '/partejustificacion';
+const baseUrl = '/partejustificaciones';
 
 export const Routes = express.Router();
 
