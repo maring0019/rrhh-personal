@@ -13,6 +13,7 @@ class BaseController {
        this._model = model;
        this.add = this.add.bind(this);
        this.update = this.update.bind(this);
+       this.updateMany = this.updateMany.bind(this);
        this.delete = this.delete.bind(this);
        this.get = this.get.bind(this);
        this.getById = this.getById.bind(this);
@@ -39,6 +40,27 @@ class BaseController {
             let objWithChanges = req.body;
             const objUpdated = await objToUpdate.update({ $set: objWithChanges });
             return res.json(objUpdated);
+        } catch (err) {
+            return next(err);
+        }
+    }
+
+    async updateMany(req, res, next){
+        try {
+            let array = req.body;
+            const result = await this._model.bulkWrite(
+                array.map((data) => 
+                      ({ updateOne: {
+                            filter: { _id: Types.ObjectId(data._id)},
+                            update: { $set: data }
+                        }
+                    })
+                )
+            )
+            // TODO Mejorar el manejo y notificacion de errores
+            console.log('Vamos a ver los resultados')
+            console.log(result);
+            return next(200);
         } catch (err) {
             return next(err);
         }

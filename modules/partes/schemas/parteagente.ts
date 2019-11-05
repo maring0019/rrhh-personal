@@ -1,5 +1,4 @@
 import { Schema, Types, model } from 'mongoose';
-import { ParteJustificacionSchema } from './partejustificacion';
 
 export const ParteAgenteSchema = new Schema({
     parte: {
@@ -34,7 +33,10 @@ export const ParteAgenteSchema = new Schema({
             descripcion: String
         }
     },
-    justificacion: ParteJustificacionSchema,
+    justificacion: {
+        id: Types.ObjectId,
+        nombre: String
+    },
     observaciones: String
 })
 
