@@ -12,5 +12,6 @@ Routes.get(`${baseUrl}/:id/partesagentes`, controller.getPartesAgentes);
 Routes.get(`${baseUrl}/:id`, controller.getById);
 
 Routes.post(`${baseUrl}`, controller.add);
+Routes.post(`${baseUrl}/:id/procesar`, controller.procesar);
 Routes.put(`${baseUrl}/:id`, controller.update);
 Routes.delete(`${baseUrl}/:id`, controller.delete);

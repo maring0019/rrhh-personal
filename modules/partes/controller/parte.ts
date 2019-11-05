@@ -126,6 +126,19 @@ class ParteController extends BaseController {
         }
     }
 
+    async procesar(req, res, next){
+        try {
+            const id = req.params.id;
+            if (!id || (id && !Types.ObjectId.isValid(id))) return res.status(404).send();
+            let objToUpdate:any = await Parte.findById(id);
+            if (!objToUpdate) return res.status(404).send();
+            const objUpdated = await objToUpdate.updateOne({ $set: { procesado:true } });
+            return res.json(objUpdated);
+        } catch (err) {
+            return next(err);
+        }   
+    }
+
     getQueryParams(req){
         let queryParams = super.getQueryParams(req);
         // El parametro fecha puede venir de dos formas diferentes en la url:
