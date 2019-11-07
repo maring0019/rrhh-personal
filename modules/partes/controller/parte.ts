@@ -7,6 +7,15 @@ import { Agente } from '../../agentes/schemas/agente';
 
 class ParteController extends BaseController {
 
+    // Posibles estados del parte diario
+    ESTADO_SIN_PRESENTAR = 0;
+    ESTADO_PRESENTACION_PARCIAL = 1;
+    ESTADO_PRESENTACION_TOTAL = 2;
+
+    async findEstadoParte(estadoFilter){
+        return await ParteEstado.findOne({ codigo: estadoFilter}).lean();
+    }
+
     /**
      * Crea un nuevo parte con parametros "fecha" y "ubicacion" provistos en
      * el body. Por defecto ademas el estado del parte sera "Sin Presentar".
@@ -20,7 +29,8 @@ class ParteController extends BaseController {
         try {
             let obj = req.body;
             if (!obj.estado){
-                const estadoSinPresentar = await ParteEstado.findOne({ codigo: 0}).lean();
+                // const estadoSinPresentar = await ParteEstado.findOne({ codigo: 0}).lean();
+                const estadoSinPresentar = await this.findEstadoParte(this.ESTADO_SIN_PRESENTAR);
                 obj.estado = { id:estadoSinPresentar._id, nombre: estadoSinPresentar.nombre }
             }
             let parte = new Parte(obj);
@@ -49,6 +59,14 @@ class ParteController extends BaseController {
     }
 
 
+    /**
+     * Recupera informacion de los partes de los agentes para un parte en particular cuyo
+     * id es especificado por parametro. Si el id es invalido retornamos una lista vacia.
+     * Los partes de los agentes se deben proveer con informacion de las fichadas del dia
+     * y eventualmente informacion de los articulos que se hayan ingresado en caso de una
+     * ausencia. Para obtener toda esta informacion basicamente se realiza un 'join' con
+     * las colecciones partes, fichadascache, ausenciasperiodo
+     */
     async getPartesAgentes(req, res, next){
         try {
             const id = req.params.id;
@@ -133,6 +151,51 @@ class ParteController extends BaseController {
             let objToUpdate:any = await Parte.findById(id);
             if (!objToUpdate) return res.status(404).send();
             const objUpdated = await objToUpdate.updateOne({ $set: { procesado:true } });
+            return res.json(objUpdated);
+        } catch (err) {
+            return next(err);
+        }   
+    }
+
+    /**
+     * Guarda todos los partes de agentes enviados en el body
+     * y actualiza el estado del parte al que pertenecen al de 
+     * Presentacion Parcial.
+     */
+    async guardar(req, res, next){
+        return await this.save(req, res, next, this.ESTADO_PRESENTACION_PARCIAL);
+    }
+
+    /**
+     * Guarda todos los partes de agentes enviados en el body
+     * y actualiza el estado del parte al que pertenecen al de 
+     * Presentacion Total.
+     */
+    async confirmar(req, res, next){
+        return await this.save(req, res, next, this.ESTADO_PRESENTACION_TOTAL);
+    }
+
+    async save(req, res, next, estadoParte){
+        try {
+            const id = req.params.id;
+            if (!id || (id && !Types.ObjectId.isValid(id))) return res.status(404).send();
+            let objToUpdate:any = await Parte.findById(id);
+            if (!objToUpdate) return res.status(404).send();
+            // 1. Guardamos primeramente los partes de agentes
+            let partesAgentes = req.body;
+            await ParteAgente.bulkWrite(
+                partesAgentes.map((data) => 
+                      ({ updateOne: {
+                            filter: { _id: Types.ObjectId(data._id)},
+                            update: { $set: data }
+                        }
+                    })
+                )
+            )
+            // 2. Actualizamos el estado del parte al que pertenecen
+            const nuevoEstado = await this.findEstadoParte(estadoParte);
+            const objUpdated = await objToUpdate.updateOne(
+                { $set: { estado : { id: nuevoEstado._id, nombre: nuevoEstado.nombre } } });
             return res.json(objUpdated);
         } catch (err) {
             return next(err);
