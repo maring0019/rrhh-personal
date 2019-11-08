@@ -6,7 +6,14 @@ import { ParteEstado } from '../schemas/parteestado';
 import { Agente } from '../../agentes/schemas/agente';
 
 class ParteController extends BaseController {
-
+    
+    constructor(model) {
+        super(model);
+        this.guardar = this.guardar.bind(this);
+        this.confirmar = this.confirmar.bind(this);
+        this.editar = this.editar.bind(this); 
+     }
+ 
     // Posibles estados del parte diario
     ESTADO_SIN_PRESENTAR = 0;
     ESTADO_PRESENTACION_PARCIAL = 1;
@@ -29,7 +36,6 @@ class ParteController extends BaseController {
         try {
             let obj = req.body;
             if (!obj.estado){
-                // const estadoSinPresentar = await ParteEstado.findOne({ codigo: 0}).lean();
                 const estadoSinPresentar = await this.findEstadoParte(this.ESTADO_SIN_PRESENTAR);
                 obj.estado = { id:estadoSinPresentar._id, nombre: estadoSinPresentar.nombre }
             }
@@ -172,6 +178,11 @@ class ParteController extends BaseController {
      * Presentacion Total.
      */
     async confirmar(req, res, next){
+        return await this.save(req, res, next, this.ESTADO_PRESENTACION_TOTAL);
+    }
+
+    async editar(req, res, next){
+        // TODO Notificar a los responsables que corresponda (via mail?)
         return await this.save(req, res, next, this.ESTADO_PRESENTACION_TOTAL);
     }
 

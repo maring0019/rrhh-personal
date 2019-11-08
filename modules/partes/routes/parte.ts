@@ -15,5 +15,6 @@ Routes.post(`${baseUrl}`, controller.add);
 Routes.post(`${baseUrl}/:id/procesar`, controller.procesar);
 Routes.post(`${baseUrl}/:id/guardar`, controller.guardar);
 Routes.post(`${baseUrl}/:id/confirmar`, controller.confirmar);
+Routes.post(`${baseUrl}/:id/editar`, controller.editar);
 Routes.put(`${baseUrl}/:id`, controller.update);
 Routes.delete(`${baseUrl}/:id`, controller.delete);
