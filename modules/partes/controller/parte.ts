@@ -4,6 +4,7 @@ import { Parte } from '../schemas/parte';
 import { ParteAgente } from '../schemas/parteagente';
 import { ParteEstado } from '../schemas/parteestado';
 import { Agente } from '../../agentes/schemas/agente';
+import { FichadaCache } from '../schemas/fichadacache';
 
 class ParteController extends BaseController {
     
@@ -14,6 +15,7 @@ class ParteController extends BaseController {
         this.editar = this.editar.bind(this);
         this.getPartesAgentes = this.getPartesAgentes.bind(this);
         this.getPartesAgenteReporte = this.getPartesAgenteReporte.bind(this);
+        this.getFichadasAgentesReporte = this.getFichadasAgentesReporte.bind(this);
      }
  
     // Posibles estados del parte diario
@@ -29,10 +31,7 @@ class ParteController extends BaseController {
      * Crea un nuevo parte con parametros "fecha" y "ubicacion" provistos en
      * el body. Por defecto ademas el estado del parte sera "Sin Presentar".
      * A su vez se crean los partes de los agentes con referencia al nuevo
-     * parte creado.
-     * @param req 
-     * @param res 
-     * @param next 
+     * parte creado. 
      */
     async add(req, res, next) {
         try {
@@ -138,6 +137,49 @@ class ParteController extends BaseController {
         }
     }
 
+    /**
+     * Recupera informacion de las fichadas de uno o mas agentes  en un rango de fechas
+     * y lugar de trabajo.
+     * TODO: Finalizar query para obtener Lugar de Pago y Recordar de colocar los datos
+     * del agente, o hacer un join. Mover quizas este metodo como un enpoint de fichadas
+     */
+    async getFichadasAgentesReporte(req, res, next){
+        try {
+            let casters = 
+                {
+                    casters: {
+                        documentoId: val => Types.ObjectId(val),
+                    },
+                    castParams: {
+                        'agente.id': 'documentoId' // castea el param agente.id al tipo ObjectId
+                        // 'ubicacion.id': 'documentoId' TODO Incorporar este parametro
+                    }
+                }
+            const params = this.getQueryParams(req, casters);
+            // Search Pipeline
+            let pipeline:any = [
+                { $match: params.filter || {}} ,
+                { $sort: params.sort || { fecha: -1 }},
+                { $project: 
+                    {
+                        agente: 1,
+                        fecha: 1,
+                        entrada: 1,
+                        salida: 1,
+                        horasTrabajadas:  { "$subtract": [ "$salida", "$entrada" ] } // dif en milisegundos
+                    }
+                } 
+            ]
+
+            let objs = await FichadaCache.aggregate(pipeline);
+            console.log(objs);
+            return res.json(objs);
+        } catch (err) {
+            return next(err);
+        }
+    }
+
+
     async procesar(req, res, next){
         try {
             const id = req.params.id;
@@ -210,7 +252,11 @@ class ParteController extends BaseController {
             // 2. Actualizamos el estado del parte al que pertenecen
             const nuevoEstado = await this.findEstadoParte(estadoParte);
             const objUpdated = await objToUpdate.updateOne(
-                { $set: { estado : { id: nuevoEstado._id, nombre: nuevoEstado.nombre } } });
+                { $set: 
+                    { 
+                        estado : { id: nuevoEstado._id, nombre: nuevoEstado.nombre } },
+                        fechaEnvio: new Date()
+                    });
             return res.json(objUpdated);
         } catch (err) {
             return next(err);

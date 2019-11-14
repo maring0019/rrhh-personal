@@ -5,8 +5,10 @@ export const FichadaCacheSchema = new Schema({
         id: {
             type: Types.ObjectId,
             required: true,
-            index: true
-        }
+            index: true,
+        },
+        nombre: String, 
+        apellido: String
     },
     fecha:{
         type: Date,
@@ -14,7 +16,8 @@ export const FichadaCacheSchema = new Schema({
         index: true
     }, 
     entrada: Date,
-    salida: Date
+    salida: Date,
+    horasTrabajadas: String
 
 })
 
