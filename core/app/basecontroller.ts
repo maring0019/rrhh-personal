@@ -98,8 +98,8 @@ class BaseController {
         }
     }
 
-    protected getQueryParams(req){
-        let queryParams = aqp(req.query);
+    protected getQueryParams(req, casters?){
+        let queryParams = aqp(req.query, casters);
         return queryParams;
     }
 

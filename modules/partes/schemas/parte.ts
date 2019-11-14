@@ -22,6 +22,16 @@ export const ParteSchema = new Schema({
         nombre: String
     },
     procesado: Boolean,
+    fechaEnvio: Date,
+    usuarioEnvio: { // TODO. Consultar: El usuario es siempre un agente?
+        id: {
+            type: Types.ObjectId,
+            // required: true,
+            index: true
+        },
+        nombre: String, 
+        apellido: String
+    },
     audit_user: Number,
     audit_fecha: Date
 })

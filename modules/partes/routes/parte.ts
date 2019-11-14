@@ -8,6 +8,7 @@ const baseUrl = '/partes';
 export const Routes = express.Router();
 
 Routes.get(`${baseUrl}`, controller.get);
+Routes.get(`${baseUrl}/agentes/reportes`, controller.getPartesAgenteReporte);
 Routes.get(`${baseUrl}/:id/partesagentes`, controller.getPartesAgentes);
 Routes.get(`${baseUrl}/:id`, controller.getById);
 

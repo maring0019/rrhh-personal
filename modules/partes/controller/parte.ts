@@ -11,7 +11,9 @@ class ParteController extends BaseController {
         super(model);
         this.guardar = this.guardar.bind(this);
         this.confirmar = this.confirmar.bind(this);
-        this.editar = this.editar.bind(this); 
+        this.editar = this.editar.bind(this);
+        this.getPartesAgentes = this.getPartesAgentes.bind(this);
+        this.getPartesAgenteReporte = this.getPartesAgenteReporte.bind(this);
      }
  
     // Posibles estados del parte diario
@@ -66,12 +68,12 @@ class ParteController extends BaseController {
 
 
     /**
-     * Recupera informacion de los partes de los agentes para un parte en particular cuyo
-     * id es especificado por parametro. Si el id es invalido retornamos una lista vacia.
-     * Los partes de los agentes se deben proveer con informacion de las fichadas del dia
-     * y eventualmente informacion de los articulos que se hayan ingresado en caso de una
-     * ausencia. Para obtener toda esta informacion basicamente se realiza un 'join' con
-     * las colecciones partes, fichadascache, ausenciasperiodo
+     * Recupera informacion de los partes de los agentes para un parte diario en particular
+     * cuyo id es especificado por parametro. Si el id es invalido retornamos el status 404.
+     * Los partes de los agentes se deben retornar con informacion de las fichadas del dia y
+     * eventualmente informacion de los articulos que se hayan ingresado en caso de una ausencia.
+     * Para obtener toda esta informacion basicamente se realiza un 'join' con las colecciones
+     * partes, fichadascache, ausenciasperiodo
      */
     async getPartesAgentes(req, res, next){
         try {
@@ -79,72 +81,58 @@ class ParteController extends BaseController {
             if (!id || (id && !Types.ObjectId.isValid(id))) return next(404);
             let parte:any = await Parte.findById(id);
             if (!parte) return next(404);
-            const pipeline = [
-                { $match: { 'parte.id': Types.ObjectId(parte._id) } },
-                // Join con fichadascache sobre agente y fecha
-                { $lookup: {
-                    from: "fichadascache",
-                    let: { agente_parte: "$agente.id", fecha_parte: "$fecha"},
-                    pipeline: [
-                        { $match:
-                            { $expr:
-                                { $and:
-                                    [
-                                        { $eq: [ "$agente.id",  "$$agente_parte" ] }, 
-                                        { $eq: [
-                                             // Busqueda solo por fecha, sin importar la hora o tz
-                                             { $dateToString: { date: "$fecha", format:"%Y-%m-%d"}} ,
-                                             { $dateToString: { date: "$$fecha_parte", format:"%Y-%m-%d"}}
-                                            ] }
-                                    ]
-                                }
-                            }
-                        },
-                        { $project: 
-                            {
-                                entrada: 1,
-                                salida: 1,
-                                horasTrabajadas:  { "$subtract": [ "$salida", "$entrada" ] } // dif en milisegundos
-                            }
-                        } 
-                    ],
-                    as: "fichadas"
-                    }
-                },
-                { $unwind: { path: "$fichadas", preserveNullAndEmptyArrays: true }},
-                // Join con ausenciasperiodo sobre agente y fecha
-                { $lookup: {
-                    from: "ausenciasperiodo",
-                    let: { agente_parte: "$agente.id", fecha_parte: "$fecha"},
-                    pipeline: [
-                        { $match:
-                            { $expr:
-                                { $and:
-                                    [
-                                        { $eq: [ "$agente.id",  "$$agente_parte" ] },
-                                        // Busqueda solo por fecha, sin importar la hora o tz
-                                        { $lte: [
-                                            { $dateToString: { date: "$fechaDesde", format:"%Y-%m-%d"}} ,
-                                            { $dateToString: { date: "$$fecha_parte", format:"%Y-%m-%d"}}
-                                            ]
-                                        },
-                                        { $gte: [
-                                            { $dateToString: { date: "$fechaHasta", format:"%Y-%m-%d"}} ,
-                                            { $dateToString: { date: "$$fecha_parte", format:"%Y-%m-%d"}}
-                                        ]}
-                                    ]
-                                }
-                            }
-                        },
-                        { $project: { articulo: 1 } } // Solo interesa el articulo en caso de ausencia
-                    ],
-                    as: "ausencia"
-                    }
-                },
-                { $unwind: { path: "$ausencia", preserveNullAndEmptyArrays: true} }
+            let pipeline:any = [
+                { $match: { 'parte.id': Types.ObjectId(parte._id) } }
             ]
+            pipeline = pipeline.concat(this.pipelineLookupFichadas).concat(this.pipelineLookupAusentismo);
             let partes = await ParteAgente.aggregate(pipeline);
             return res.json(partes);
+        } catch (err) {
+            return next(err);
+        }
+    }
+
+    /**
+     * Recupera informacion de los partes de un agente en particular en un rango de fechas.
+     * Para recuperar los datos de las fichadas y ausencias, utiliza los mismos pipelines
+     * que el metodo 'getPartesAgentes'
+     */
+    async getPartesAgenteReporte(req, res, next){
+        try {
+            let casters = 
+                {
+                    casters: {
+                        documentoId: val => Types.ObjectId(val),
+                    },
+                    castParams: {
+                        'agente.id': 'documentoId' // castea el param agente.id al tipo ObjectId
+                    }
+                }
+            const params = this.getQueryParams(req, casters);
+            // Search Pipeline
+            let pipeline:any = [
+                { $match: params.filter || {}} ,
+                { $sort: params.sort || { fecha: -1 }},
+                { $lookup: {
+                    from: "partes",
+                    let: { parte_id: "$parte.id"},
+                    pipeline: 
+                        [{ 
+                            $match: { 
+                                $expr: { 
+                                    $eq: ["$$parte_id", "$_id"] // Join con parte id
+                                },
+                            }
+                        }],
+                    as: "parte"
+                    }
+                },
+                { $unwind: { path: "$parte", preserveNullAndEmptyArrays: true} }
+            ]
+
+            pipeline = pipeline.concat(this.pipelineLookupFichadas).concat(this.pipelineLookupAusentismo);
+            let objs = await ParteAgente.aggregate(pipeline);
+            return res.json(objs);
         } catch (err) {
             return next(err);
         }
@@ -181,11 +169,27 @@ class ParteController extends BaseController {
         return await this.save(req, res, next, this.ESTADO_PRESENTACION_TOTAL);
     }
 
+    
+    /**
+     * Al igual que el metodo 'procesar', guarda todos los partes
+     * de agentes enviados en el body y actualiza el estado del
+     * parte al que pertenecen al de Presentacion Total, pero en 
+     * forma complementaria notifica via mail? a un conjunto de
+     * usuarios responsables de auditar/validar los cambios que 
+     * se han realizado.
+     */
     async editar(req, res, next){
         // TODO Notificar a los responsables que corresponda (via mail?)
         return await this.save(req, res, next, this.ESTADO_PRESENTACION_TOTAL);
     }
 
+    /**
+     * Helper utilizado por los metodos 'guardar', 'confirmar' y 'editar'.
+     * Basicamente guarda un parte dario actualizando su estado segun lo
+     * indicado por el parametro estadoParte y los partes de los agentes
+     * correspondientes.
+     * @param estadoParte 
+     */
     async save(req, res, next, estadoParte){
         try {
             const id = req.params.id;
@@ -213,8 +217,8 @@ class ParteController extends BaseController {
         }   
     }
 
-    getQueryParams(req){
-        let queryParams = super.getQueryParams(req);
+    getQueryParams(req, casters?){
+        let queryParams = super.getQueryParams(req, casters);
         // El parametro fecha puede venir de dos formas diferentes en la url:
         //  - como una fecha en particular fecha=valor
         //  - como un rango de fechas fecha>=valor&fecha<=valor
@@ -248,7 +252,75 @@ class ParteController extends BaseController {
                 ]}
             ]}
         return queryParams;
-    } 
+    }
+
+
+    pipelineLookupAusentismo =  [
+        // Join con ausenciasperiodo sobre agente y fecha
+        { $lookup: {
+            from: "ausenciasperiodo",
+            let: { agente_parte: "$agente.id", fecha_parte: "$fecha"},
+            pipeline: [
+                { $match:
+                    { $expr:
+                        { $and:
+                            [
+                                { $eq: [ "$agente.id",  "$$agente_parte" ] },
+                                // Busqueda solo por fecha, sin importar la hora o tz
+                                { $lte: [
+                                    { $dateToString: { date: "$fechaDesde", format:"%Y-%m-%d"}} ,
+                                    { $dateToString: { date: "$$fecha_parte", format:"%Y-%m-%d"}}
+                                    ]
+                                },
+                                { $gte: [
+                                    { $dateToString: { date: "$fechaHasta", format:"%Y-%m-%d"}} ,
+                                    { $dateToString: { date: "$$fecha_parte", format:"%Y-%m-%d"}}
+                                ]}
+                            ]
+                        }
+                    }
+                },
+                { $project: { articulo: 1 } } // Solo interesa el articulo en caso de ausencia
+            ],
+            as: "ausencia"
+            }
+        },
+        { $unwind: { path: "$ausencia", preserveNullAndEmptyArrays: true} }
+    ]
+
+    pipelineLookupFichadas = [
+          // Join con fichadascache sobre agente y fecha
+          { $lookup: {
+            from: "fichadascache",
+            let: { agente_parte: "$agente.id", fecha_parte: "$fecha"},
+            pipeline: [
+                { $match:
+                    { $expr:
+                        { $and:
+                            [
+                                { $eq: [ "$agente.id",  "$$agente_parte" ] }, 
+                                { $eq: [
+                                     // Busqueda solo por fecha, sin importar la hora o tz
+                                     { $dateToString: { date: "$fecha", format:"%Y-%m-%d"}} ,
+                                     { $dateToString: { date: "$$fecha_parte", format:"%Y-%m-%d"}}
+                                    ] }
+                            ]
+                        }
+                    }
+                },
+                { $project: 
+                    {
+                        entrada: 1,
+                        salida: 1,
+                        horasTrabajadas:  { "$subtract": [ "$salida", "$entrada" ] } // dif en milisegundos
+                    }
+                } 
+            ],
+            as: "fichadas"
+            }
+        },
+        { $unwind: { path: "$fichadas", preserveNullAndEmptyArrays: true }}
+    ]
 }
 
 export default ParteController; 
