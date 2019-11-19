@@ -139,9 +139,7 @@ class ParteController extends BaseController {
 
     /**
      * Recupera informacion de las fichadas de uno o mas agentes  en un rango de fechas
-     * y lugar de trabajo.
-     * TODO: Finalizar query para obtener Lugar de Pago y Recordar de colocar los datos
-     * del agente, o hacer un join. Mover quizas este metodo como un enpoint de fichadas
+     * y lugar de trabajo (alias ubicaciones).
      */
     async getFichadasAgentesReporte(req, res, next){
         try {
@@ -150,19 +148,53 @@ class ParteController extends BaseController {
                     casters: {
                         documentoId: val => Types.ObjectId(val),
                     },
-                    castParams: {
-                        'agente.id': 'documentoId' // castea el param agente.id al tipo ObjectId
-                        // 'ubicacion.id': 'documentoId' TODO Incorporar este parametro
+                    castParams: { // castea los param agente.id  y ubicacion.id al tipo ObjectId
+                        'agente.id': 'documentoId', 
+                        'ubicacion.id': 'documentoId'
                     }
                 }
-            const params = this.getQueryParams(req, casters);
+            let params = this.getQueryParams(req, casters);
+            let ubicacion;
+            // Si se aplica un filtro por ubicacion, por el momento solo es requerido
+            // al realizar el lookup con agentes, por lo tanto lo quitamos del conjunto
+            // de filtros para la busqueda de fichadas. 
+            // Analizar si no es conveniente en un futuro colocar la información de la
+            // ubicacion del agente como parte de los datos de la fichada ya que si el 
+            // agente cambia de ubicacion/lugar de trabajo, no queda registro de la real
+            // ubicacion al momento de fichar. Sí seria posible obtener esta info desde 
+            // el parte (ya que el parte si tiene ubicacion), sin embargo no siempre se
+            // emiten los partes para todos los agentes.
+            if (params.filter.ubicacion) {
+                ubicacion = params.filter.ubicacion;
+                delete params.filter['ubicacion']
+            }
             // Search Pipeline
             let pipeline:any = [
                 { $match: params.filter || {}} ,
                 { $sort: params.sort || { fecha: -1 }},
+                { $lookup: {
+                    from: "agentes",
+                    let: { agente_fichada: "$agente.id", ubicacion: ubicacion },
+                    pipeline: [
+                        { $match:
+                            { $expr:
+                                { $and:
+                                    [
+                                        { $eq: [ "$_id",  "$$agente_fichada" ] },
+                                        (ubicacion)? { $eq: [ "$situacionLaboral.cargo.servicio.ubicacion",  "$$ubicacion" ] }: {},
+                                    ]
+                                }
+                            }
+                        },
+                    ],
+                    as: "agente"
+                    }
+                },
+                { $unwind: { path: "$agente" } },
                 { $project: 
                     {
-                        agente: 1,
+                        agente: { nombre: '$agente.nombre', apellido: '$agente.apellido' } ,
+                        ubicacion: '$agente.situacionLaboral.cargo.servicio',
                         fecha: 1,
                         entrada: 1,
                         salida: 1,
@@ -170,9 +202,8 @@ class ParteController extends BaseController {
                     }
                 } 
             ]
-
+            
             let objs = await FichadaCache.aggregate(pipeline);
-            console.log(objs);
             return res.json(objs);
         } catch (err) {
             return next(err);
