@@ -21,6 +21,43 @@ export async function getFrancos(req, res, next) {
     }
 }
 
+export async function getAsEvento(req, res, next) {
+    try {
+        let matchAgente:any = {};
+        if (req.query.agenteID) {
+            matchAgente = { 'agente.id': Types.ObjectId(req.query.agenteID)};
+        }
+        // TODO: Aplicar algun filtro por anio o similar. Ahora por defecto
+        // recupera la info en un periodo de un anio hacia atras y adelante
+        const thisYear = (new Date()).getFullYear();
+        const fechaHasta = new Date((thisYear + 1) + "-12-31");
+        const fechaDesde = new Date((thisYear - 1) + "-01-01") ;
+        let matchFecha:any = { fecha: { $gte:fechaDesde, $lte:fechaHasta }};
+        const pipeline = [
+            { $match: 
+                { ...matchAgente, ...matchFecha}
+            },
+            { $project:
+                {
+                    id: "$_id",
+                    title: { $ifNull: ['$descripcion', 'Franco'] },
+                    start: { $dateToString: { date: "$fecha", format:"%Y-%m-%d"}},
+                    allDay: { $literal: true },
+                    color: "grey",
+                    type: "Franco",
+                    ausentismoFechaDesde: { $dateToString: { date: "$fecha", format:"%Y-%m-%d"}},
+                    ausentismoFechaHasta: { $dateToString: { date: "$fecha", format:"%Y-%m-%d"}},
+                    startString: { $dateToString: { date: "$fecha", format:"%Y-%m-%d"}},
+                }
+            }
+        ];
+        let objs = await Franco.aggregate(pipeline)
+        return res.json(objs);
+    } catch (err) {
+        return next(err);
+    }
+}
+
 
 export async function addFranco(req, res, next) {
     try {

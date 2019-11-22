@@ -7,6 +7,7 @@ const controller = new FeriadoController(Feriado);
 export const Routes = express.Router();
 
 Routes.get('/feriados', controller.get);
+Routes.get('/feriados/eventos', controller.getAsEvento);
 Routes.get('/feriados/:id', controller.getById);
 
 Routes.post('/feriados', controller.add);

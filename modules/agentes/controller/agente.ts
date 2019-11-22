@@ -230,7 +230,49 @@ async function getAusencias(req, res, next){
                 
         const pipeline = [
             { $match: { 'agente.id': Types.ObjectId(agente.id) } },
+            { $unwind: '$ausencias'}
+        ]
+        let ausencias = await AusenciaPeriodo.aggregate(pipeline)
+        return res.json(ausencias);
+    } catch (err) {
+        return next(err);
+    }
+}
+
+
+async function getAusenciasAsEvento(req, res, next){
+    try {
+        const id = req.params.id;
+        if (!id || (id && !Types.ObjectId.isValid(id))) return next(404);
+        let agente:any = await Agente.findById(id);
+        if (!agente) return next(404);
+        
+        // TODO: Aplicar algun filtro por anio o similar. Ahora por defecto
+        // recupera la info en un periodo de un anio hacia atras y adelante
+        const thisYear = (new Date()).getFullYear();
+        const fechaHastaMax = new Date((thisYear + 1) + "-12-31");
+        const fechaDesdeMin = new Date((thisYear - 1) + "-01-01") ;
+        let matchFecha:any = { fechaHasta: { $gt: fechaDesdeMin }, fechaDesde: { $lt: fechaHastaMax}};
+                
+        const pipeline = [
+            { $match: {
+                ...{'agente.id': Types.ObjectId(agente.id) }, ...matchFecha }
+            },
             { $unwind: '$ausencias'},
+            { $project:
+                {
+                    id: "$ausencias._id",
+                    title: { $concat: ["ART. ", "$articulo.codigo"] },
+                    start: { $dateToString: { date: "$ausencias.fecha", format:"%Y-%m-%d"}},
+                    allDay: { $literal: true },
+                    backgroundColor: { $ifNull: ['$articulo.color', '#bce8f1'] },
+                    color: "",
+                    type: "AUSENCIA",
+                    ausentismoFechaDesde: { $dateToString: { date: "$fechaDesde", format:"%Y-%m-%d"}},
+                    ausentismoFechaHasta: { $dateToString: { date: "$fechaHasta", format:"%Y-%m-%d"}},
+                    startString: { $dateToString: { date: "$ausencias.fecha", format:"%Y-%m-%d"}}
+                }
+            }
         ]
         let ausencias = await AusenciaPeriodo.aggregate(pipeline)
         return res.json(ausencias);
@@ -388,6 +430,7 @@ const AgenteController = {
     getAgenteByID,
     getFotoPerfil,
     getAusencias,
+    getAusenciasAsEvento,
     getLicenciasTotales,
     uploadFotoPerfil,
     uploadFilesAgente,

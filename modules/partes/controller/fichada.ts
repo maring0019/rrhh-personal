@@ -11,10 +11,23 @@ class FichadaController extends BaseController {
 
     constructor(model) {
         super(model);
+        this.addFromFichador = this.addFromFichador.bind(this);
         this.actualizaFichadaIO = this.actualizaFichadaIO.bind(this);
     }
 
-    async add(req, res, next) {
+    /**
+     * Guarda una nueva fichada proveniente del fichador. El nro de
+     * agente se provee en el body (el fichador por ahora desconoce
+     * los id internos utilizados en mongodb). Por lo tanto se debe
+     * identificar primero correctamente el agente que ha fichado.
+     * Luego se actualiza la fichada cache para intentar 'emparejar'
+     * una ficahda de entrada con una de salida para asi por ejemplo
+     * poder luego determinar la cantidad de hs trabajadas.
+     * Obs: Este metodo es un reemplazo 'temporal' al trigger que se
+     * ejecuta actualmente en el viejo sistema luego de cada insert
+     * en la tabla de fichadas.
+     */
+    async addFromFichador(req, res, next) {
         try {
             let obj = req.body;
             // Primero necesitamos recuperar el agente en mongodb a partir 
@@ -36,7 +49,7 @@ class FichadaController extends BaseController {
                     reloj: obj.reloj
                 });
             const nuevaFichada = await object.save();
-            // Finalmente guardamos la fichadacache (entrada y salida)
+            // Finalmente actualizamos la fichadacache (entrada y salida)
             await this.actualizaFichadaIO(nuevaFichada);
             return res.json(nuevaFichada);
         } catch (err) {
@@ -119,6 +132,7 @@ class FichadaController extends BaseController {
     }
 
     diffHours(date1, date2){
+        // TODO Implementar!
         return 12;
     }
 
