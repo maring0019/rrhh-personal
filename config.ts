@@ -42,6 +42,12 @@ export const modules = {
         route: '/modules/partes',
         middleware: null,
     },
+    guardia:{
+        active: true,
+        path: './modules/guardias/routes',
+        route: '/modules/guardias',
+        middleware: null,
+    },
     reportes:{
         active: true,
         path: './modules/reportes/routes',
