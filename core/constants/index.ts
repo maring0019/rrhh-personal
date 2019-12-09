@@ -32,5 +32,9 @@ export const constantes = {
         type: String,
         required: true,
         enum: ['primario', 'secundario', 'terciario', 'universitario', 'postgrado', 'especialidad']
-    }
+    },
+    TIPOGUARDIA: {
+        type: String,
+        enum: ['activa', 'pasiva']
+    },
 };
