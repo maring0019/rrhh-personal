@@ -13,7 +13,8 @@ export const GuardiaSchema = new Schema({
             type: Types.ObjectId,
             required: true
         },
-        nombre: String
+        nombre: String,
+        codigo: Number
     },
     tipoGuardia: constantes.TIPOGUARDIA,
     categoria: {
