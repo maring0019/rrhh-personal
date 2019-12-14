@@ -25,7 +25,7 @@ export default {
         templateRootPath: env('TEMPLATES_ROOT', path.join(__dirname, '../views'))
     },
     auth: {
-        method: env('AUTH', 'ldap'),
+        method: env('AUTH', ''),
         ldap: {
             host: env('LADP_HOST', 'localhost'),
             port: env('LADP_PORT', 389),

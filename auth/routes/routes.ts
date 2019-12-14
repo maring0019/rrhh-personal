@@ -60,6 +60,15 @@ Routes.post('/login', async (req, res, next) => {
         const password = sha1Hash(req.body.password);
         const user = await Usuario.findOne({ usuario: req.body.usuario, password });
         if (!user) {
+            // let usuario = new Usuario(
+            //     { usuario: 28588178,
+            //         activo: true,
+            //         nombre: 'David',
+            //         apellido: 'Nievas',
+            //         password: sha1Hash('')
+            //     }
+            // );
+            // usuario.save();
             return next(403);
         }
         return res.json({
@@ -71,10 +80,10 @@ Routes.post('/login', async (req, res, next) => {
         return next(403);
     }
     // Usar LDAP?
-    // if (!(config.auth.method === 'ldap')) {
-    if (true) {
+    if (!(config.auth.method === 'ldap')) {
         // Access de prueba
-        login(req.body.usuario, req.body.usuario);
+        loginCache();
+        // login(req.body.usuario, req.body.usuario);
     } else {
         const server = config.auth.ldap.host + ':' +  config.auth.ldap.port;
         const reachable = await isReachable(server);

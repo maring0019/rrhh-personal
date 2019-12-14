@@ -34,7 +34,7 @@ class FeriadoController extends BaseController {
                         title: { $ifNull: ['$descripcion', 'Feriado'] },
                         start: { $dateToString: { date: "$fecha", format:"%Y-%m-%d"}},
                         allDay: { $literal: true },
-                        backgroundColor: "#e9e9e9",
+                        backgroundColor: "transparent",
                         textColor:'#7d7d7d',
                         type: "FERIADO",
                         ausentismoFechaDesde: { $dateToString: { date: "$fecha", format:"%Y-%m-%d"}},
