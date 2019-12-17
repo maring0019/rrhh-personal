@@ -268,9 +268,9 @@ async function getAusenciasAsEvento(req, res, next){
                     backgroundColor: "transparent",
                     textColor: { $ifNull: ['$articulo.color', '#002738'] },
                     type: "AUSENCIA",
-                    ausentismoFechaDesde: { $dateToString: { date: "$fechaDesde", format:"%Y-%m-%d"}},
-                    ausentismoFechaHasta: { $dateToString: { date: "$fechaHasta", format:"%Y-%m-%d"}},
-                    startString: { $dateToString: { date: "$ausencias.fecha", format:"%Y-%m-%d"}}
+                    ausentismoFechaDesde: { $dateToString: { date: "$fechaDesde", format:"%Y-%m-%dT00:00:00"}},
+                    ausentismoFechaHasta: { $dateToString: { date: "$fechaHasta", format:"%Y-%m-%dT00:00:00"}},
+                    startString: { $dateToString: { date: "$ausencias.fecha", format:"%Y-%m-%dT00:00:00"}}
                 }
             }
         ]

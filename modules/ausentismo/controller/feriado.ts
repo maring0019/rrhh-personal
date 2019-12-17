@@ -37,9 +37,9 @@ class FeriadoController extends BaseController {
                         backgroundColor: "transparent",
                         textColor:'#7d7d7d',
                         type: "FERIADO",
-                        ausentismoFechaDesde: { $dateToString: { date: "$fecha", format:"%Y-%m-%d"}},
-                        ausentismoFechaHasta: { $dateToString: { date: "$fecha", format:"%Y-%m-%d"}},
-                        startString: { $dateToString: { date: "$fecha", format:"%Y-%m-%d"}},
+                        ausentismoFechaDesde: { $dateToString: { date: "$fecha", format:"%Y-%m-%dT00:00:00"}},
+                        ausentismoFechaHasta: { $dateToString: { date: "$fecha", format:"%Y-%m-%dT00:00:00"}},
+                        startString: { $dateToString: { date: "$fecha", format:"%Y-%m-%dT00:00:00"}},
                     }
                 }
             ];

@@ -46,9 +46,9 @@ export async function getAsEvento(req, res, next) {
                     backgroundColor: "transparent",
                     textColor: '#002738', //{ $ifNull: ['$articulo.color', '#002738'] },
                     type: "Franco",
-                    ausentismoFechaDesde: { $dateToString: { date: "$fecha", format:"%Y-%m-%d"}},
-                    ausentismoFechaHasta: { $dateToString: { date: "$fecha", format:"%Y-%m-%d"}},
-                    startString: { $dateToString: { date: "$fecha", format:"%Y-%m-%d"}},
+                    ausentismoFechaDesde: { $dateToString: { date: "$fecha", format:"%Y-%m-%dT00:00:00"}},
+                    ausentismoFechaHasta: { $dateToString: { date: "$fecha", format:"%Y-%m-%dT00:00:00"}},
+                    startString: { $dateToString: { date: "$fecha", format:"%Y-%m-%dT00:00:00"}},
                 }
             }
         ];
