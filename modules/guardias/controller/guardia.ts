@@ -55,60 +55,9 @@ class GuardiaController extends BaseController {
             let guardia:any = await Guardia.findById(id);
             if (!guardia) return res.status(404).send();
             let ws = fs.createWriteStream('/tmp/guardia.csv');
-
-            // Encabezado
-            const tipoGuardia = (guardia.tipoGuardia == 'pasiva')? "PASIVA":"ACTIVA";
-            const esProfesional = (guardia.categoria.nombre == 'Profesional')? "x":"TECNICO";
-            const esTecnico = (guardia.categoria.nombre == 'Técnico')? "x": (guardia.categoria.nombre == 'Auxiliar')? "AUXILIARES":"TECNICO";
-            const esAuxiliar = (guardia.categoria.nombre == 'Auxiliar')? "x":"AUXILIARES";
-            const fechaDesde = moment(guardia.periodo.fechaDesde).format('DD/MM/YYYY');
-            const fechaHasta = moment(guardia.periodo.fechaHasta).format('DD/MM/YYYY');
-            let row1 = `CERTIFICACION DE GUARDIAS ${tipoGuardia}S,,,,PROFESIONAL,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,`;
-            let row2 = `Mes:,,,,${esProfesional},,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,`;
-            let row3 = `Dependencia: HOSPITAL DR. EDUARDO CASTRO RENDON,,,,${esTecnico},,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,`;
-            let row4 = `Guardias ${tipoGuardia.toLowerCase()}s: ${fechaDesde} al ${fechaHasta},,,,${esAuxiliar},,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,`;
-            let row5 = `,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,`;
-            let filasCSV = [];
-            filasCSV.push(row1.split(','));
-            filasCSV.push(row2.split(','));
-            filasCSV.push(row3.split(','));
-            filasCSV.push(row4.split(','));
-            filasCSV.push(row5.split(','));
-            
-            // Guardias por Agente
-            let headers = ["DEM","Servicio","Legajo","Agente","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","Total"];
-            filasCSV.push(headers);
-            let range = guardia.periodo.range();
-            guardia.planilla.forEach(guardiaAgente => {
-                let grillaGuardias = [];
-                let totalGuardias = 0;
-                grillaGuardias.push('Nro de Lote'); // TODO Guardar Lote (Crear Schema)
-                grillaGuardias.push(guardia.servicio.nombre);
-                grillaGuardias.push(guardiaAgente.agente.id); // TODO Guardar Legajo
-                grillaGuardias.push(guardiaAgente.agente.apellido);
-                range.forEach((dia, index) => {
-                    if (guardiaAgente.diasGuardia[index]){
-                        const diaCompleto = guardiaAgente.diasGuardia[index].diaCompleto;
-                        totalGuardias += diaCompleto? 1:0.5;
-                        grillaGuardias.push(diaCompleto?'X':'M');
-                    }
-                    else{
-                        grillaGuardias.push('');
-                    }
-                });
-                grillaGuardias.push(totalGuardias);
-                filasCSV.push(grillaGuardias)
-            });
-
-            let footer = `Firma y Sello del Director,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,`;
-            filasCSV.push(footer.split(','));
+            let filasCSV = this._generarFilasCSV(guardia);
             csv.write(filasCSV, {
                     headers: false
-                    // transform: (row) => {
-                    //     return {
-                    //         Agente: row.agente.nombre
-                    //     };
-                    // }
                 })   
                 .pipe(ws)
                 .on('finish', () => {
@@ -123,8 +72,57 @@ class GuardiaController extends BaseController {
         } catch (err) {
             return next(err);
         }
+    }
 
+    private _generarFilasCSV(guardia){
+        let filasCSV = [];
+        // Datos del Encabezado.
+        const tipoGuardia = (guardia.lote.tipoGuardia == 'pasiva')? "PASIVA":"ACTIVA";
+        const esProfesional = (guardia.lote.categoria.nombre == 'Profesional')? "x":"TECNICO";
+        const esTecnico = (guardia.lote.categoria.nombre == 'Técnico')? "x": (guardia.lote.categoria.nombre == 'Auxiliar')? "AUXILIARES":"TECNICO";
+        const esAuxiliar = (guardia.lote.categoria.nombre == 'Auxiliar')? "x":"AUXILIARES";
+        const fechaDesde = moment(guardia.periodo.fechaDesde).utc().format('DD/MM/YYYY');
+        const fechaHasta = moment(guardia.periodo.fechaHasta).utc().format('DD/MM/YYYY');
+        let row1 = `CERTIFICACION DE GUARDIAS ${tipoGuardia}S,,,,PROFESIONAL,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,`;
+        let row2 = `Mes:,,,,${esProfesional},,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,`;
+        let row3 = `Dependencia: HOSPITAL DR. EDUARDO CASTRO RENDON,,,,${esTecnico},,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,`;
+        let row4 = `Guardias ${tipoGuardia.toLowerCase()}s: ${fechaDesde} al ${fechaHasta},,,,${esAuxiliar},,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,`;
+        let row5 = `,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,`;
+        
+        filasCSV.push(row1.split(','));
+        filasCSV.push(row2.split(','));
+        filasCSV.push(row3.split(','));
+        filasCSV.push(row4.split(','));
+        filasCSV.push(row5.split(','));
+        
+        // Datos de las Guardias por Agente
+        let headers = ["DEM","Servicio","Legajo","Agente","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","Total"];
+        filasCSV.push(headers);
+        let range = guardia.periodo.range();
+        guardia.planilla.forEach(guardiaAgente => {
+            let grillaGuardias = [];
+            let totalGuardias = 0;
+            grillaGuardias.push(guardia.lote.numero);
+            grillaGuardias.push(guardia.lote.servicio.nombre);
+            grillaGuardias.push(guardiaAgente.agente.numero);
+            grillaGuardias.push(`${guardiaAgente.agente.apellido} ${guardiaAgente.agente.nombre}`  );
+            range.forEach((dia, index) => {
+                if (guardiaAgente.diasGuardia[index]){
+                    const diaCompleto = guardiaAgente.diasGuardia[index].diaCompleto;
+                    totalGuardias += diaCompleto? 1:0.5;
+                    grillaGuardias.push(diaCompleto?'X':'M');
+                }
+                else{
+                    grillaGuardias.push('');
+                }
+            });
+            grillaGuardias.push(totalGuardias);
+            filasCSV.push(grillaGuardias)
+        });
 
+        let footer = `Firma y Sello del Director,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,`;
+        filasCSV.push(footer.split(','));
+        return filasCSV;
     }
 
 
@@ -132,7 +130,8 @@ class GuardiaController extends BaseController {
      * Helper utilizado por los metodos 'add', y 'addAndConfirmar'
      * Basicamente crea una guardia con el estado indicado por el
      * parametro estadoGuardia
-     * @param estadoGuardia  
+     * @param estadoGuardia
+     * TODO: Validar que el periodo, y lote sean unicos 
      */
     async saveAdd(req, res, next, estadoGuardia){
         try {

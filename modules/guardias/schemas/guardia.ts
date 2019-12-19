@@ -2,28 +2,29 @@
 import { Schema, Types, model } from 'mongoose';
 import { GuardiaPeriodoSchema } from './guardiaperiodo';
 import { GuardiaItemPlanillaSchema } from './guardiaitemplanilla';
-import { constantes } from '../../../core/constants';
+import { GuardiaLoteSchema } from './guardialote';
 
 
 export const GuardiaSchema = new Schema({
     
     periodo: GuardiaPeriodoSchema,
-    servicio: {
-        id: {
-            type: Types.ObjectId,
-            required: true
-        },
-        nombre: String,
-        codigo: Number
-    },
-    tipoGuardia: constantes.TIPOGUARDIA,
-    categoria: {
-        id: {
-            type: Types.ObjectId,
-            required: true
-        },
-        nombre: String
-    },
+    lote: GuardiaLoteSchema,
+    // servicio: {
+    //     id: {
+    //         type: Types.ObjectId,
+    //         required: true
+    //     },
+    //     nombre: String,
+    //     codigo: Number
+    // },
+    // tipoGuardia: constantes.TIPOGUARDIA,
+    // categoria: {
+    //     id: {
+    //         type: Types.ObjectId,
+    //         required: true
+    //     },
+    //     nombre: String
+    // },
     planilla: [GuardiaItemPlanillaSchema],
     estado: String,
     fechaEntrega: Date,
@@ -45,13 +46,13 @@ export const GuardiaSchema = new Schema({
     fechaValidacion: Date
 });
 
-GuardiaSchema.index({
-    periodo: 1,
-    servicio: 1,
-    categoria: 1,
-    tipoGuardia: 1
-  }, {
-    unique: true,
-  });
+// GuardiaSchema.index({
+//     periodo: 1,
+//     servicio: 1,
+//     categoria: 1,
+//     tipoGuardia: 1
+//   }, {
+//     unique: true,
+//   });
 
 export const Guardia = model('Guardia', GuardiaSchema, 'guardias');

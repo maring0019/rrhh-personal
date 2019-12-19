@@ -35,6 +35,7 @@ export const constantes = {
     },
     TIPOGUARDIA: {
         type: String,
+        required: true,
         enum: ['activa', 'pasiva']
     },
 };

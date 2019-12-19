@@ -81,7 +81,8 @@ class BaseController {
 
     async get(req, res, next) {
         try {
-            const params = this.getQueryParams(req);
+            const casters = this.getQueryParamsCasters();
+            const params = this.getQueryParams(req, casters);
             let objs = await this.search(params);
             return res.json(objs);
         } catch (err) {
@@ -102,6 +103,12 @@ class BaseController {
         let queryParams = aqp(req.query, casters);
         return queryParams;
     }
+
+
+    protected getQueryParamsCasters(){
+        return {};
+    }
+
 
     protected async search(params){
         let objs = await this._model

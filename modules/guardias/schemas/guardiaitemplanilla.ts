@@ -14,7 +14,8 @@ export const GuardiaItemPlanillaSchema = new Schema({
             index: true,
         },
         nombre: String, 
-        apellido: String
+        apellido: String,
+        numero: String
     },
     diasGuardia: [DiaGuardiaSchema]
 })
