@@ -39,8 +39,8 @@ export const FormulaSchema = new Schema({
     parametro: String,                    // Representa un numero de dias
     comparador: constantes.COMPARADOR,    // 
     sexo:constantes.SEXO,                 // Indica segun el sexo del agente si se debe aplicar o no el control/formula definida
-    periodo: String, //PeriodoSchema,               // Indica el periodo en el que se debe evaluar la formula
-    limiteAusencias: Number,
+    periodo: String, //PeriodoSchema,     // Indica el periodo en el que se debe evaluar la formula
+    limiteAusencias: Number,              // Total de dias disponibles por periodo (ej 2 ausencias por mes)
     fechaDesde: Date,                     // Indica a partir de que fecha aplicar el control
     fechaHasta:Date,                      // Indica hasta cuando aplicar el control
     activa: Boolean                       // Este atributo tiene prioridad sobre las fechas desde y hasta

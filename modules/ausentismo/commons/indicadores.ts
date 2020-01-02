@@ -34,18 +34,24 @@ export async function getIndicadoresAusentismo(agente, articulo, desde, hasta?){
 
 
 /**
- * Retorna un indicador aplicable unicamente a aquellos articulos que si tienen 
- * por definicion un numero acotado o maximo de ausencias en un periodo determinado.
- * Por ejemplo el articulo 80 Asuntos Personales, restringe el numero maximo de 
- * ausencias a un maximo 10 en el periodo de un anio o a solo dos en el periodo de
- * un mes.
- * Cada indicador indica totales de ausencias, licencias ejecutadas y disponibles.
+ * Retorna un listado de indicadores con informacion sobre los dias de ausencia
+ * que corresponden por ley, los dias de ausencias ya ejecutados y los dias de
+ * ausencias aun disponibles para un agente y articulo en particular. Los datos
+ * de los indicadores varian de acuerdo a los diferentes periodos que se hayan
+ * definido en las formulas del articulo.  Por ej (actualmente) el articulo 80
+ * Asuntos Personales, define en las formulas del articulo dos periodos que son
+ * el periodo mensual y el periodo anual y por cada periodo restringe el numero
+ * de ausencias a un maximo de 2 dias y 10 dias respectivamente. En este  caso
+ * se retornaran dos indicadores, uno con informacion sobre las ausencias de 
+ * cada mes y otro con informacion sobre las ausencias totalizadas anualmente.
+ * Importante: Ver como esta definido el schema IndicadorAusentismoSchema para
+ * comprender mejor la estructura que retorna este metodo.
  * @param agente 
  * @param articulo 
  * @param formula 
  * @param desde 
  * @param hasta
-* @returns [IndicadorAusentismoSchema]
+ * @returns [IndicadorAusentismoSchema]
  */
 export async function getIndicadoresConPeriodo(agente, articulo, formula, desde, hasta?){
     const anioDesde = desde.getFullYear();
@@ -70,10 +76,8 @@ export async function getIndicadoresConPeriodo(agente, articulo, formula, desde,
 }
 
 /**
- * Retorna un indicador aplicable unicamente a aquellos articulos que NO tienen 
- * por definicion un numero acotado o maximo de ausencias en un periodo determinado
- * de tiempo.
- * Cada indicador indica totales de ausencias, ausencias ejecutadas y disponibles.
+ * Idem getIndicadoresConPeriodo(), excepto que aplica a aquellos articulos cuyas
+ * formulas no definen un numero maximo de ausencias en un periodo determinado.
  * @param agente 
  * @param articulo 
  * @param formula 
@@ -84,13 +88,13 @@ export async function getIndicadoresConPeriodo(agente, articulo, formula, desde,
 export async function getIndicadoresSinPeriodo(agente, articulo, formula, desde?, hasta?){
     let indicador:any;
     if ( formula.diasContinuos ){
-        // Si la formula del articulo exige que los dias de licencias
+        // Si la formula del articulo exige que los dias de ausencias
         // sean continuos no es necesario recuperar un indicador con
         // informacion previa sobre dias disponibles
         indicador = await calcularIndicadoresAusentismo(agente, articulo, formula)
     }
     else {
-        // Si la formula del articulo no exige que los dias de licencias
+        // Si la formula del articulo no exige que los dias de ausencias
         // sean continuos, se deben recuperar los indicadores previos
         // existentes (es decir el historico de ausencias)
         indicador = await IndicadorAusentismo.findOne(
@@ -232,7 +236,19 @@ export async function getTotalLicenciasDisponibles(agente, articulo){
 export async function getIndicadoresHistoricos(agente, articulo, desde, hasta, dias){
     let ausencias = await aus.calcularDiasAusencias(agente, articulo, desde, hasta, dias);
     let indicadores = await getIndicadoresAusentismo(agente, articulo, ausencias.desde, ausencias.hasta);
+    // console.log("Indicadores HISTORICOS ##############");
+    // indicadores.forEach(element => {
+    //     console.log(element.periodo)
+    //     console.log(element.intervalos)
+        
+    // });
     let indicadoresRecalculados = aus.distribuirAusenciasEntreIndicadores(indicadores, ausencias);
+    // console.log("Indicadores HISTORICOS Recalculados ######################");
+    // indicadoresRecalculados.forEach(element => {
+    //     console.log(element.periodo)
+    //     console.log(element.intervalos)
+        
+    // });
     let indicadoresHistoricos = rollbackIndicadores(indicadoresRecalculados);
     return indicadoresHistoricos;
 }

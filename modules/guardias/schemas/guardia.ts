@@ -9,22 +9,6 @@ export const GuardiaSchema = new Schema({
     
     periodo: GuardiaPeriodoSchema,
     lote: GuardiaLoteSchema,
-    // servicio: {
-    //     id: {
-    //         type: Types.ObjectId,
-    //         required: true
-    //     },
-    //     nombre: String,
-    //     codigo: Number
-    // },
-    // tipoGuardia: constantes.TIPOGUARDIA,
-    // categoria: {
-    //     id: {
-    //         type: Types.ObjectId,
-    //         required: true
-    //     },
-    //     nombre: String
-    // },
     planilla: [GuardiaItemPlanillaSchema],
     estado: String,
     fechaEntrega: Date,

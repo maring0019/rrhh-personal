@@ -2,6 +2,7 @@ import * as aus from '../commons/ausentismo';
 import * as utils from '../commons/utils';
 import * as ind from '../commons/indicadores';
 import { changeFileObjectRef } from '../../../core/files/controller/file';
+import { IDiasAusencia } from '../commons/ausentismo';
 
 
 class LicenciasController {
@@ -15,19 +16,23 @@ class LicenciasController {
 
     /**
      * 
-     * @param ausentismo nuevo ausentismo a guardar
+     * @param ausentismo nuevo ausentismo de tipo "licencia" a guardar
      */
-    async addAusentismo(ausentismo){
+    async addAusentismo(ausentismo){ 
         if (!ausentismo.ausencias.length){
-            let au = await this.calcularAusentismo(ausentismo.agente, ausentismo.articulo,
-                ausentismo.fechaDesde, ausentismo.fechaHasta, ausentismo.cantidadDias);
+            let au: IDiasAusencia = await this.calcularAusentismo(
+                                ausentismo.agente,
+                                ausentismo.articulo,
+                                ausentismo.fechaDesde,
+                                ausentismo.fechaHasta,
+                                ausentismo.cantidadDias);
     
             if (au.warnings && au.warnings.length){
                 return au;
             }
             else{
                 // Generamos el nuevo ausentismo y actualizamos indicadores
-                ausentismo.ausencias = aus.generarDiasAusencia(ausentismo, au.ausencias)
+                ausentismo.ausencias = au.ausencias;//  aus.generarDiasAusencia(ausentismo, au.ausencias)
                 const ausentismoNew = await aus.insertAusentismo(ausentismo);
                 await ind.insertIndicadoresHistoricos(ausentismoNew, au.indicadores);
                 await ind.updateIndicadores(au.indicadores);
@@ -68,14 +73,18 @@ class LicenciasController {
     }
 
     async updateAusentismoSameArticulo(ausToUpdate, ausNewValues){
-        let au = await this.recalcularAusentismoArticuloActual(ausToUpdate, 
-                ausNewValues.agente,ausNewValues.articulo, ausNewValues.fechaDesde,
-                ausNewValues.fechaHasta, ausNewValues.cantidadDias)
-        
+        let au = await this.recalcularAusentismoArticuloActual(
+                        ausToUpdate, 
+                        ausNewValues.agente,
+                        ausNewValues.articulo,
+                        ausNewValues.fechaDesde,
+                        ausNewValues.fechaHasta,
+                        ausNewValues.cantidadDias
+                    )
         if (au.warnings && au.warnings.length) return au; // Return ausencias con warnings. No guardamos nada
         
         // Si llegamos aca, esta todo ok para guardar los cambios  
-        ausNewValues.ausencias = aus.generarDiasAusencia(ausNewValues, au.ausencias)
+        ausNewValues.ausencias = au.ausencias; // aus.generarDiasAusencia(ausNewValues, au.ausencias)
         const ausentismoNew = await aus.insertAusentismo(ausNewValues);
         await aus.deleteAusentismo(ausToUpdate);
         await ind.deleteIndicadoresHistoricos(ausToUpdate);
@@ -92,7 +101,7 @@ class LicenciasController {
             
         // Si llegamos aca, esta todo ok para guardar los cambios
         // TODO Update fileinfo
-        ausNewValues.ausencias = aus.generarDiasAusencia(ausNewValues, au.ausencias);
+        ausNewValues.ausencias = au.ausencias; // aus.generarDiasAusencia(ausNewValues, au.ausencias);
         const ausentismoNew = await aus.insertAusentismo(ausNewValues);
         await aus.deleteAusentismo(ausToUpdate);
         await ind.updateIndicadoresOnDelete(ausToUpdate)

@@ -19,7 +19,7 @@ export const IndicadorAusentismoSchema = new Schema({
     },
     vigencia: Number,          // TODO Anio de vigencia o Fecha desde y hasta??
     periodo: String,           // Anual, Cuatrimestre, Bimestre, etc. Puede ser null
-    intervalos:[               // Ej.Period Anual=1 intervalo, Periodo Cuatrimestre=3 intervalos, etc
+    intervalos:[               // Ej.Periodos Anual: 1 intervalo, Periodo Cuatrimestre: 3 intervalos, etc
         {
             desde: Date,       // Si el periodo es null este atributo no se requiere
             hasta: Date,

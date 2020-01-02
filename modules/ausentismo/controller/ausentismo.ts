@@ -51,7 +51,7 @@ export async function getAusentismo(req, res, next) {
 }
 
 
-export async function addAusentismo(req, res, next) {
+export async function addAusentismo(req, res, next) { 
     try {
         const ausentismo = res.locals.ausentismo;
         const controller = res.locals.controller;

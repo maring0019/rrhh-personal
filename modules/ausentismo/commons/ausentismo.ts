@@ -4,17 +4,38 @@ import { AusenciaPeriodo } from '../schemas/ausenciaperiodo';
 import * as ind from './indicadores'; 
 import * as utils from './utils';
 
+export interface IDiasAusencia {
+    desde: Date,
+    hasta: Date,
+    dias: Number,
+    ausencias?: any[],
+    warnings?: any[],
+    indicadores?: any
+}
 
-export async function calcularDiasAusencias(agente, articulo, desde, hasta?, dias?){
-    let ausencias:any;
+
+/**
+ * Determina con precision la fecha desde, hasta, total de dias y las fechas
+ * de los dias de ausencia, de acuerdo al tipo de dia indicado por el articulo
+ * (dias corridos o habiles).
+ * @param agente  
+ * @param articulo Determina si se deben calcular dias corridos o habiles
+ * @param desde 
+ * @param hasta Opcional. Si se indica este valor se intenta determinar el total de dias
+ * @param dias Opcional. Si se indica este valor se intenta determinar la fecha hasta
+ * @returns [Promise<IDiasAusencia>]
+ */
+export async function calcularDiasAusencias(agente, articulo, desde, hasta?, dias?):Promise<IDiasAusencia>{
+    let diasAusencias: IDiasAusencia;
     if ((!articulo.diasCorridos && !articulo.diaHabiles) || articulo.diasCorridos){
-        ausencias = calculaDiasCorridos(desde, hasta, dias);
+        diasAusencias = calculaDiasCorridos(desde, hasta, dias);
     }
 
     if (articulo.diasHabiles){
-        ausencias = await calculaDiasHabiles(agente, desde, hasta, dias);
+        diasAusencias = await calculaDiasHabiles(agente, desde, hasta, dias);
     }
-    return ausencias;
+    diasAusencias.ausencias = generarAusencias(agente, articulo, diasAusencias.ausencias);
+    return diasAusencias;
 }
 
 
@@ -48,7 +69,8 @@ export function calculaDiasCorridos(desde:Date, hasta?:Date, dias?:number){
 }
 
 
-export async function calculaDiasHabiles(agente, desde:Date, hasta?:Date, dias?){
+export async function calculaDiasHabiles(agente, desde:Date, hasta?:Date, dias?):Promise<IDiasAusencia>
+{
     let ausencias = [];
     let totalDias = 0;
     if (hasta && !dias){
@@ -118,7 +140,11 @@ export function distribuirAusenciasEntreIndicadores(indicadores, ausentismo){
                 intervalo.asignadas = ausentismo.dias;
             }
             else{
-                for (let dia of ausentismo.ausencias){
+                for (let ausencia of ausentismo.ausencias){
+                    // console.log('Vamos a imprimir el dia!!')
+                    // console.log(dia)
+                    // console.log(intervalo.desde)
+                    let dia = ausencia.fecha;
                     if ( intervalo.desde <= dia && intervalo.hasta >= dia){
                         intervalo.asignadas = intervalo.asignadas + 1;
                     }
@@ -305,6 +331,22 @@ export function generarDiasAusencia(ausentismo, diasAusencia){
             agente: ausentismo.agente, 
             fecha: utils.parseDate(new Date(dia)),
             articulo: ausentismo.articulo
+            }
+        )
+        ausencias.push(ausencia);
+    }
+    return ausencias;
+}
+
+
+
+export function generarAusencias(agente, articulo, diasAusencia){
+    let ausencias = [];
+    for (const dia of diasAusencia){
+        const ausencia = new Ausencia({
+            agente: agente, 
+            fecha: utils.parseDate(new Date(dia)),
+            articulo: articulo
             }
         )
         ausencias.push(ausencia);
