@@ -1,7 +1,7 @@
 import { Schema, Types, model } from 'mongoose';
 import { CertificadoSchema } from './certificado';
 import { AusenciaSchema } from './ausencia';
-import { IndicadorAusentismoSchema } from './indicador';
+// import { IndicadorAusentismoSchema } from './indicador';
 
 export const AusenciaPeriodoSchema = new Schema({
     agente: {
