@@ -1,7 +1,7 @@
 import * as aus from '../commons/ausentismo';
 import * as utils from '../commons/utils';
 import * as ind from '../commons/indicadores';
-import { changeFileObjectRef } from '../../../core/files/controller/file';
+// import { changeFileObjectRef } from '../../../core/files/controller/file';
 import { IDiasAusencia } from '../commons/ausentismo';
 
 
@@ -55,6 +55,7 @@ class LicenciasController {
      * @param ausNewValues 
      */
     async updateAusentismo(ausToUpdate, ausNewValues){
+        console.log('Erramos el camino chango!!')
         let ausUpdated;
         if(ausNewValues.articulo.descuentaDiasLicencia ||
             (ausToUpdate.articulo.id == ausNewValues.articulo.id)){
@@ -68,29 +69,30 @@ class LicenciasController {
             return ausUpdated;    
         }
         // Actualizamos finalmente cualquier referencia a archivos adjuntos
-        changeFileObjectRef(ausToUpdate._id, ausUpdated._id);
+        // changeFileObjectRef(ausToUpdate._id, ausUpdated._id);
         return ausUpdated;
     }
 
     async updateAusentismoSameArticulo(ausToUpdate, ausNewValues){
-        let au = await this.recalcularAusentismoArticuloActual(
-                        ausToUpdate, 
-                        ausNewValues.agente,
-                        ausNewValues.articulo,
-                        ausNewValues.fechaDesde,
-                        ausNewValues.fechaHasta,
-                        ausNewValues.cantidadDias
-                    )
-        if (au.warnings && au.warnings.length) return au; // Return ausencias con warnings. No guardamos nada
+        return ausToUpdate;
+        // let au = await this.recalcularAusentismoArticuloActual(
+        //                 ausToUpdate, 
+        //                 ausNewValues.agente,
+        //                 ausNewValues.articulo,
+        //                 ausNewValues.fechaDesde,
+        //                 ausNewValues.fechaHasta,
+        //                 ausNewValues.cantidadDias
+        //             )
+        // if (au.warnings && au.warnings.length) return au; // Return ausencias con warnings. No guardamos nada
         
-        // Si llegamos aca, esta todo ok para guardar los cambios  
-        ausNewValues.ausencias = au.ausencias; // aus.generarDiasAusencia(ausNewValues, au.ausencias)
-        const ausentismoNew = await aus.insertAusentismo(ausNewValues);
-        await aus.deleteAusentismo(ausToUpdate);
-        await ind.deleteIndicadoresHistoricos(ausToUpdate);
-        await ind.insertIndicadoresHistoricos(ausentismoNew, au.indicadores);
-        await ind.updateIndicadores(au.indicadores);
-        return ausentismoNew;
+        // // Si llegamos aca, esta todo ok para guardar los cambios  
+        // ausNewValues.ausencias = au.ausencias; // aus.generarDiasAusencia(ausNewValues, au.ausencias)
+        // const ausentismoNew = await aus.insertAusentismo(ausNewValues);
+        // await aus.deleteAusentismo(ausToUpdate);
+        // await ind.deleteIndicadoresHistoricos(ausToUpdate);
+        // await ind.insertIndicadoresHistoricos(ausentismoNew, au.indicadores);
+        // await ind.updateIndicadores(au.indicadores);
+        // return ausentismoNew;
     }
 
     async updateAusentismoChangeArticulo(ausToUpdate, ausNewValues){

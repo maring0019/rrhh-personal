@@ -1,6 +1,7 @@
 import { Schema, Types, model } from 'mongoose';
 import { CertificadoSchema } from './certificado';
 import { AusenciaSchema } from './ausencia';
+import { IndicadorAusentismoSchema } from './indicador';
 
 export const AusenciaPeriodoSchema = new Schema({
     agente: {
@@ -39,7 +40,8 @@ export const AusenciaPeriodoSchema = new Schema({
     extra: String,
     adjuntos: Array,
     certificado: CertificadoSchema,
-    ausencias: [AusenciaSchema]
+    ausencias: [AusenciaSchema],
+    // indicadoresHistoricos: [IndicadorAusentismoSchema]
 });
 
 // TODO CREATE INDEX!!!!!

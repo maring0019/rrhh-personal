@@ -5,8 +5,9 @@ import { Types } from 'mongoose';
 import { AusenciaPeriodo } from '../schemas/ausenciaperiodo';
 
 import  * as AusentismoController from '../controller/ausentismo';
-import LicenciasController from '../controller/licencias';
 import AusenciasController from '../controller/ausencias';
+import Licencias2Controller  from '../controller/licencias2';
+import LicenciasController  from '../controller/licencias';
 
 
 export const Routes = express.Router();
@@ -24,9 +25,13 @@ let middleware = async function(req, res, next ){
             
             res.locals.ausentismoToUpdate = ausentismoToUpdate;
             articulo = await utils.parseArticulo(ausentismoToUpdate.articulo);
+            res.locals.controller = articulo.descuentaDiasLicencia? new Licencias2Controller():new AusenciasController();
+        }
+        else{
+            res.locals.controller = articulo.descuentaDiasLicencia? new LicenciasController():new AusenciasController();
         }
         res.locals.ausentismo = ausentismo;
-        res.locals.controller = articulo.descuentaDiasLicencia? new LicenciasController():new AusenciasController();
+        
         next();
     } catch (err) {
         return next(err);
@@ -41,6 +46,8 @@ Routes.put('/ausencias/periodo/:id',middleware, AusentismoController.updateAusen
 
 Routes.get('/ausencias/periodo', AusentismoController.getAusentismo);
 Routes.get('/ausencias/periodo/:id', AusentismoController.getAusentismoById);
+
+Routes.get('/ausencias/periodo/indicadores/agentes/:id', AusentismoController.getIndicadoresLicencia);
 
 // Routes.delete('/ausencias/:id', AusenciaController.deleteAusencia);
 

@@ -115,7 +115,7 @@ export async function getIndicadoresLicencia(agente, articulo, formula, desde?, 
         {
             'agente.id': new Types.ObjectId(agente.id),
             // 'articulo.id': new Types.ObjectId(articulo.id),
-            'vigencia': { $gt : thisYear-3},
+            'vigencia': { $gte : thisYear-3},
             'vencido': false
         }).sort({ vigencia: 1 });
     return indicadores;

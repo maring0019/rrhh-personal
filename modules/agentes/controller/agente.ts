@@ -288,8 +288,9 @@ async function getLicenciasTotales(req, res, next){
         if (!id || (id && !Types.ObjectId.isValid(id))) return next(404);
         let agente:any = await Agente.findById(id);
         if (!agente) return next(404);
+        const thisYear = new Date().getFullYear();
         const pipeline = [
-            { $match: { 'agente.id': Types.ObjectId(agente._id), vigencia: { $gte: 2017} }},
+            { $match: { 'agente.id': Types.ObjectId(agente._id), vigencia: { $gte: thisYear - 3 } }},
             { $unwind: '$intervalos'},
             { $group: { _id:null, totales: { $sum: "$intervalos.totales"}, ejecutadas: { $sum: "$intervalos.ejecutadas"} }}]
         let licenciasTotales = await IndicadorAusentismo.aggregate(pipeline)
