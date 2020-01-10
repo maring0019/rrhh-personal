@@ -234,15 +234,15 @@ export async function getTotalLicenciasDisponibles(agente, articulo){
 
 
 export async function getIndicadoresHistoricos(agente, articulo, desde, hasta, dias){
-    let ausencias = await aus.calcularDiasAusencias(agente, articulo, desde, hasta, dias);
-    let indicadores = await getIndicadoresAusentismo(agente, articulo, ausencias.desde, ausencias.hasta);
+    let ausentismo:any = await aus.calcularDiasAusenciasDeprecated(agente, articulo, desde, hasta, dias);
+    let indicadores = await getIndicadoresAusentismo(agente, articulo, ausentismo.fechaDesde, ausentismo.fechaHasta);
     // console.log("Indicadores HISTORICOS ##############");
     // indicadores.forEach(element => {
     //     console.log(element.periodo)
     //     console.log(element.intervalos)
         
     // });
-    let indicadoresRecalculados = aus.distribuirAusenciasEntreIndicadores(indicadores, ausencias);
+    let indicadoresRecalculados = aus.distribuirAusenciasEntreIndicadores(indicadores, ausentismo);
     // console.log("Indicadores HISTORICOS Recalculados ######################");
     // indicadoresRecalculados.forEach(element => {
     //     console.log(element.periodo)

@@ -5,12 +5,10 @@ import * as ind from './indicadores';
 import * as utils from './utils';
 
 export interface IDiasAusencia {
-    desde: Date,
-    hasta: Date,
-    dias: Number,
+    fechaDesde: Date,
+    fechaHasta: Date,
+    cantidadDias: Number,
     ausencias?: any[],
-    warnings?: any[],
-    indicadores?: any
 }
 
 
@@ -25,7 +23,7 @@ export interface IDiasAusencia {
  * @param dias Opcional. Si se indica este valor se intenta determinar la fecha hasta
  * @returns [Promise<IDiasAusencia>]
  */
-export async function calcularDiasAusencias(agente, articulo, desde, hasta?, dias?):Promise<IDiasAusencia>{
+export async function calcularDiasAusenciasDeprecated(agente, articulo, desde, hasta?, dias?):Promise<IDiasAusencia>{
     let diasAusencias: IDiasAusencia;
     if ((!articulo.diasCorridos && !articulo.diaHabiles) || articulo.diasCorridos){
         diasAusencias = calculaDiasCorridos(desde, hasta, dias);
@@ -60,11 +58,10 @@ export function calculaDiasCorridos(desde:Date, hasta?:Date, dias?:number){
         totalDias = dias;
     }
     return {
-        desde: desde,
-        hasta: hasta,
-        dias: totalDias,
-        ausencias: ausencias,
-        warnings:[]
+        fechaDesde: desde,
+        fechaHasta: hasta,
+        cantidadDias: totalDias,
+        ausencias: ausencias
     }
 }
 
@@ -100,11 +97,10 @@ export async function calculaDiasHabiles(agente, desde:Date, hasta?:Date, dias?)
         totalDias = dias;
     }
     return {
-        desde: desde,
-        hasta: hasta,
-        dias: totalDias,
-        ausencias: ausencias,
-        warnings: []
+        fechaDesde: desde,
+        fechaHasta: hasta,
+        cantidadDias: totalDias,
+        ausencias: ausencias
     }
 }
 

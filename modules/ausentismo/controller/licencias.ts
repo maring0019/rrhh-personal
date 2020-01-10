@@ -1,175 +1,467 @@
+
+import { Types } from 'mongoose';
 import * as aus from '../commons/ausentismo';
 import * as utils from '../commons/utils';
-import * as ind from '../commons/indicadores';
-// import { changeFileObjectRef } from '../../../core/files/controller/file';
-import { IDiasAusencia } from '../commons/ausentismo';
-
+import { IndicadorAusentismoHistorico } from '../schemas/indicadorhistorico';
+import { IndicadorAusentismo } from '../schemas/indicador';
+import { AusenciaPeriodo } from '../schemas/ausenciaperiodo';
+import { calcularDiasAusencias } from './ausentismo';
 
 class LicenciasController {
 
-    agente:any;
-    articulo:any;
-    fechaDesde:any;
-    fechaHasta:any;
-    cantidadDias:any;
-
-
     /**
-     * 
+     * Alta de un nuevo ausentismo por licencia. Adicionalmente actualiza
+     * los indicadores y crea indicadores historicos de referencias (para
+     * futura edicion/eliminacion)
      * @param ausentismo nuevo ausentismo de tipo "licencia" a guardar
      */
-    async addAusentismo(ausentismo){ 
-        if (!ausentismo.ausencias.length){
-            let au: IDiasAusencia = await this.calcularAusentismo(
-                                ausentismo.agente,
-                                ausentismo.articulo,
-                                ausentismo.fechaDesde,
-                                ausentismo.fechaHasta,
-                                ausentismo.cantidadDias);
-    
-            if (au.warnings && au.warnings.length){
-                return au;
+    async addAusentismo(ausNewValues){ 
+        if (!ausNewValues.ausencias.length){
+            let ausentismo:any = await this.calcularDiasAusentismo(ausNewValues.agente, ausNewValues.articulo, ausNewValues.fechaDesde, ausNewValues.fechaHasta, ausNewValues.cantidadDias);
+            ausentismo = {...ausNewValues, ...ausentismo }; // Copiamos los valores del ausentismo calculado
+            let indicadores = await this.updateIndicadores(ausentismo);
+            let warnings = await this.validateAusentismo(ausentismo, indicadores);
+            if (warnings && warnings.length){
+                ausentismo.warnings = warnings;
+                return ausentismo; 
             }
-            else{
-                // Generamos el nuevo ausentismo y actualizamos indicadores
-                ausentismo.ausencias = au.ausencias;//  aus.generarDiasAusencia(ausentismo, au.ausencias)
-                const ausentismoNew = await aus.insertAusentismo(ausentismo);
-                await ind.insertIndicadoresHistoricos(ausentismoNew, au.indicadores);
-                await ind.updateIndicadores(au.indicadores);
-                return ausentismoNew;
-            } 
-        }
-        else{
-            // Los dias de ausencia ya vienen calculados. No calculamos ausencias ni aplicamos
-            // ningun control o restriccion.
-            const ausentismoNew = await aus.insertAusentismo(ausentismo);
+            let ausentismoNew = new AusenciaPeriodo(ausentismo);
+            ausentismoNew = await ausentismoNew.save();
+            await this.insertIndicadoresHistoricos(ausentismoNew, indicadores);
+            await this.saveIndicadores(indicadores);
             return ausentismoNew;
         }
-        
+        else {
+            // Los dias de ausencia ya vienen calculados. No calculamos ausencias ni aplicamos
+            // ningun control o restriccion.
+            const ausentismoNew = new AusenciaPeriodo(ausNewValues);
+            return await ausentismoNew.save();
+        }
     }
-
+ 
+  
+    
+    
     /**
-     * Verifica si se modifico el articulo en la edicion y delega la actualizacion
-     * segun corresponda
+     * Aplica cambios basicos realizados a un ausentismo por licencia. Si
+     * se modificaron las fechas se debe utilizar otro metodo para cambios
+     * mas complejos. Es una simple optimizacion para evitar recalcular
+     * indicadores, etc.
      * @param ausToUpdate 
      * @param ausNewValues 
      */
-    async updateAusentismo(ausToUpdate, ausNewValues){
-        console.log('Erramos el camino chango!!')
-        let ausUpdated;
-        if(ausNewValues.articulo.descuentaDiasLicencia ||
-            (ausToUpdate.articulo.id == ausNewValues.articulo.id)){
-            ausUpdated = await this.updateAusentismoSameArticulo(ausToUpdate, ausNewValues);
-        }
-        else {
-            ausUpdated = await this.updateAusentismoChangeArticulo(ausToUpdate, ausNewValues);
-        }
-        if (ausUpdated.warnings && ausUpdated.warnings.length){
-            // Return ausencias con warnings. No guardamos nada
-            return ausUpdated;    
-        }
-        // Actualizamos finalmente cualquier referencia a archivos adjuntos
-        // changeFileObjectRef(ausToUpdate._id, ausUpdated._id);
+    async simpleUpdateAusentismo(ausToUpdate, ausNewValues){
+        await ausToUpdate.updateOne({ $set: { observacion: ausNewValues.observacion } });
+        return ausToUpdate;
+    }
+
+    /**
+     * Aplica los cambios realizados a una licencia existente. Para esto se
+     * recalculan los dias de licencias e indicadores de acuerdo a los nuevos
+     * valores ingresados, y se realizan las validaciones correspondientes.
+     * @param ausToUpdate Ausentismo existente a actualizar
+     * @param ausNewValues Ausentismo con los nuevos valores a aplicar.
+     */
+    async fullUpdateAusentismo(ausToUpdate, ausNewValues){
+        let ausentismo:any = await this.calcularDiasAusentismo(ausNewValues.agente,ausNewValues.articulo,ausNewValues.fechaDesde,ausNewValues.fechaHasta,ausNewValues.cantidadDias);
+        ausNewValues = {...ausNewValues, ...ausentismo} //  Copiamos los valores del ausentismo calculado
+        let indicadores = await this.recalcularIndicadores(ausToUpdate, ausNewValues);
+        let warnings = await this.validateAusentismo(ausNewValues, indicadores, ausToUpdate);
+        if (warnings && warnings.length){
+            // Se identificaron problemas al validar. No se actualiza nada
+            ausentismo.warnings = warnings;
+            return ausentismo; 
+        } 
+        ausToUpdate = this.applyChanges(ausToUpdate, ausNewValues);
+        let ausUpdated = await ausToUpdate.save();
+        await this.updateIndicadoresHistoricos(ausToUpdate, ausNewValues, indicadores)
+        await this.saveIndicadores(indicadores);
         return ausUpdated;
     }
 
-    async updateAusentismoSameArticulo(ausToUpdate, ausNewValues){
-        return ausToUpdate;
-        // let au = await this.recalcularAusentismoArticuloActual(
-        //                 ausToUpdate, 
-        //                 ausNewValues.agente,
-        //                 ausNewValues.articulo,
-        //                 ausNewValues.fechaDesde,
-        //                 ausNewValues.fechaHasta,
-        //                 ausNewValues.cantidadDias
-        //             )
-        // if (au.warnings && au.warnings.length) return au; // Return ausencias con warnings. No guardamos nada
-        
-        // // Si llegamos aca, esta todo ok para guardar los cambios  
-        // ausNewValues.ausencias = au.ausencias; // aus.generarDiasAusencia(ausNewValues, au.ausencias)
-        // const ausentismoNew = await aus.insertAusentismo(ausNewValues);
-        // await aus.deleteAusentismo(ausToUpdate);
-        // await ind.deleteIndicadoresHistoricos(ausToUpdate);
-        // await ind.insertIndicadoresHistoricos(ausentismoNew, au.indicadores);
-        // await ind.updateIndicadores(au.indicadores);
-        // return ausentismoNew;
-    }
 
-    async updateAusentismoChangeArticulo(ausToUpdate, ausNewValues){
-        let au = await this.recalcularAusentismoArticuloNuevo(ausToUpdate, ausNewValues.agente,
-            ausNewValues.articulo, ausNewValues.fechaDesde, ausNewValues.fechaHasta, ausNewValues.cantidadDias);
-        
-        if (au.warnings && au.warnings.length) return au;// Return ausencias con warnings. No guardamos nada
+    async sugerirAusentismo(ausNewValues){
+        let indicadores = await this.obtenerIndicadoresActuales(ausNewValues);
+        let totalDiasDisponibles = await this.obtenerTotalLicenciasDisponibles(ausNewValues);
+        let ausentismo = await this.calcularDiasAusentismo(ausNewValues.agente, ausNewValues.articulo, ausNewValues.desde, null, totalDiasDisponibles);
+        let warnings = await this.validateAusentismoSugerencia(ausNewValues, ausentismo, indicadores);
+
+        // let warnings = [];
+        // warnings = warnings.concat(utils.formatWarningsIndicadores(await aus.checkIndicadoresSugerencia(indicadores, desde)));
+        // warnings = warnings.concat(utils.formatWarningsSuperposicion(await aus.checkSolapamientoPeriodos(agente, articulo, ausencias.desde, ausencias.hasta)));
+        if (warnings && warnings.length){
             
-        // Si llegamos aca, esta todo ok para guardar los cambios
-        // TODO Update fileinfo
-        ausNewValues.ausencias = au.ausencias; // aus.generarDiasAusencia(ausNewValues, au.ausencias);
-        const ausentismoNew = await aus.insertAusentismo(ausNewValues);
-        await aus.deleteAusentismo(ausToUpdate);
-        await ind.updateIndicadoresOnDelete(ausToUpdate)
-        await ind.deleteIndicadoresHistoricos(ausToUpdate);
-        return ausentismoNew;  
+        }
+        // ausentismo.warnings = warnings; // TODO Corregir Esto
+        return ausentismo; 
+        
     }
 
-    async sugerirAusentismo(agente, articulo, desde){
-        let indicadores = await ind.getIndicadoresLicencia(agente, articulo, desde);
-        let totalDiasDisponibles = await ind.getTotalLicenciasDisponibles(agente, articulo);
-        let ausencias = await aus.calcularDiasAusencias(agente, articulo, desde, null, totalDiasDisponibles);
-        
-        let warnings = [];
-        warnings = warnings.concat(utils.formatWarningsIndicadores(await aus.checkIndicadoresSugerencia(indicadores, desde)));
-        warnings = warnings.concat(utils.formatWarningsSuperposicion(await aus.checkSolapamientoPeriodos(agente, articulo, ausencias.desde, ausencias.hasta)));
 
-        ausencias.warnings = warnings;
-        return ausencias;
+    /**
+     * Utilizado en la edicion de una licencia. Basicamente es un esfuerzo por
+     * actualizar los indicadores existentes removiendo los dias previos asignados
+     * y aplicando los nuevos dias indicados.
+     * @param ausToUpdate 
+     * @param ausNewValues 
+     * @param ausCalculado
+     * @usedby fullUpdateAusentismo()
+     */
+    async recalcularIndicadores(ausToUpdate, ausNewValues){
+        let indicadoresHistoricos = await this.obtenerIndicadoresHistoricos(ausToUpdate);
+        let indicadoresActuales = await this.obtenerIndicadoresActuales(ausToUpdate);
+        let indicadores = await this.rollbackIndicadores(indicadoresHistoricos, indicadoresActuales);
+        let indicadoresRecalculados = await this.distribuirAusentismoEntreIndicadores(indicadores, ausNewValues.cantidadDias);
+        return indicadoresRecalculados;
     }
 
-    async calcularAusentismo(agente, articulo, desde, hasta, dias){
-        let ausencias = await aus.calcularDiasAusencias(agente, articulo, desde, hasta, dias);
-        let indicadores = await ind.getIndicadoresLicencia(agente, articulo, ausencias.desde, ausencias.hasta);
-        let indicadoresRecalculados = await aus.distribuirLicenciasEntreIndicadores(agente, articulo, indicadores, ausencias);  
-    
+    /**
+     * Actualizar los indicadores existentes a partir de los nuevos dias de 
+     * licencia indicados en el ausentismo
+     * @param ausentismo 
+     * @usedby addAusentismo()
+     */
+    async updateIndicadores(ausentismo){
+        let indicadoresActuales = await this.obtenerIndicadoresActuales(ausentismo);
+        let indicadoresRecalculados = await this.distribuirAusentismoEntreIndicadores(indicadoresActuales, ausentismo.cantidadDias);
+        return indicadoresRecalculados;
+    }
+
+    /**
+     * Valida la correctitud de un ausentismo definido en relacion a los indicadores
+     * calculados. Actualmente se valida:
+     *             - Que el ausentismo no se solape con otras ausencias previas
+     *             - Que los indicadores no excedan los dias disponibles de licencia
+     * @param ausentismo 
+     * @param indicadores 
+     * @param ausToUpdate Opcional. Requerido en la actualizacion de un ausentismo
+     */
+    async validateAusentismo(ausentismo, indicadores, ausToUpdate?){
         let warnings = [];
-        warnings = warnings.concat(utils.formatWarningsIndicadores(await aus.checkIndicadoresGuardado(indicadoresRecalculados)));
-        warnings = warnings.concat(utils.formatWarningsSuperposicion(await aus.checkSolapamientoPeriodos(agente, articulo, ausencias.desde, ausencias.hasta)));
-        
-        ausencias.warnings = warnings;
-        ausencias.indicadores = indicadoresRecalculados;
-        return ausencias;
+        warnings = warnings.concat(utils.formatWarningsIndicadores(await aus.checkIndicadoresGuardado(indicadores)));
+        warnings = warnings.concat(utils.formatWarningsSuperposicion(await aus.checkSolapamientoPeriodos(ausentismo.agente, ausentismo.articulo, ausentismo.fechaDesde, ausentismo.fechaHasta, ausToUpdate)));
+        return warnings;
+    }
+
+    /**
+     * Idem validateAusentismo. Realiza algunas validaciones similares pero
+     * utiles solo cuando se sugieren los dias de ausencia. 
+     * No utilizar ni al momento de cargar o editar licencias.
+     * @param ausNewValues 
+     * @param ausentismoCalculado 
+     * @param indicadores 
+     * @param ausToUpdate 
+     */
+    async validateAusentismoSugerencia(ausNewValues, ausentismoCalculado, indicadores, ausToUpdate?){
+        let warnings = [];
+        warnings = warnings.concat(utils.formatWarningsIndicadores(await aus.checkIndicadoresSugerencia(indicadores, ausNewValues.fechaDesde)));
+        warnings = warnings.concat(utils.formatWarningsSuperposicion(await aus.checkSolapamientoPeriodos(ausNewValues.agente, ausNewValues.articulo, ausentismoCalculado.desde, ausentismoCalculado.hasta, ausToUpdate)));
+        return warnings;
+    }
+
+
+
+    /** 
+     * Dado un conjunto de indicadores historicos (perteneciente a una licencia
+     * previamente tomada) se intentara dejar los indicadores actuales al estado
+     * previo de tomarse la licencia.
+     * @param indicadoresHistoricos 
+     * @param indicadoresActuales
+     * @usedby recalcularIndicadores
+     */
+    async rollbackIndicadores(indicadoresHistoricos, indicadoresActuales){
+        for (let indNuevo of indicadoresActuales){
+            for (let intervalo of indNuevo.intervalos){
+                const intEncontrado = this.findIntervalo(intervalo, indNuevo, indicadoresHistoricos);
+                if (intEncontrado){
+                    intervalo.ejecutadas = intervalo.ejecutadas - intEncontrado.asignadas;
+                }
+            }
+        }
+        return indicadoresActuales;
     }
     
+    /**
+     * Utilidad para encontrar un intervalo perteneciente a un indicador
+     * dentro de otro indicador
+     * @param intervalo 
+     * @param indicadorNuevo 
+     * @param indicadoresPrevios 
+     */
+    findIntervalo(intervalo, indicadorNuevo, indicadoresPrevios){
+        let intervaloEncontrado;
+        for (const indicador of indicadoresPrevios){
+            if (indicadorNuevo.vigencia ==  indicador.vigencia){
+                for (const int of indicador.intervalos){
+                    if ((!int.desde && !intervalo.desde && !int.hasta && !intervalo.hasta) ||
+                        (int.desde.getTime() == intervalo.desde.getTime() &&
+                        int.hasta.getTime() == intervalo.hasta.getTime())){
+                            intervaloEncontrado = int;
+                            break;
+                        }
+                }
+            }
+            if (intervaloEncontrado) break;
+        }   
+        return intervaloEncontrado;
+    }
+
+    async calcularDiasAusentismo(agente, articulo, desde, hasta, dias){
+        return await calcularDiasAusencias(agente, articulo, desde, hasta, dias);
+    }
+
+
+    /**
+     * Metodo que asigna/distribuye los dias de licencias a tomar entre los dias 
+     * disponibles por periodo (indicadores). Recordar que un indicador informa
+     * el periodo de vigencia y los dias totales disponibles y los dias ya asig-
+     * nados.
+     * 
+     * @param indicadores 
+     * @param diasLicencia total dias de licencia a asignar
+     */
+    async distribuirAusentismoEntreIndicadores(indicadores, diasLicencia){
+        let totalDiasLicencia = diasLicencia;
+        let intervaloEnAnalisis:any;
+        for (let indicador of indicadores){         
+            for (const intervalo of indicador.intervalos){
+                intervaloEnAnalisis = intervalo;
+                if (intervalo.totales){
+                    const diasDisponibles = intervalo.totales - intervalo.ejecutadas;
+                    if ( diasDisponibles ==  0 ) break;
+                    if ( diasDisponibles <=  totalDiasLicencia ){
+                        totalDiasLicencia = totalDiasLicencia - diasDisponibles;
+                        intervalo.asignadas = diasDisponibles;
+                    }
+                    else{
+                        intervalo.asignadas = totalDiasLicencia;
+                        totalDiasLicencia = 0;
+                    }
+                }
+                else{ 
+                    // No habria limite de licencias. Asignamos todos los dias a este intervalo
+                    // TODO Revisar si efectivamente asi deberia ser el comportamiento correcto
+                    intervalo.asignadas = totalDiasLicencia;
+                }
+                
+            }
+        } 
+        if ( totalDiasLicencia > 0){
+            // Quedaron dias de licencia sin poder asignar a ningun intervalo
+            // Forzamos que el numero de licencias asignadas sea superior al disponible
+            if (intervaloEnAnalisis) intervaloEnAnalisis.asignadas = intervaloEnAnalisis.asignadas + totalDiasLicencia; 
+        }   
     
-    async recalcularAusentismoArticuloActual(licEnEdicion, agente, articulo, desde, hasta, dias){
-        let ausencias = await aus.calcularDiasAusencias(agente, articulo, desde, hasta, dias);
+        return indicadores;
+    }
+
+
+    /**
+     * Recupera los indicadores(historicos) al momento en que se aplicaron
+     * los cambios. Este dato no siempre estara disponible debido a que las
+     * licencias previas legadas del sistema anterior no disponen de esta
+     * informacion (es decir que no es posible saber con precision a que
+     * periodo se usufructuo), por lo tanto ante estos casos se "calcularan"
+     * los indicadores historicos. Idealmente quizas deba ser el usuario 
+     * quien manualmente indique a que periodo pertenecio cada licencia que
+     * se tomo en el pasado. De esta forma el usuario tendria mas control
+     * sobre el proceso.
+     * @param ausentismo 
+     */
+    async obtenerIndicadoresHistoricos(ausentismo){
+        let indicadores:any = await IndicadorAusentismoHistorico.find({
+            'ausentismo.id': Types.ObjectId(ausentismo.id)
+        });
+        if (!indicadores || !indicadores.length){
+            // Se debe tratar de un ausentismo legado sin informacion sobre el
+            // periodo que se usufructo la licencia
+            indicadores = await this.calcularIndicadoresHistoricos(ausentismo);
+        }
+        return indicadores;
+    }
+
+    /**
+     * @usedby obtenerIndicadoresHistoricos()
+     * @param ausentismo 
+     */
+    async calcularIndicadoresHistoricos(ausentismo){
+        let indicadoresHistoricos:any = [];
+        let indicadoresActuales:any = await this.obtenerIndicadoresActuales(ausentismo);
+        let cantidadDias = ausentismo.cantidadDias;
+        for (const indicador of indicadoresActuales) {
+            // Vamos a intentar determinar/inferir el indicador historico
+            if (cantidadDias > 0 ){
+                const licTotales = indicador.intervalos[0].totales;
+                const licEjecutadas = indicador.intervalos[0].ejecutadas;
+                let pipeline:any = [
+                    { $match: { 'indicador.id': Types.ObjectId(indicador._id)}} ,
+                    { $unwind: '$intervalos'},
+                    { $group: { _id:null, total_asignadas: { $sum: "$intervalos.asignadas" }}}
+                ]
+                let resultadoQuery = await IndicadorAusentismoHistorico.aggregate(pipeline)
+                let licAsignadas = resultadoQuery.length? resultadoQuery[0].total_asignadas : 0;
+                // licDisponibles seria el nro de licencias que se podrian considerar
+                // para "proponer" como historicas
+                let licDisponibles = licEjecutadas - licAsignadas; 
+                if ( licDisponibles > 0){
+                    let licReasignadas = 0;
+                    if (cantidadDias <= licDisponibles) {
+                        licReasignadas = cantidadDias;
+                        cantidadDias = 0;
+                    }
+                    else{
+                        licReasignadas = licDisponibles;
+                        cantidadDias = cantidadDias -  licDisponibles;
+                    }
+                    let indicadorHistorico = 
+                        {
+                            "indicador" : {
+                                "id" : indicador.id
+                            },
+                            "vigencia" : indicador.vigencia,
+                            "ausentismo" : {
+                                "id" : ausentismo.id
+                            },
+                            "intervalos" : [ 
+                                {
+                                    "totales" : licTotales,
+                                    "ejecutadas" : licEjecutadas - licReasignadas,
+                                    "asignadas" : licReasignadas
+                                }
+                            ]
+                        }
+                    indicadoresHistoricos.push(indicadorHistorico);
+                }    
+            }
+        }
+        return indicadoresHistoricos;
+    }
+
+
+    /**
+     * Consulta y recupera los indicadores actuales tomando como referencia
+     * los ultimos 3 anios desde el momento de la consulta.
+     * Obs: Idealmente se deberia indicar el articulo sobre el cual interesa
+     * recuperar los indicadores, pero a la fecha solo se guardan indicadores
+     * para las licencias
+     * @param ausentismo 
+     */
+    async obtenerIndicadoresActuales(ausentismo){
+        const thisYear = new Date().getFullYear();
+        let indicadores = await IndicadorAusentismo.find(
+            {
+                'agente.id': new Types.ObjectId(ausentismo.agente.id),
+                // 'articulo.id': new Types.ObjectId(articulo.id),
+                'vigencia': { $gte : thisYear - 3},
+                'vencido': false
+            }).sort({ vigencia: 1 });
+        return indicadores;
+    }
+
+
+    async obtenerTotalLicenciasDisponibles(ausentismo){
+        let pipeline:any = [
+            { 
+                $match: { 
+                    'agente.id': Types.ObjectId(ausentismo.agente.id || ausentismo.agente._id),
+                    // 'articulo.id': Types.ObjectId(articulo.id),
+                    'vencido': false
+                }
+            } ,
+            {
+                $unwind: '$intervalos'
+            },
+            {
+                $group: {
+                    _id : null,
+                    totales : { $sum: '$intervalos.totales'},
+                    ejecutadas : { $sum: '$intervalos.ejecutadas'}
+                }
+            }
+         ]
         
-        let indicadoresActuales = await ind.getIndicadoresLicencia(agente, articulo, ausencias.desde, ausencias.hasta);
-        let indicadoresHistoricos = await ind.getIndicadoresLicenciaHistoricos(licEnEdicion);
-        let indicadoresCorregidos = ind.mergeIndicadores(indicadoresActuales, indicadoresHistoricos);
-        let indicadoresRecalculados = await aus.distribuirLicenciasEntreIndicadores(agente, articulo, indicadoresCorregidos, ausencias);  
-    
-        let warnings = [];
-        warnings = warnings.concat(utils.formatWarningsIndicadores(await aus.checkIndicadoresGuardado(indicadoresRecalculados)));
-        warnings = warnings.concat(utils.formatWarningsSuperposicion(await aus.checkSolapamientoPeriodos(agente, articulo, ausencias.desde, ausencias.hasta, licEnEdicion)));
-        
-        ausencias.warnings = warnings;
-        ausencias.indicadores = indicadoresRecalculados;
-        return ausencias;
+        let resultado = await IndicadorAusentismo.aggregate(pipeline);
+        return resultado.length? resultado[0].totales - resultado[0].ejecutadas : 0;
+    }
+
+    /**
+     * Utilidad para copiar los valores de un objeto ausentismo a otro objeto
+     * @param ausToUpdate 
+     * @param ausNewValues 
+     */
+    applyChanges(ausToUpdate, ausNewValues){
+        ausToUpdate.fechaDesde = ausNewValues.fechaDesde;
+        ausToUpdate.fechaHasta = ausNewValues.fechaHasta;
+        ausToUpdate.cantidadDias = ausNewValues.cantidadDias;
+        ausToUpdate.ausencias = ausNewValues.ausencias;
+        ausToUpdate.observacion = ausNewValues.observacion;
+        ausToUpdate.adicional = ausNewValues.adicional;
+        ausToUpdate.extra = ausNewValues.extra;
+        // adjuntos: Array,
+        // certificado: CertificadoSchema,
+        // ausencias: [AusenciaSchema]
+        return ausToUpdate;
+    }
+
+
+
+    async saveIndicadores(indicadores){
+        for (const indicador of indicadores){
+            for (let intervalo of indicador.intervalos){
+                if( intervalo.asignadas){
+                    intervalo.ejecutadas = intervalo.ejecutadas + intervalo.asignadas;
+                    intervalo.asignadas = 0;
+                }
+            }
+           await indicador.save()
+        }
+        return indicadores;
+    }
+
+    async updateIndicadoresHistoricos(ausToUpdate, ausNewValues, indicadores){
+        await this.deleteIndicadoresHistoricos(ausToUpdate);
+        await this.insertIndicadoresHistoricos(ausNewValues, indicadores);
+    }
+
+    async deleteIndicadoresHistoricos(ausentismo){
+        await IndicadorAusentismoHistorico.deleteMany({
+                'ausentismo.id': Types.ObjectId(ausentismo.id)
+            });
     }
     
-    async recalcularAusentismoArticuloNuevo(licEnEdicion, agente, articulo, desde, hasta, dias){
-        let ausencias = await aus.calcularDiasAusencias(agente, articulo, desde, hasta, dias);
-        let indicadores = await ind.getIndicadoresAusentismo(agente, articulo, ausencias.desde, ausencias.hasta);
-        let indicadoresRecalculados = await aus.distribuirAusenciasEntreIndicadores(indicadores, ausencias);  
-        
-        let warnings = [];
-        warnings = warnings.concat(utils.formatWarningsIndicadores(await aus.checkIndicadoresGuardado(indicadoresRecalculados)));
-        warnings = warnings.concat(utils.formatWarningsSuperposicion(await aus.checkSolapamientoPeriodos(agente, articulo, ausencias.desde, ausencias.hasta, licEnEdicion)));
-        
-        ausencias.warnings = warnings;
-        
-        return ausencias;
+    async insertIndicadoresHistoricos(ausentismo, indicadores){
+        let timestamp = new Date().getTime();
+        for (const indicador of indicadores){
+            let intervalosH = [];
+            for (const int of indicador.intervalos){
+                if (int.asignadas > 0){
+                    // Solo interesa guardar el historico de los indicadores
+                    // que modificaron los dias asignados
+                    let intHistorico = {
+                        desde: int.desde,
+                        hasta: int.hasta,
+                        totales: int.totales,
+                        ejecutadas: int.ejecutadas,
+                        asignadas: int.asignadas
+                    }
+                    intervalosH.push(intHistorico)
+                }
+                
+            }
+            if (intervalosH.length){
+                let indicadorHistorico = new IndicadorAusentismoHistorico({
+                    timestamp: timestamp,
+                    indicador: { id: Types.ObjectId(indicador._id)},
+                    vigencia: indicador.vigencia,
+                    ausentismo: { id: Types.ObjectId(ausentismo._id)},
+                    intervalos: intervalosH
+                });
+                await indicadorHistorico.save();
+            }
+        }
+        return;
     }
 }
+
+
 export default LicenciasController;
-
-

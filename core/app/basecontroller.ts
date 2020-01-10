@@ -38,8 +38,8 @@ class BaseController {
             let objToUpdate:any = await this._model.findById(id);
             if (!objToUpdate) return res.status(404).send();
             let objWithChanges = req.body;
-            const objUpdated = await objToUpdate.updateOne({ $set: objWithChanges });
-            return res.json(objUpdated);
+            await objToUpdate.updateOne({ $set: objWithChanges });
+            return res.json(objToUpdate);
         } catch (err) {
             return next(err);
         }

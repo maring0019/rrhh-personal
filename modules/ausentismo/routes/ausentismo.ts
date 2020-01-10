@@ -6,7 +6,6 @@ import { AusenciaPeriodo } from '../schemas/ausenciaperiodo';
 
 import  * as AusentismoController from '../controller/ausentismo';
 import AusenciasController from '../controller/ausencias';
-import Licencias2Controller  from '../controller/licencias2';
 import LicenciasController  from '../controller/licencias';
 
 
@@ -25,7 +24,7 @@ let middleware = async function(req, res, next ){
             
             res.locals.ausentismoToUpdate = ausentismoToUpdate;
             articulo = await utils.parseArticulo(ausentismoToUpdate.articulo);
-            res.locals.controller = articulo.descuentaDiasLicencia? new Licencias2Controller():new AusenciasController();
+            res.locals.controller = articulo.descuentaDiasLicencia? new LicenciasController():new AusenciasController();
         }
         else{
             res.locals.controller = articulo.descuentaDiasLicencia? new LicenciasController():new AusenciasController();
