@@ -94,6 +94,23 @@ export async function updateAusentismo(req, res, next){
     }
 }
 
+export async function deleteAusentismo(req, res, next){
+    try {
+        const id = req.params.id;
+        if (!id || (id && !Types.ObjectId.isValid(id))) return res.status(404).send();
+        
+        let ausentismoToDelete:any = await AusenciaPeriodo.findById(id);
+        if (!ausentismoToDelete) return res.status(404).send();
+        
+        let controller = res.locals.controller;
+        let response = await controller.deleteAusentismo(ausentismoToDelete);
+        return res.json(response);  
+    } catch (err) {
+        return next(err);
+    }
+}
+
+
 
 export async function sugerirDiasAusentismo(req, res, next) {
     try {

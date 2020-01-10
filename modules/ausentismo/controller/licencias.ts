@@ -65,7 +65,7 @@ class LicenciasController {
     async fullUpdateAusentismo(ausToUpdate, ausNewValues){
         let ausentismo:any = await this.calcularDiasAusentismo(ausNewValues.agente,ausNewValues.articulo,ausNewValues.fechaDesde,ausNewValues.fechaHasta,ausNewValues.cantidadDias);
         ausNewValues = {...ausNewValues, ...ausentismo} //  Copiamos los valores del ausentismo calculado
-        let indicadores = await this.recalcularIndicadores(ausToUpdate, ausNewValues);
+        let indicadores = await this.recalcularIndicadores(ausToUpdate, ausNewValues.cantidadDias);
         let warnings = await this.validateAusentismo(ausNewValues, indicadores, ausToUpdate);
         if (warnings && warnings.length){
             // Se identificaron problemas al validar. No se actualiza nada
@@ -74,10 +74,18 @@ class LicenciasController {
         } 
         ausToUpdate = this.applyChanges(ausToUpdate, ausNewValues);
         let ausUpdated = await ausToUpdate.save();
-        await this.updateIndicadoresHistoricos(ausToUpdate, ausNewValues, indicadores)
+        await this.updateIndicadoresHistoricos(ausToUpdate, indicadores)
         await this.saveIndicadores(indicadores);
         return ausUpdated;
     }
+
+    async deleteAusentismo(ausToDelete){
+        let indicadores = await this.recalcularIndicadores(ausToDelete, 0);
+        await this.saveIndicadores(indicadores);
+        await this.deleteIndicadoresHistoricos(ausToDelete);
+        return await ausToDelete.remove();
+    }
+    
 
 
     async sugerirAusentismo(ausNewValues){
@@ -107,11 +115,11 @@ class LicenciasController {
      * @param ausCalculado
      * @usedby fullUpdateAusentismo()
      */
-    async recalcularIndicadores(ausToUpdate, ausNewValues){
+    async recalcularIndicadores(ausToUpdate, diasLicencia:Number){
         let indicadoresHistoricos = await this.obtenerIndicadoresHistoricos(ausToUpdate);
         let indicadoresActuales = await this.obtenerIndicadoresActuales(ausToUpdate);
         let indicadores = await this.rollbackIndicadores(indicadoresHistoricos, indicadoresActuales);
-        let indicadoresRecalculados = await this.distribuirAusentismoEntreIndicadores(indicadores, ausNewValues.cantidadDias);
+        let indicadoresRecalculados = await this.distribuirAusentismoEntreIndicadores(indicadores, diasLicencia);
         return indicadoresRecalculados;
     }
 
@@ -418,15 +426,15 @@ class LicenciasController {
         return indicadores;
     }
 
-    async updateIndicadoresHistoricos(ausToUpdate, ausNewValues, indicadores){
+    async updateIndicadoresHistoricos(ausToUpdate, indicadores){
         await this.deleteIndicadoresHistoricos(ausToUpdate);
-        await this.insertIndicadoresHistoricos(ausNewValues, indicadores);
+        await this.insertIndicadoresHistoricos(ausToUpdate, indicadores);
     }
 
     async deleteIndicadoresHistoricos(ausentismo){
         await IndicadorAusentismoHistorico.deleteMany({
                 'ausentismo.id': Types.ObjectId(ausentismo.id)
-            });
+        });
     }
     
     async insertIndicadoresHistoricos(ausentismo, indicadores){

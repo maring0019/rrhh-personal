@@ -37,17 +37,16 @@ let middleware = async function(req, res, next ){
     }
 }
 
-// Routes.post('/ausencias', AusenciaController.addAusencia);
-Routes.post('/ausencias/periodo', middleware, AusentismoController.addAusentismo);
-Routes.post('/ausencias/periodo/sugerir', middleware, AusentismoController.sugerirDiasAusentismo);
-Routes.post('/ausencias/periodo/calcular', AusentismoController.calcularAusentismo);
-Routes.put('/ausencias/periodo/:id',middleware, AusentismoController.updateAusentismo);
+Routes.post('/ausencias', middleware, AusentismoController.addAusentismo);
+Routes.post('/ausencias/sugerir', middleware, AusentismoController.sugerirDiasAusentismo);
+Routes.post('/ausencias/calcular', AusentismoController.calcularAusentismo);
+Routes.put('/ausencias/:id',middleware, AusentismoController.updateAusentismo);
 
-Routes.get('/ausencias/periodo', AusentismoController.getAusentismo);
-Routes.get('/ausencias/periodo/:id', AusentismoController.getAusentismoById);
+Routes.get('/ausencias', AusentismoController.getAusentismo);
+Routes.get('/ausencias/:id', AusentismoController.getAusentismoById);
 
-Routes.get('/ausencias/periodo/indicadores/agentes/:id', AusentismoController.getIndicadoresLicencia);
+Routes.get('/ausencias/indicadores/agentes/:id', AusentismoController.getIndicadoresLicencia);
 
-// Routes.delete('/ausencias/:id', AusenciaController.deleteAusencia);
+Routes.delete('/ausencias/:id', middleware, AusentismoController.deleteAusentismo);
 
 
