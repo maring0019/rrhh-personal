@@ -286,8 +286,10 @@ async function getLicenciasTotales(req, res, next){
     try {
         const id = req.params.id;
         if (!id || (id && !Types.ObjectId.isValid(id))) return next(404);
+        
         let agente:any = await Agente.findById(id);
         if (!agente) return next(404);
+        
         const thisYear = new Date().getFullYear();
         const pipeline = [
             { $match: { 'agente.id': Types.ObjectId(agente._id), vigencia: { $gte: thisYear - 3 } }},

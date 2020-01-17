@@ -1,11 +1,10 @@
 
 import { Types } from 'mongoose';
-import * as aus from '../commons/ausentismo';
-import * as utils from '../commons/utils';
 import { IndicadorAusentismoHistorico } from '../schemas/indicadorhistorico';
 import { IndicadorAusentismo } from '../schemas/indicador';
 import { AusenciaPeriodo } from '../schemas/ausenciaperiodo';
-import { calcularDiasAusencias } from './ausentismo';
+
+import { calcularDiasAusentismo, validateAusentismo, validateAusentismoSugerencia, applyChanges } from './ausentismo';
 
 class LicenciasController {
 
@@ -17,10 +16,10 @@ class LicenciasController {
      */
     async addAusentismo(ausNewValues){ 
         if (!ausNewValues.ausencias.length){
-            let ausentismo:any = await this.calcularDiasAusentismo(ausNewValues.agente, ausNewValues.articulo, ausNewValues.fechaDesde, ausNewValues.fechaHasta, ausNewValues.cantidadDias);
+            let ausentismo:any = await calcularDiasAusentismo(ausNewValues.agente, ausNewValues.articulo, ausNewValues.fechaDesde, ausNewValues.fechaHasta, ausNewValues.cantidadDias);
             ausentismo = {...ausNewValues, ...ausentismo }; // Copiamos los valores del ausentismo calculado
             let indicadores = await this.updateIndicadores(ausentismo);
-            let warnings = await this.validateAusentismo(ausentismo, indicadores);
+            let warnings = await validateAusentismo(ausentismo, indicadores);
             if (warnings && warnings.length){
                 ausentismo.warnings = warnings;
                 return ausentismo; 
@@ -45,7 +44,7 @@ class LicenciasController {
     /**
      * Aplica cambios basicos realizados a un ausentismo por licencia. Si
      * se modificaron las fechas se debe utilizar otro metodo para cambios
-     * mas complejos. Es una simple optimizacion para evitar recalcular
+     * mas complejos.Esta es una simple optimizacion para evitar recalcular
      * indicadores, etc.
      * @param ausToUpdate 
      * @param ausNewValues 
@@ -63,16 +62,16 @@ class LicenciasController {
      * @param ausNewValues Ausentismo con los nuevos valores a aplicar.
      */
     async fullUpdateAusentismo(ausToUpdate, ausNewValues){
-        let ausentismo:any = await this.calcularDiasAusentismo(ausNewValues.agente,ausNewValues.articulo,ausNewValues.fechaDesde,ausNewValues.fechaHasta,ausNewValues.cantidadDias);
+        let ausentismo:any = await calcularDiasAusentismo(ausNewValues.agente,ausNewValues.articulo,ausNewValues.fechaDesde,ausNewValues.fechaHasta,ausNewValues.cantidadDias);
         ausNewValues = {...ausNewValues, ...ausentismo} //  Copiamos los valores del ausentismo calculado
         let indicadores = await this.recalcularIndicadores(ausToUpdate, ausNewValues.cantidadDias);
-        let warnings = await this.validateAusentismo(ausNewValues, indicadores, ausToUpdate);
+        let warnings = await validateAusentismo(ausNewValues, indicadores, ausToUpdate);
         if (warnings && warnings.length){
             // Se identificaron problemas al validar. No se actualiza nada
             ausentismo.warnings = warnings;
             return ausentismo; 
         } 
-        ausToUpdate = this.applyChanges(ausToUpdate, ausNewValues);
+        ausToUpdate = applyChanges(ausToUpdate, ausNewValues);
         let ausUpdated = await ausToUpdate.save();
         await this.updateIndicadoresHistoricos(ausToUpdate, indicadores)
         await this.saveIndicadores(indicadores);
@@ -91,8 +90,8 @@ class LicenciasController {
     async sugerirAusentismo(ausNewValues){
         let indicadores = await this.obtenerIndicadoresActuales(ausNewValues);
         let totalDiasDisponibles = await this.obtenerTotalLicenciasDisponibles(ausNewValues);
-        let ausentismo = await this.calcularDiasAusentismo(ausNewValues.agente, ausNewValues.articulo, ausNewValues.desde, null, totalDiasDisponibles);
-        let warnings = await this.validateAusentismoSugerencia(ausNewValues, ausentismo, indicadores);
+        let ausentismo = await calcularDiasAusentismo(ausNewValues.agente, ausNewValues.articulo, ausNewValues.desde, null, totalDiasDisponibles);
+        let warnings = await validateAusentismoSugerencia(ausNewValues, ausentismo, indicadores);
 
         // let warnings = [];
         // warnings = warnings.concat(utils.formatWarningsIndicadores(await aus.checkIndicadoresSugerencia(indicadores, desde)));
@@ -107,13 +106,13 @@ class LicenciasController {
 
 
     /**
-     * Utilizado en la edicion de una licencia. Basicamente es un esfuerzo por
-     * actualizar los indicadores existentes removiendo los dias previos asignados
-     * y aplicando los nuevos dias indicados.
+     * Utilizado en la edicion/eliminacion de una licencia. Basicamente es un
+     * esfuerzo por actualizar los indicadores existentes removiendo los dias
+     * previos asignados y aplicando los nuevos dias indicados.
      * @param ausToUpdate 
      * @param ausNewValues 
      * @param ausCalculado
-     * @usedby fullUpdateAusentismo()
+     * @usedby fullUpdateAusentismo(), deleteAusentismo()
      */
     async recalcularIndicadores(ausToUpdate, diasLicencia:Number){
         let indicadoresHistoricos = await this.obtenerIndicadoresHistoricos(ausToUpdate);
@@ -133,38 +132,6 @@ class LicenciasController {
         let indicadoresActuales = await this.obtenerIndicadoresActuales(ausentismo);
         let indicadoresRecalculados = await this.distribuirAusentismoEntreIndicadores(indicadoresActuales, ausentismo.cantidadDias);
         return indicadoresRecalculados;
-    }
-
-    /**
-     * Valida la correctitud de un ausentismo definido en relacion a los indicadores
-     * calculados. Actualmente se valida:
-     *             - Que el ausentismo no se solape con otras ausencias previas
-     *             - Que los indicadores no excedan los dias disponibles de licencia
-     * @param ausentismo 
-     * @param indicadores 
-     * @param ausToUpdate Opcional. Requerido en la actualizacion de un ausentismo
-     */
-    async validateAusentismo(ausentismo, indicadores, ausToUpdate?){
-        let warnings = [];
-        warnings = warnings.concat(utils.formatWarningsIndicadores(await aus.checkIndicadoresGuardado(indicadores)));
-        warnings = warnings.concat(utils.formatWarningsSuperposicion(await aus.checkSolapamientoPeriodos(ausentismo.agente, ausentismo.articulo, ausentismo.fechaDesde, ausentismo.fechaHasta, ausToUpdate)));
-        return warnings;
-    }
-
-    /**
-     * Idem validateAusentismo. Realiza algunas validaciones similares pero
-     * utiles solo cuando se sugieren los dias de ausencia. 
-     * No utilizar ni al momento de cargar o editar licencias.
-     * @param ausNewValues 
-     * @param ausentismoCalculado 
-     * @param indicadores 
-     * @param ausToUpdate 
-     */
-    async validateAusentismoSugerencia(ausNewValues, ausentismoCalculado, indicadores, ausToUpdate?){
-        let warnings = [];
-        warnings = warnings.concat(utils.formatWarningsIndicadores(await aus.checkIndicadoresSugerencia(indicadores, ausNewValues.fechaDesde)));
-        warnings = warnings.concat(utils.formatWarningsSuperposicion(await aus.checkSolapamientoPeriodos(ausNewValues.agente, ausNewValues.articulo, ausentismoCalculado.desde, ausentismoCalculado.hasta, ausToUpdate)));
-        return warnings;
     }
 
 
@@ -214,10 +181,7 @@ class LicenciasController {
         return intervaloEncontrado;
     }
 
-    async calcularDiasAusentismo(agente, articulo, desde, hasta, dias){
-        return await calcularDiasAusencias(agente, articulo, desde, hasta, dias);
-    }
-
+    
 
     /**
      * Metodo que asigna/distribuye los dias de licencias a tomar entre los dias 
@@ -391,26 +355,6 @@ class LicenciasController {
         let resultado = await IndicadorAusentismo.aggregate(pipeline);
         return resultado.length? resultado[0].totales - resultado[0].ejecutadas : 0;
     }
-
-    /**
-     * Utilidad para copiar los valores de un objeto ausentismo a otro objeto
-     * @param ausToUpdate 
-     * @param ausNewValues 
-     */
-    applyChanges(ausToUpdate, ausNewValues){
-        ausToUpdate.fechaDesde = ausNewValues.fechaDesde;
-        ausToUpdate.fechaHasta = ausNewValues.fechaHasta;
-        ausToUpdate.cantidadDias = ausNewValues.cantidadDias;
-        ausToUpdate.ausencias = ausNewValues.ausencias;
-        ausToUpdate.observacion = ausNewValues.observacion;
-        ausToUpdate.adicional = ausNewValues.adicional;
-        ausToUpdate.extra = ausNewValues.extra;
-        // adjuntos: Array,
-        // certificado: CertificadoSchema,
-        // ausencias: [AusenciaSchema]
-        return ausToUpdate;
-    }
-
 
 
     async saveIndicadores(indicadores){

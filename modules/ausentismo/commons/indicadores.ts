@@ -4,7 +4,7 @@ import { IndicadorAusentismo } from '../schemas/indicador';
 import { IndicadorAusentismoHistorico } from '../schemas/indicadorhistorico';
 import { AusenciaPeriodo } from '../schemas/ausenciaperiodo';
 
-import * as aus from '../commons/ausentismo';
+import { Articulo } from '../schemas/articulo';
 
 
 /**
@@ -17,7 +17,11 @@ import * as aus from '../commons/ausentismo';
  * @param hasta 
  * @returns [IndicadorAusentismoSchema]
  */
-export async function getIndicadoresAusentismo(agente, articulo, desde, hasta?){
+export async function obtenerIndicadores(ausentismo){
+    const agente = ausentismo.agente;
+    const articulo = await Articulo.findById(Types.ObjectId(ausentismo.articulo.id)).lean();
+    const desde = ausentismo.fechaDesde;
+    const hasta = ausentismo.fechaHasta;
     let indicadores = [];
     for (let formula of articulo.formulas ) {        
         if ( formula.periodo ){
@@ -63,7 +67,7 @@ export async function getIndicadoresConPeriodo(agente, articulo, formula, desde,
         let indicador = await IndicadorAusentismo.findOne(
             {
                 'agente.id': new Types.ObjectId(agente.id),
-                'articulo.id': new Types.ObjectId(articulo.id),
+                'articulo.id': new Types.ObjectId(articulo.id || articulo._id),
                 'periodo': formula.periodo, // TODO Idealmente buscar por ID???
                 'vigencia': anio // TODO analizar el tema de la vigencia correctamente
             });
@@ -100,25 +104,12 @@ export async function getIndicadoresSinPeriodo(agente, articulo, formula, desde?
         indicador = await IndicadorAusentismo.findOne(
             {
                 'agente.id': new Types.ObjectId(agente.id),
-                'articulo.id': new Types.ObjectId(articulo.id),
+                'articulo.id': new Types.ObjectId(articulo.id || articulo._id),
                 'periodo': null,
             });
         if (!indicador) indicador = await calcularIndicadoresAusentismo(agente, articulo, formula);
     }
     return indicador;
-}
-
-
-export async function getIndicadoresLicencia(agente, articulo, formula, desde?, hasta?){
-    const thisYear = new Date().getFullYear();
-    let indicadores = await IndicadorAusentismo.find(
-        {
-            'agente.id': new Types.ObjectId(agente.id),
-            // 'articulo.id': new Types.ObjectId(articulo.id),
-            'vigencia': { $gte : thisYear-3},
-            'vencido': false
-        }).sort({ vigencia: 1 });
-    return indicadores;
 }
 
 
@@ -193,7 +184,7 @@ export async function calcularIndicadoresPorIntervalo(agente, articulo, formula,
  */
 export async function getTotalAusenciasPorArticulo(agente, articulo, desde?, hasta?){
     let pipeline:any = [
-        { $match: { 'agente.id': Types.ObjectId(agente.id), 'articulo.id': Types.ObjectId(articulo.id) } },
+        { $match: { 'agente.id': Types.ObjectId(agente.id), 'articulo.id': Types.ObjectId(articulo.id || articulo._id) } },
         { $unwind: '$ausencias'}
     ]
     if (desde && hasta){
@@ -207,51 +198,6 @@ export async function getTotalAusenciasPorArticulo(agente, articulo, desde?, has
     return total.length? total[0].total_ausencias : 0;
 }
 
-export async function getTotalLicenciasDisponibles(agente, articulo){
-    let pipeline:any = [
-        { 
-            $match: { 
-                'agente.id': Types.ObjectId(agente.id),
-                // 'articulo.id': Types.ObjectId(articulo.id),
-                'vencido': false
-            }
-        } ,
-        {
-            $unwind: '$intervalos'
-        },
-        {
-            $group: {
-                _id : null,
-                totales : { $sum: '$intervalos.totales'},
-                ejecutadas : { $sum: '$intervalos.ejecutadas'}
-            }
-        }
-     ]
-    
-    let resultado = await IndicadorAusentismo.aggregate(pipeline);
-    return resultado.length? resultado[0].totales - resultado[0].ejecutadas : 0;
-}
-
-
-export async function getIndicadoresHistoricos(agente, articulo, desde, hasta, dias){
-    let ausentismo:any = await aus.calcularDiasAusenciasDeprecated(agente, articulo, desde, hasta, dias);
-    let indicadores = await getIndicadoresAusentismo(agente, articulo, ausentismo.fechaDesde, ausentismo.fechaHasta);
-    // console.log("Indicadores HISTORICOS ##############");
-    // indicadores.forEach(element => {
-    //     console.log(element.periodo)
-    //     console.log(element.intervalos)
-        
-    // });
-    let indicadoresRecalculados = aus.distribuirAusenciasEntreIndicadores(indicadores, ausentismo);
-    // console.log("Indicadores HISTORICOS Recalculados ######################");
-    // indicadoresRecalculados.forEach(element => {
-    //     console.log(element.periodo)
-    //     console.log(element.intervalos)
-        
-    // });
-    let indicadoresHistoricos = rollbackIndicadores(indicadoresRecalculados);
-    return indicadoresHistoricos;
-}
 
 export async function getIndicadoresLicenciaHistoricos(ausentismo){
     let indicadores = await IndicadorAusentismoHistorico.find({
@@ -260,46 +206,6 @@ export async function getIndicadoresLicenciaHistoricos(ausentismo){
     return indicadores;
 }
 
-function rollbackIndicadores(indicadores){
-    for (let indicador of indicadores){
-        for (let intervalo of indicador.intervalos){
-            intervalo.ejecutadas = intervalo.ejecutadas - intervalo.asignadas;
-        }
-    }
-    return indicadores;
-}
-
-
-export function mergeIndicadores(indicadoresNuevos, indicadoresPrevios){
-    for (let indNuevo of indicadoresNuevos){
-        for (let intervalo of indNuevo.intervalos){
-            const intEncontrado = findIntervalo(intervalo, indNuevo, indicadoresPrevios);
-            if (intEncontrado){
-                intervalo.ejecutadas = intervalo.ejecutadas - intEncontrado.asignadas;
-            }
-            
-        }
-    }
-    return indicadoresNuevos;
-}
-
-function findIntervalo(intervalo, indicadorNuevo, indicadoresPrevios){
-    let intervaloEncontrado;
-    for (const indicador of indicadoresPrevios){
-        if (indicadorNuevo.vigencia ==  indicador.vigencia){
-            for (const int of indicador.intervalos){
-                if ((!int.desde && !intervalo.desde && !int.hasta && !intervalo.hasta) ||
-                    (int.desde.getTime() == intervalo.desde.getTime() &&
-                    int.hasta.getTime() == intervalo.hasta.getTime())){
-                        intervaloEncontrado = int;
-                        break;
-                    }
-            }
-        }
-        if (intervaloEncontrado) break;
-    }   
-    return intervaloEncontrado;
-}
 
 /**
  * Identifica el indicador mas relevante y retorna el numero maximos de dias 
@@ -318,10 +224,8 @@ export function getMaxDiasDisponibles(indicadores, fechaInteres){
     const limit = 999999;
     let maxDias = limit;
     for (let indicador of indicadores){
-        indicadoresFiltrados.push(aus.minimizarIntervalosIndicador(indicador, fechaInteres, fechaInteres));
+        indicadoresFiltrados.push(minimizarIntervalosIndicador(indicador, fechaInteres, fechaInteres));
     }
-    // console.log('Intervalos minimizados')
-    // for (const i of indicadoresFiltrados) console.log(i.intervalos)
     for (const indicador of indicadoresFiltrados){
         for(const intervalo of indicador.intervalos){
             const diasDisponibles = intervalo.totales - intervalo.ejecutadas;
@@ -330,6 +234,36 @@ export function getMaxDiasDisponibles(indicadores, fechaInteres){
             
     }
     return (maxDias < limit)? maxDias : 0;
+}
+
+
+/**
+ * Utilidad para reducir el nro de intervalos a analizar dentro de un indicador
+ * Retorna el mismo indicador con solo los intervalos de interes, que son aquellos
+ * comprendidos dentro del periodo desde y hasta
+ * @param indicador 
+ * @param desde 
+ * @param hasta 
+ */
+export function minimizarIntervalosIndicador(indicador, desde, hasta){
+    let filteredIntervalos = [];
+    if (indicador.periodo){
+        let cotaInferior = false;
+        for( let intervalo of indicador.intervalos ) {
+            if ( !cotaInferior){
+                if (intervalo.hasta >= desde) {
+                    filteredIntervalos.push(intervalo);
+                    cotaInferior = true;
+                }
+            }
+            else{
+                if (intervalo.desde > hasta) break;
+                filteredIntervalos.push(intervalo);
+            }
+        }
+        indicador.intervalos = filteredIntervalos;
+    }
+    return indicador;
 }
 
 
@@ -346,60 +280,6 @@ export async function updateIndicadores(indicadores){
     }
 }
 
-export async function updateIndicadoresOnDelete(ausentismo){
-    let indicadoresHistoricos:any = await IndicadorAusentismoHistorico.find({
-            'ausentismo.id': Types.ObjectId(ausentismo.id)
-        });
-    for (const indH of indicadoresHistoricos){
-        let indicador:any = await IndicadorAusentismo.findById(indH.indicador.id);
-        for (const int of indicador.intervalos){
-            let intervaloInteres = findIntervalo(int, indicador, indicadoresHistoricos)
-            int.ejecutadas = int.ejecutadas - intervaloInteres.asignadas;
-        }
-        await indicador.save();
-    }
-}
-
-
-
-export async function deleteIndicadoresHistoricos(ausentismo){
-    await IndicadorAusentismoHistorico.deleteMany({
-            'ausentismo.id': Types.ObjectId(ausentismo.id)
-        });
-}
-
-export async function insertIndicadoresHistoricos(ausentismo, indicadores){
-    let timestamp = new Date().getTime();
-    for (const indicador of indicadores){
-        let intervalosH = [];
-        for (const int of indicador.intervalos){
-            if (int.asignadas > 0){
-                // Solo interesa guardar el historico de los indicadores
-                // que modificaron los dias asignados
-                let intHistorico = {
-                    desde: int.desde,
-                    hasta: int.hasta,
-                    totales: int.totales,
-                    ejecutadas: int.ejecutadas,
-                    asignadas: int.asignadas
-                }
-                intervalosH.push(intHistorico)
-            }
-            
-        }
-        if (intervalosH.length){
-            let indicadorHistorico = new IndicadorAusentismoHistorico({
-                timestamp: timestamp,
-                indicador: { id: Types.ObjectId(indicador._id)},
-                vigencia: indicador.vigencia,
-                ausentismo: { id: Types.ObjectId(ausentismo._id)},
-                intervalos: intervalosH
-            });
-            await indicadorHistorico.save();
-        }
-    }
-    return;
-}
 
 export const constantes = {
     total: {

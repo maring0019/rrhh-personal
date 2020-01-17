@@ -1,228 +1,127 @@
-// import * as utils from '../commons/utils';
-// import * as aus from '../commons/ausentismo';
-// import * as ind from '../commons/indicadores';
-// import LicenciasController from './licencias';
-// import { changeFileObjectRef } from '../../../core/files/controller/file';
-// import { IDiasAusencia } from '../commons/ausentismo';
+import * as ind from '../commons/indicadores';
+import { calcularDiasAusentismo, validateAusentismo, applyChanges } from './ausentismo';
+import { AusenciaPeriodo } from '../schemas/ausenciaperiodo';
+
 
 class AusenciasController {
-    
-    
-//     /**
-//      * 
-//      * @param 
-//      * ausentismo = {
-//      *    agente: Agente, // TODO Reducir la cantidad de info del agente
-//      *    articulo: Articulo,
-//      *    fechaDesde: Date,
-//      *    fechaHasta: Date,
-//      *    cantidadDias: Number,
-//      *    observacion: String,
-//      *    ausencias: any[]  
-//      * } 
-//      */
-//     async addAusentismo(ausentismo){ 
-//         if (!ausentismo.ausencias.length){
-//             let au = await calcularAusentismo(ausentismo.agente, ausentismo.articulo,
-//                 ausentismo.fechaDesde, ausentismo.fechaHasta, ausentismo.cantidadDias);
-//             if (au.warnings && au.warnings.length)
-//                 return au;
-//             ausentismo.ausencias = au.ausencias;// aus.generarDiasAusencia(ausentismo, au.ausencias);
-//         }
-//         else{
-//             // Los dias de ausencia ya vienen calculados. No calculamos ausencias ni aplicamos
-//             // ningun control o restriccion. Especialmente util en la migracion
-//         }
-//         return await aus.insertAusentismo(ausentismo);
-//     }
-
-//     /**
-//      * Verifica si se modifico el articulo en la edicion y delega la actualizacion
-//      * segun corresponda
-//      * @param ausToUpdate 
-//      * @param ausNewValues 
-//      */
-//     async updateAusentismo(ausToUpdate, ausNewValues){
-//         let ausUpdated;
-//         if(!ausNewValues.articulo.descuentaDiasLicencia){
-//             ausUpdated = await this.updateAusentismoToAusentismo(ausToUpdate, ausNewValues);
-//         }
-//         else {
-//             ausUpdated = await this.updateAusentismoToLicencia(ausToUpdate, ausNewValues);
-//         }
-//         if (ausUpdated.warnings && ausUpdated.warnings.length){
-//             // Return ausencias con warnings. No guardamos nada
-//             return ausUpdated;    
-//         }
-//         // Actualizamos finalmente cualquier referencia a archivos adjuntos
-//         changeFileObjectRef(ausToUpdate._id, ausUpdated._id);
-//         return ausUpdated;
-//     }
-
-//     async updateAusentismoToAusentismo(ausToUpdate, ausNewValues){
-//         let au:any;
-//         if (ausToUpdate.articulo.id == ausNewValues.articulo.id){
-//             au = await recalcularAusentismoArticuloActual(ausToUpdate, ausNewValues.agente,
-//                     ausNewValues.articulo, ausNewValues.fechaDesde, ausNewValues.fechaHasta, ausNewValues.cantidadDias)
-//         }
-//         else{
-//             au = await recalcularAusentismoArticuloNuevo(ausToUpdate, ausNewValues.agente,
-//                     ausNewValues.articulo, ausNewValues.fechaDesde, ausNewValues.fechaHasta, ausNewValues.cantidadDias)
-//         }
-
-//         if (au.warnings && au.warnings.length){
-//             // Return ausencias con warnings. No guardamos nada
-//             return au;    
-//         }
-//         else{
-//             // Todo esta ok, se procede a guardar los cambios
-//             ausNewValues.ausencias = au.ausencias;//  aus.generarDiasAusencia(ausNewValues, au.ausencias)                           
-//             await aus.deleteAusentismo(ausToUpdate);
-//             return await aus.insertAusentismo(ausNewValues);
-//         }
-//     }
-
-//     /**
-//      * Actualizacion de un ausentismo existente. Resuelve los casos en 
-//      * que se edita el articulo de una ausencia comun para transformarse
-//      * en un ausentismo por licencia.
-//      * @param ausToUpdate 
-//      * @param ausNewValues 
-//      */
-//     async updateAusentismoToLicencia(ausToUpdate, ausNewValues){
-//         let licController = new LicenciasController();
-//         let au = await licController.recalcularAusentismoArticuloActual(ausToUpdate,ausNewValues.agente,ausNewValues.articulo,
-//             ausNewValues.fechaDesde, ausNewValues.fechaHasta, ausNewValues.cantidadDias)
-
-//         if (au.warnings && au.warnings.length){
-//             // Return ausencias con warnings. No guardamos nada
-//             return au;    
-//         }
-//         else{
-//             // Todo esta ok, se procede a guardar los cambios
-//             // TODO Update fileinfo
-//             ausNewValues.ausencias = au.ausencias; // aus.generarDiasAusencia(ausNewValues, au);                          
-//             let ausentismoNew = await aus.insertAusentismo(ausNewValues);
-//             await aus.deleteAusentismo(ausToUpdate);
-//             await ind.insertIndicadoresHistoricos(ausentismoNew, au.indicadores);
-//             await ind.updateIndicadores(au.indicadores);
-
-//             return ausentismoNew; // TODO Revisar esto!!!
-//         }
-//     }
-
-//     /**
-//      * Sugiere un nro optimo de ausencias para un agente a partir de la seleccion
-//      * de un articulo y una fecha de inicio desde. Se utilizan las formulas definidas
-//      * en el articulo para los controles. Se indican cantidad de dias, fecha hasta
-//      * y listado de dias de ausencias para el periodo que corresponda. Si durante el
-//      * proceso se identifican problemas como por ejemplo numero maximo de dias de
-//      * ausencias superados, se indican en un listado de warnings.
-//      * @param ausentismo 
-//      */
-//     async sugerirAusentismo(agente, articulo, desde){
-//         let indicadores = await ind.getIndicadoresAusentismo(agente, articulo, desde);
-//         let diasOptimoAusencia = ind.getMaxDiasDisponibles(indicadores, desde);
-//         let ausencias = await aus.calcularDiasAusencias(agente, articulo, desde, null, diasOptimoAusencia);
         
-//         let warnings = [];
-//         warnings = warnings.concat(utils.formatWarningsIndicadores(await aus.checkIndicadoresSugerencia(indicadores, desde)));
-//         warnings = warnings.concat(utils.formatWarningsSuperposicion(await aus.checkSolapamientoPeriodos(agente, articulo, ausencias.desde, ausencias.hasta)));// TODO Ver este control en la edicion
+    /**
+     * Alta de nuevo ausentismo 
+     */
+    async addAusentismo(ausNewValues){ 
+        let ausentismoNew;
+        if (!ausNewValues.ausencias.length){
+            let ausentismo:any = await calcularDiasAusentismo(ausNewValues.agente, ausNewValues.articulo, ausNewValues.fechaDesde, ausNewValues.fechaHasta, ausNewValues.cantidadDias);
+            ausentismo = {...ausNewValues, ...ausentismo }; // Copiamos los valores del ausentismo calculado
+            let indicadores = await this.updateIndicadores(ausentismo);
+            let warnings = await validateAusentismo(ausentismo, indicadores);
+            if (warnings && warnings.length){
+                ausentismo.warnings = warnings;
+                return ausentismo;
+            }
+            ausentismoNew = new AusenciaPeriodo(ausentismo);
+        }
+        else{
+            // Los dias de ausencia ya vienen calculados. No calculamos ausencias ni aplicamos
+            // ningun control o restriccion. Especialmente util en la migracion
+            ausentismoNew = new AusenciaPeriodo(ausNewValues);    
+        }
+        return await ausentismoNew.save();
+    }
 
-//         ausencias.warnings = warnings;
-//         return ausencias;
-//     }
+    /**
+     * Aplica cambios basicos realizados a un ausentismo por licencia. Si
+     * se modificaron las fechas se debe utilizar otro metodo para cambios
+     * mas complejos.Esta es una simple optimizacion para evitar recalcular
+     * indicadores, etc.
+     * @param ausToUpdate 
+     * @param ausNewValues 
+     */
+    async simpleUpdateAusentismo(ausToUpdate, ausNewValues){
+        await ausToUpdate.updateOne({ $set: { observacion: ausNewValues.observacion } });
+        return ausToUpdate;
+    }
 
+
+    async fullUpdateAusentismo(ausToUpdate, ausNewValues){
+        let ausentismo:any = await calcularDiasAusentismo(ausNewValues.agente, ausNewValues.articulo, ausNewValues.fechaDesde, ausNewValues.fechaHasta, ausNewValues.cantidadDias);
+        ausNewValues = {...ausNewValues, ...ausentismo} //  Copiamos los valores del ausentismo calculado
+        let indicadores = await this.recalcularIndicadores(ausToUpdate, ausNewValues);
+        let warnings = await validateAusentismo(ausNewValues, indicadores, ausToUpdate);
+        if (warnings && warnings.length){
+            // Se identificaron problemas al validar. No se actualiza nada
+            ausentismo.warnings = warnings;
+            return ausentismo; 
+        }
+        ausToUpdate = applyChanges(ausToUpdate, ausNewValues);
+        let ausUpdated = await ausToUpdate.save();
+        return ausUpdated; 
+    }
+
+    async deleteAusentismo(ausToDelete){
+        return await ausToDelete.remove();
+    }
+
+ 
+    async recalcularIndicadores(ausToUpdate, ausNewValues){
+        // Indicadores son los indicadores sin los cambios aplicados
+        // por los dias del ausentismo que se esta actualizando
+        let indicadores = await this.rollbackIndicadores(ausToUpdate);
+        return await this.distribuirAusentismoEntreIndicadores(indicadores, ausNewValues);
+    }
+
+    async rollbackIndicadores(ausToUpdate){
+        let indicadores = await ind.obtenerIndicadores(ausToUpdate);
+        let indicadoresRecalculados = await this.distribuirAusentismoEntreIndicadores(indicadores, ausToUpdate);
+        for (let indicador of indicadoresRecalculados){
+            for (let intervalo of indicador.intervalos){
+                intervalo.ejecutadas = intervalo.ejecutadas - intervalo.asignadas;
+                intervalo.asignadas = 0;
+            }
+        }
+        return indicadoresRecalculados;
+    }
+
+    
+    async updateIndicadores(ausentismo){
+        let indicadoresActuales = await ind.obtenerIndicadores(ausentismo);
+        let indicadoresRecalculados = await this.distribuirAusentismoEntreIndicadores(indicadoresActuales, ausentismo);
+        return indicadoresRecalculados;
+    }
+
+
+
+    /**
+     * "Distribuye" cada uno de los dias calculados del ausentismo entre los intervalos del
+     * periodo de los indicadores. 
+     * De esta forma se determina finalmente cuantos dias se van a asignar a cada intervalo
+     * del periodo. 
+     * @param indicadores 
+     * @param ausentismo 
+     */
+    distribuirAusentismoEntreIndicadores(indicadores, ausentismo){
+        for (let indicador of indicadores){
+            for (let intervalo of indicador.intervalos){
+                intervalo.asignadas = 0; // Inicializamos en 0 el contador
+                if ( !indicador.periodo || 
+                    (intervalo.desde <= ausentismo.fechaDesde && 
+                    intervalo.hasta >= ausentismo.fechaHasta)){
+                    // Asignamos el total de dias de ausencias al intervalo
+                    intervalo.asignadas = ausentismo.cantidadDias;
+                }
+                else{
+                    for (let ausencia of ausentismo.ausencias){
+                        let dia = ausencia.fecha;
+                        if ( intervalo.desde <= dia && intervalo.hasta >= dia){
+                            intervalo.asignadas = intervalo.asignadas + 1;
+                        }
+                        if (intervalo.hasta < dia) break;
+                    }
+                }
+            }
+        }
+        return indicadores;
+    }
 }
 
 export default AusenciasController;
-
-
-// /**
-//  * Metodo principal para determinar los dias de ausencias y las fechas 
-//  * correspondientes y validar que no se presenten problemas por limites
-//  * de dias alcanzados, o por solapamiento con otras ausencias previas.
-//  * El proceso se puede resumir en los siguientes pasos:
-//  * 1. A partir de los datos ingresados se calculan con precision los dias de ausencia
-//  * 2. Se recuperan/calculan los datos previos sobre ausencias disponibles y ejecutadas
-//  * 3. Se actualizan los datos sobre ausencias disponibles y ejecutadas
-//  * 4. Se valida que no se superen las cotas de ausencias disponibles
-//  * 5. Otras validaciones
-//  * @param agente 
-//  * @param articulo 
-//  * @param desde 
-//  * @param hasta 
-//  * @param dias 
-//  */
-// async function calcularAusentismo(agente, articulo, desde, hasta, dias){
-//     let ausencias:IDiasAusencia = await aus.calcularDiasAusencias(agente, articulo, desde, hasta, dias);
-//     let indicadores = await ind.getIndicadoresAusentismo(agente, articulo, ausencias.desde, ausencias.hasta);
-//     let indicadoresRecalculados = aus.distribuirAusenciasEntreIndicadores(indicadores, ausencias);  
-
-//     let warnings = [];
-//     warnings = warnings.concat(utils.formatWarningsIndicadores(await aus.checkIndicadoresGuardado(indicadoresRecalculados)));
-//     warnings = warnings.concat(utils.formatWarningsSuperposicion(await aus.checkSolapamientoPeriodos(agente, articulo, ausencias.desde, ausencias.hasta)));
-//     ausencias.warnings = warnings;
-    
-//     return ausencias;
-// }
-
-
-// export async function recalcularAusentismoArticuloActual(ausEnEdicion, agente, articulo, desde, hasta, dias){
-//     // console.log(ausEnEdicion)
-//     let ausencias = await aus.calcularDiasAusencias(agente, articulo, desde, hasta, dias);
-    
-//     let indicadores = await ind.getIndicadoresAusentismo(agente, articulo, ausencias.desde, ausencias.hasta);
-//     // console.log("Indicadores ##############");
-//     // indicadores.forEach(element => {
-//     //     console.log(element.periodo)
-//     //     console.log(element.intervalos)
-        
-//     // });
-//     let indicadoresRecalculados = aus.distribuirAusenciasEntreIndicadores(indicadores, ausencias);
-    
-//     // console.log("Indicadores Recalculados ######################");
-//     // indicadoresRecalculados.forEach(element => {
-//     //     console.log(element.periodo)
-//     //     console.log(element.intervalos)
-        
-//     // });
-
-//     let indicadoresHistoricos = await ind.getIndicadoresHistoricos(agente, articulo, ausEnEdicion.fechaDesde, ausEnEdicion.fechaHasta, ausEnEdicion.cantidadDias);
-//     // console.log("Indicadores Historicos ########################");
-//     // indicadoresHistoricos.forEach(element => {
-//     //     console.log(element.periodo)
-//     //     console.log(element.intervalos)
-        
-//     // });
-
-//     let indicadoresFinales = ind.mergeIndicadores(indicadoresRecalculados, indicadoresHistoricos);
-    
-//     // console.log(indicadoresFinales);
-//     // indicadoresFinales.forEach(element => {
-//     //     console.log(element.periodo)
-//     //     console.log(element.intervalos)
-        
-//     // });
-
-//     let warnings = [];
-//     warnings = warnings.concat(utils.formatWarningsIndicadores(await aus.checkIndicadoresGuardado(indicadoresFinales)));
-//     warnings = warnings.concat(utils.formatWarningsSuperposicion(await aus.checkSolapamientoPeriodos(agente, articulo, ausencias.desde, ausencias.hasta, ausEnEdicion)));
-
-//     ausencias.warnings = warnings;
-//     return ausencias;
-// }
-
-// export async function recalcularAusentismoArticuloNuevo(ausEnEdicion, agente, articulo, desde, hasta, dias){
-//     let ausencias = await aus.calcularDiasAusencias(agente, articulo, desde, hasta, dias);
-//     let indicadores = await ind.getIndicadoresAusentismo(agente, articulo, ausencias.desde, ausencias.hasta);
-//     let indicadoresRecalculados = aus.distribuirAusenciasEntreIndicadores(indicadores, ausencias);  
-    
-//     let warnings = [];
-//     warnings = warnings.concat(utils.formatWarningsIndicadores(await aus.checkIndicadoresGuardado(indicadoresRecalculados)));
-//     warnings = warnings.concat(utils.formatWarningsSuperposicion(await aus.checkSolapamientoPeriodos(agente, articulo, ausencias.desde, ausencias.hasta, ausEnEdicion)));
-    
-//     ausencias.warnings = warnings;
-    
-//     return ausencias;
-// }
