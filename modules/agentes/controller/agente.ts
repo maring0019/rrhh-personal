@@ -185,6 +185,42 @@ async function reactivarAgente(req, res, next) {
     }
 }
 
+
+/**
+ * Incorpora una nueva historia laboral, lo cual implica actualizar la
+ * situacion laboral actual con la nueva historia laboral y guardar un
+ * registro de la antigua situacion.
+ * @param req 
+ * @param res 
+ * @param next 
+ */
+async function addHistorialLaboral(req, res, next){
+    try {
+        const id = req.params.id;
+        if (!id || (id && !Types.ObjectId.isValid(id))) return res.status(404).send();
+        let agente:any = await Agente.findById(id);
+        if (!agente) return res.status(404).send({message:"Agente not found"});
+        let newSituacionLaboral = req.body;
+        let agenteCopy = agente.toObject();
+        let oldSituacionLaboral = agenteCopy.situacionLaboral;
+        
+        agente.situacionLaboral.situacion = newSituacionLaboral.situacion;
+        agente.situacionLaboral.exceptuadoFichado = newSituacionLaboral.exceptuadoFichado;
+        agente.situacionLaboral.trabajaEnHospital = newSituacionLaboral.trabajaEnHospital;
+        agente.situacionLaboral.trasladoDesde = newSituacionLaboral.trasladoDesde;
+        agente.situacionLaboral.lugarPago = newSituacionLaboral.lugarPago;    
+        agente.situacionLaboral.normaLegal = newSituacionLaboral.normaLegal;
+        agente.situacionLaboral.cargo = newSituacionLaboral.cargo;
+        agente.situacionLaboral.regimen = newSituacionLaboral.regimen;
+        
+        agente.historiaLaboral.push(oldSituacionLaboral);
+        let agenteActualizado = await agente.save();
+        return res.json(agenteActualizado);
+    } catch (err) {
+        return next(err);
+    }
+}
+
 async function uploadFotoPerfil(req, res, next){
     try {
         const id = req.params.id;
@@ -427,6 +463,7 @@ const AgenteController = {
     addAgente,
     bajaAgente,
     reactivarAgente,
+    addHistorialLaboral,
     updateAgente,
     deleteAgente,
     searchAgentes,

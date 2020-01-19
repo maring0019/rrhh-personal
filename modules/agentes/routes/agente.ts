@@ -23,5 +23,6 @@ Routes.post('/agentes/:id/files', AgenteController.uploadFilesAgente);
 Routes.put('/agentes/:id', AgenteController.updateAgente);
 Routes.put('/agentes/:id/baja', AgenteController.bajaAgente);
 Routes.put('/agentes/:id/reactivar', AgenteController.reactivarAgente);
+Routes.put('/agentes/:id/nuevaHistoriaLaboral', AgenteController.addHistorialLaboral);
 Routes.delete('/agentes/:id', AgenteController.deleteAgente);
 
