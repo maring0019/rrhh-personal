@@ -8,7 +8,7 @@ import { Agente } from '../schemas/agente';
 import { makeFs } from '../../../core/tm/schemas/imagenes';
 import { attachFilesToObject } from '../../../core/files/controller/file'
 import { AusenciaPeriodo } from '../../ausentismo/schemas/ausenciaperiodo';
-// import { processImage } from '../../../core/files/utils';
+import { processImage } from '../../../core/files/utils';
 import { IndicadorAusentismo } from '../../ausentismo/schemas/indicador';
 
 async function getAgentes(req, res, next){
@@ -67,6 +67,24 @@ async function searchAgentes(req, res, next){
 
 async function addAgente(req, res, next){
     try {
+        let historiaLaboral=[];
+        if (req.body.migracion){
+            // Si viene este dato asumimos que es de la migracion y 
+            // lo guardamos como viene al dato
+            historiaLaboral = req.body.historiaLaboral;
+        }
+        else{
+            // Sino viene el dato, se trata de un alta en el nuevo
+            // sistema y por lo tanto guardamos un registro en el 
+            // historial del agente
+            let nuevaHistoria = {
+                tipo: 'alta',
+                fecha: (req.body.situacionLaboral && req.body.situacionLaboral.normaLegal)? req.body.situacionLaboral.normaLegal.fecha: new Date(),
+                timestamp: new Date(),
+                changeset: {} // TODO Definir que colocar como changeset
+            }
+            historiaLaboral.push(nuevaHistoria);
+        }
         const agente = new Agente({
             numero: req.body.numero,
             // tipoDocumento
@@ -80,11 +98,10 @@ async function addAgente(req, res, next){
             fechaNacimiento: req.body.fechaNacimiento,
             nacionalidad: req.body.nacionalidad,
             direccion: req.body.direccion,
-            // TODO Test insert de estas relaciones
             contactos: req.body.contactos,
             educacion: req.body.educacion,
             situacionLaboral: req.body.situacionLaboral,
-            historiaLaboral: req.body.historiaLaboral,
+            historiaLaboral: historiaLaboral,
             bajas: req.body.bajas,
             activo: (req.body.activo==null || req.body.activo=='undefined')? true:req.body.activo
         });
@@ -98,7 +115,7 @@ async function addAgente(req, res, next){
         if (_isEmpty(agenteExistente)){
             const agenteNuevo = await agente.save();
             if (req.body.foto){
-                await AgenteController._saveImage(req.body.foto, agenteNuevo._id);
+                await AgenteController._saveImage(req.body.foto, agenteNuevo._id, req.body.migracion);
             }
             return res.json(agenteNuevo);
         }
@@ -163,8 +180,13 @@ async function bajaAgente(req, res, next) {
         if (!agente) return res.status(404).send({message:"Agente not found"});
         let baja = req.body;
         agente.activo = false;
-        agente.bajas.push(baja);
-        let agenteActualizado = await agente.save();
+        let nuevaHistoria = {
+            tipo: 'baja',
+            fecha: baja.fecha,
+            changeset: baja
+        }
+        agente.historiaLaboral.push(nuevaHistoria);
+        let agenteActualizado = await agente.save(); // TODO Optimizar para solo actualizar la historiaLaboral?
         return res.json(agenteActualizado);
     } catch (err) {
         return next(err);
@@ -178,7 +200,14 @@ async function reactivarAgente(req, res, next) {
         let agente:any = await Agente.findById(id);
         if (!agente) return res.status(404).send("Not found");
         agente.activo = true;
-        let agenteActualizado = await agente.save();
+        let nuevaHistoria = {
+            tipo: 'reactivar',
+            fecha: new Date(),
+            timestamp: new Date(),
+            changeset: {} // TODO Definir que colocar como changeset
+        }
+        agente.historiaLaboral.push(nuevaHistoria);
+        let agenteActualizado = await agente.save();// TODO Optimizar para solo actualizar la historiaLaboral?
         return res.json(agenteActualizado);
     } catch (err) {
         return next(err);
@@ -198,22 +227,26 @@ async function addHistorialLaboral(req, res, next){
     try {
         const id = req.params.id;
         if (!id || (id && !Types.ObjectId.isValid(id))) return res.status(404).send();
+        
         let agente:any = await Agente.findById(id);
         if (!agente) return res.status(404).send({message:"Agente not found"});
+        
         let newSituacionLaboral = req.body;
         let agenteCopy = agente.toObject();
         let oldSituacionLaboral = agenteCopy.situacionLaboral;
         
-        agente.situacionLaboral.situacion = newSituacionLaboral.situacion;
-        agente.situacionLaboral.exceptuadoFichado = newSituacionLaboral.exceptuadoFichado;
-        agente.situacionLaboral.trabajaEnHospital = newSituacionLaboral.trabajaEnHospital;
-        agente.situacionLaboral.trasladoDesde = newSituacionLaboral.trasladoDesde;
-        agente.situacionLaboral.lugarPago = newSituacionLaboral.lugarPago;    
         agente.situacionLaboral.normaLegal = newSituacionLaboral.normaLegal;
+        agente.situacionLaboral.situacion = newSituacionLaboral.situacion; 
         agente.situacionLaboral.cargo = newSituacionLaboral.cargo;
         agente.situacionLaboral.regimen = newSituacionLaboral.regimen;
+        let nuevaHistoria = {
+            tipo: 'modificacion',
+            fecha: (oldSituacionLaboral.normaLegal)? oldSituacionLaboral.normaLegal.fechaNormaLegal: null,
+            timestamp: new Date(),
+            changeset: oldSituacionLaboral
+        }
+        agente.historiaLaboral.push(nuevaHistoria);
         
-        agente.historiaLaboral.push(oldSituacionLaboral);
         let agenteActualizado = await agente.save();
         return res.json(agenteActualizado);
     } catch (err) {
@@ -413,17 +446,18 @@ async function _findFotoPerfil(agenteID){
 
 }
 
-async function _saveImage(imagen, agenteID){
+async function _saveImage(imagen, agenteID, migracion?){
     // Se eliminan las fotos anteriores si es necesario
     const agenteFotoModel = makeFs();
     const fotosPrevias = await agenteFotoModel.find({ 'metadata.agenteID': agenteID });
     fotosPrevias.forEach(foto => {
         agenteFotoModel.unlinkById(foto._id, (error, unlinkedAttachment) => { });
     });
-    // Remove extra data if necesary
-    imagen = imagen.toString().replace(/^data:image\/(png|jpg|jpeg);base64,/, ""); // TODO No es necesario en la migracion!
+    // Remove extra data if necesary. En la migracion no es necesario este pre-procesamiento
+    if (!migracion) imagen = imagen.toString().replace(/^data:image\/(png|jpg|jpeg);base64,/, "");
+    
     let buffer = Buffer.from(imagen, 'base64');
-    // buffer = await processImage(buffer, {quality: 90, w: 256});
+    buffer = await processImage(buffer, {quality: 90, w: 256});
     let stream = new Readable();
     stream.push(buffer);
     stream.push(null);

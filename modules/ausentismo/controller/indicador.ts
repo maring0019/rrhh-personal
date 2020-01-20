@@ -2,7 +2,6 @@ import { IndicadorAusentismo } from '../schemas/indicador';
 
 
 export async function addIndicador(req, res, next) {
-    console.log('Adding Indicador');
     try {
         const obj = new IndicadorAusentismo({
             agente: req.body.agente,

@@ -7,6 +7,7 @@ import { ContactoSchema } from '../../../core/tm/schemas/contacto';
 import { EducacionSchema } from '../../../core/tm/schemas/educacion';
 import { EspecialidadSchema } from '../../../core/tm/schemas/especialidad';
 import { SituacionLaboralSchema } from './situacionlaboral';
+import { HistoriaLaboralSchema } from './historialaboral';
 import { BajaSchema } from './baja';
 
 
@@ -48,7 +49,7 @@ export const AgenteSchema = new Schema({
     educacion: [EducacionSchema],
     especialidad: EspecialidadSchema, // TODO Ver especialidadSchema
     situacionLaboral: SituacionLaboralSchema,
-    historiaLaboral: [],
+    historiaLaboral: [HistoriaLaboralSchema],
     bajas: [BajaSchema],
     activo: Boolean,
     

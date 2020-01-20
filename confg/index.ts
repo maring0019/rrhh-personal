@@ -33,6 +33,6 @@ export default {
         }
     },
     database: {
-        mongo: env('MONGO_HOST', 'mongodb://localhost:27017/recursosHumanos')
+        mongo: env('MONGO_HOST', 'mongodb://localhost:27017/rrhh')
     },
 };
