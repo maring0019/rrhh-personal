@@ -17,9 +17,16 @@ export async function parseAusentismo(obj){
         observacion: obj.observacion,
         adicional: obj.adicional,
         extra: obj.extra,
-        ausencias: obj.ausencias? obj.ausencias : []
+        ausencias: obj.ausencias? parseAusencias(obj.ausencias) : []
     };
     return ausentismo;
+}
+
+export function parseAusencias(ausencias){
+    for (const aus of ausencias) {
+        aus.fecha = parseDate(new Date(aus.fecha));
+    }
+    return ausencias;
 }
 
 export async function parseArticulo(obj){
