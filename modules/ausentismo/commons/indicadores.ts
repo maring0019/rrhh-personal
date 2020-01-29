@@ -24,7 +24,7 @@ export async function obtenerIndicadores(ausentismo){
     const hasta = ausentismo.fechaHasta;
     let indicadores = [];
     for (let formula of articulo.formulas ) {        
-        if ( formula.periodo ){
+        if (formula.periodo){
             indicadores = indicadores.concat(
                 await getIndicadoresConPeriodo(agente, articulo, formula, desde, hasta));   
         }
@@ -205,6 +205,27 @@ export async function getIndicadoresLicenciaHistoricos(ausentismo){
     });
     return indicadores;
 }
+
+
+
+/**
+ * Consulta y recupera los indicadores de licencia tomando como referencia
+ * los ultimos 3 anios desde el momento de la consulta.
+ * 
+ */
+export async function getIndicadoresLicencia(agente){
+    const thisYear = new Date().getFullYear();
+    return await IndicadorAusentismo.find(
+        {
+            'agente.id': Types.ObjectId(agente.id || agente._id),
+            'vigencia': { $gte : thisYear - 3 },
+            'vencido': false,
+            'intervalos.totales': { $nin: [ null, "" ] }
+        }
+    )
+}
+
+
 
 
 /**

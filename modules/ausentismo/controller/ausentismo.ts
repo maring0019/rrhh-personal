@@ -1,10 +1,10 @@
 import { AusenciaPeriodo } from '../schemas/ausenciaperiodo';
 
 import * as utils from '../commons/utils';
+import { getIndicadoresLicencia } from '../commons/indicadores';
 
 import { Types } from 'mongoose';
 import { Agente } from '../../agentes/schemas/agente';
-import { IndicadorAusentismo } from '../schemas/indicador';
 import { Ausencia } from '../schemas/ausencia';
 
 export async function getAusentismoById(req, res, next){
@@ -138,20 +138,13 @@ export async function calcularAusentismo(req, res, next) {
 
 
 
-export async function getIndicadoresLicencia(req, res, next){
+export async function getIndicadoresLicenciaAgente(req, res, next){
     try {
         const id = req.params.id;
         if (!id || (id && !Types.ObjectId.isValid(id))) return next(404);
         let agente:any = await Agente.findById(id);
         if (!agente) return next(404);
-        const thisYear = new Date().getFullYear();
-        let indicadores = await IndicadorAusentismo.find(
-            {
-                'agente.id': new Types.ObjectId(agente._id),
-                // 'articulo.id': new Types.ObjectId(articulo.id),
-                'vigencia': { $gte : thisYear -3 },
-                'vencido': false
-            }).sort({ vigencia: 1 });
+        let indicadores = await getIndicadoresLicencia(agente);
         return res.json(indicadores);
     } catch (err) {
         return next(err);
@@ -274,13 +267,15 @@ export function generarAusencias(agente, articulo, diasAusencia){
      * calculados. Actualmente se valida:
      *             - Que el ausentismo no se solape con otras ausencias previas
      *             - Que los indicadores no excedan los dias disponibles de licencia
+     *             - Que existan indicadores para el caso de las licencias 
      * @param ausentismo 
      * @param indicadores 
      * @param ausToUpdate Opcional. Requerido en la actualizacion de un ausentismo
      */
     export async function validateAusentismo(ausentismo, indicadores, ausToUpdate?){
         let warnings = [];
-        warnings = warnings.concat(utils.formatWarningsIndicadores(await this.checkIndicadoresGuardado(indicadores)));
+        warnings = warnings.concat(this.checkDiasLicencia(ausentismo, indicadores));
+        warnings = warnings.concat(utils.formatWarningsIndicadores(await this.checkMaxDiasDisponibles(indicadores)));
         warnings = warnings.concat(utils.formatWarningsSuperposicion(await this.checkSolapamientoPeriodos(ausentismo.agente, ausentismo.articulo, ausentismo.fechaDesde, ausentismo.fechaHasta, ausToUpdate)));
         return warnings;
     }
@@ -301,7 +296,36 @@ export function generarAusencias(agente, articulo, diasAusencia){
         return warnings;
     }
 
-    export function checkIndicadoresGuardado(indicadores){
+
+    /**
+     * Utilidad para copiar los valores de un objeto ausentismo a otro objeto
+     * @param ausToUpdate 
+     * @param ausNewValues 
+     */
+    export  function applyChanges(ausToUpdate, ausNewValues){
+        ausToUpdate.fechaDesde = ausNewValues.fechaDesde;
+        ausToUpdate.fechaHasta = ausNewValues.fechaHasta;
+        ausToUpdate.cantidadDias = ausNewValues.cantidadDias;
+        ausToUpdate.ausencias = ausNewValues.ausencias;
+        ausToUpdate.observacion = ausNewValues.observacion;
+        ausToUpdate.adicional = ausNewValues.adicional;
+        ausToUpdate.extra = ausNewValues.extra;
+        // adjuntos: Array,
+        // certificado: CertificadoSchema,
+        // ausencias: [AusenciaSchema]
+        return ausToUpdate;
+    }
+
+    export function checkDiasLicencia(ausentismo, indicadores){
+        let warnings = [];
+        if (ausentismo.articulo.descuentaDiasLicencia &&
+            (!indicadores || !indicadores.length)){
+            warnings = warnings.concat(`No se encontró información sobre días disponibles! Consulte con el Administrador del Sistema.`);
+        }
+        return warnings;
+    }
+
+    export function checkMaxDiasDisponibles(indicadores){
         let indicadoresConProblemas = [];
         for (const indicador of indicadores){
             let intervaloConProblemas:any;
@@ -322,6 +346,34 @@ export function generarAusencias(agente, articulo, diasAusencia){
             }     
         }
         return indicadoresConProblemas;
+    }
+
+    /**
+     * Busca ausencias previas existentes en un periodo determinado para un agente.
+     * El parametro ausentismo se utiliza unicamente en el caso que se este en modo 
+     * edicion, para evitar controlar con el mismo ausentismo que se esta editando
+     * @param agente 
+     * @param articulo 
+     * @param desde 
+     * @param hasta 
+     * @param ausentismo Opcional. Unicamente necesario en modo edicion
+     */
+    export async function checkSolapamientoPeriodos(agente, articulo, desde, hasta, ausentismo?){
+        let ausentismos = await AusenciaPeriodo.find({
+            'agente.id': agente.id,
+            'ausencias': {
+                $elemMatch: {
+                    fecha: {
+                        $gte: desde,
+                        $lte: hasta
+                    }
+                }
+            }
+        });
+        if (ausentismo){
+            ausentismos = ausentismos.filter(au => au.id != ausentismo.id);
+        }
+        return ausentismos;
     }
     
     /**
@@ -362,51 +414,4 @@ export function generarAusencias(agente, articulo, diasAusencia){
             }     
         }
         return indicadoresConProblemas;
-    }
-    
-    /**
-     * Busca ausencias previas existentes en un periodo determinado para un agente.
-     * El parametro ausentismo se utiliza unicamente en el caso que se este en modo 
-     * edicion, para evitar controlar con el mismo ausentismo que se esta editando
-     * @param agente 
-     * @param articulo 
-     * @param desde 
-     * @param hasta 
-     * @param ausentismo Opcional. Unicamente necesario en modo edicion
-     */
-    export async function checkSolapamientoPeriodos(agente, articulo, desde, hasta, ausentismo?){
-        let ausentismos = await AusenciaPeriodo.find({
-            'agente.id': agente.id,
-            'ausencias': {
-                $elemMatch: {
-                    fecha: {
-                        $gte: desde,
-                        $lte: hasta
-                    }
-                }
-            }
-        });
-        if (ausentismo){
-            ausentismos = ausentismos.filter(au => au.id != ausentismo.id);
-        }
-        return ausentismos;
-    }
-
-    /**
-     * Utilidad para copiar los valores de un objeto ausentismo a otro objeto
-     * @param ausToUpdate 
-     * @param ausNewValues 
-     */
-    export  function applyChanges(ausToUpdate, ausNewValues){
-        ausToUpdate.fechaDesde = ausNewValues.fechaDesde;
-        ausToUpdate.fechaHasta = ausNewValues.fechaHasta;
-        ausToUpdate.cantidadDias = ausNewValues.cantidadDias;
-        ausToUpdate.ausencias = ausNewValues.ausencias;
-        ausToUpdate.observacion = ausNewValues.observacion;
-        ausToUpdate.adicional = ausNewValues.adicional;
-        ausToUpdate.extra = ausNewValues.extra;
-        // adjuntos: Array,
-        // certificado: CertificadoSchema,
-        // ausencias: [AusenciaSchema]
-        return ausToUpdate;
-    }
+    } 

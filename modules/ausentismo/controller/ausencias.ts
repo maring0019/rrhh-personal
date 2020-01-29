@@ -13,7 +13,7 @@ class AusenciasController {
         if (!ausNewValues.ausencias.length){
             let ausentismo:any = await calcularDiasAusentismo(ausNewValues.agente, ausNewValues.articulo, ausNewValues.fechaDesde, ausNewValues.fechaHasta, ausNewValues.cantidadDias);
             ausentismo = {...ausNewValues, ...ausentismo }; // Copiamos los valores del ausentismo calculado
-            let indicadores = await this.updateIndicadores(ausentismo);
+            let indicadores = await this.calcularIndicadores(ausentismo);
             let warnings = await validateAusentismo(ausentismo, indicadores);
             if (warnings && warnings.length){
                 ausentismo.warnings = warnings;
@@ -83,7 +83,13 @@ class AusenciasController {
     }
 
     
-    async updateIndicadores(ausentismo){
+    /**
+     * Calcula los nuevos valores de los indicadores existentes a partir de los
+     * nuevos dias de ausencias indicados en el ausentismo
+     * @param ausentismo 
+     * @usedby addAusentismo()
+     */
+    async calcularIndicadores(ausentismo){
         let indicadoresActuales = await ind.obtenerIndicadores(ausentismo);
         let indicadoresRecalculados = await this.distribuirAusentismoEntreIndicadores(indicadoresActuales, ausentismo);
         return indicadoresRecalculados;

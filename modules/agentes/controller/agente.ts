@@ -363,6 +363,7 @@ async function getLicenciasTotales(req, res, next){
         const pipeline = [
             { $match: { 'agente.id': Types.ObjectId(agente._id), vigencia: { $gte: thisYear - 3 } }},
             { $unwind: '$intervalos'},
+            { $match: { 'intervalos.totales': {  $nin: [ null, "" ] }}},
             { $group: { _id:null, totales: { $sum: "$intervalos.totales"}, ejecutadas: { $sum: "$intervalos.ejecutadas"} }}]
         let licenciasTotales = await IndicadorAusentismo.aggregate(pipeline)
         return res.json(licenciasTotales);

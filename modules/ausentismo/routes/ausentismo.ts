@@ -45,7 +45,7 @@ Routes.put('/ausencias/:id',middleware, AusentismoController.updateAusentismo);
 Routes.get('/ausencias', AusentismoController.getAusentismo);
 Routes.get('/ausencias/:id', AusentismoController.getAusentismoById);
 
-Routes.get('/ausencias/indicadores/agentes/:id', AusentismoController.getIndicadoresLicencia);
+Routes.get('/ausencias/indicadores/agentes/:id', AusentismoController.getIndicadoresLicenciaAgente);
 
 Routes.delete('/ausencias/:id', middleware, AusentismoController.deleteAusentismo);
 

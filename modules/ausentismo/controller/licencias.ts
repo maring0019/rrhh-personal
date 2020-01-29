@@ -5,6 +5,7 @@ import { IndicadorAusentismo } from '../schemas/indicador';
 import { AusenciaPeriodo } from '../schemas/ausenciaperiodo';
 
 import { calcularDiasAusentismo, validateAusentismo, validateAusentismoSugerencia, applyChanges } from './ausentismo';
+import { getIndicadoresLicencia } from '../commons/indicadores';
 
 class LicenciasController {
 
@@ -18,7 +19,7 @@ class LicenciasController {
         if (!ausNewValues.ausencias.length){
             let ausentismo:any = await calcularDiasAusentismo(ausNewValues.agente, ausNewValues.articulo, ausNewValues.fechaDesde, ausNewValues.fechaHasta, ausNewValues.cantidadDias);
             ausentismo = {...ausNewValues, ...ausentismo }; // Copiamos los valores del ausentismo calculado
-            let indicadores = await this.updateIndicadores(ausentismo);
+            let indicadores = await this.calcularIndicadores(ausentismo);
             let warnings = await validateAusentismo(ausentismo, indicadores);
             if (warnings && warnings.length){
                 ausentismo.warnings = warnings;
@@ -123,12 +124,12 @@ class LicenciasController {
     }
 
     /**
-     * Actualizar los indicadores existentes a partir de los nuevos dias de 
-     * licencia indicados en el ausentismo
+     * Calcula los nuevos valores de los indicadores existentes a partir de los
+     * nuevos dias de licencia indicados en el ausentismo
      * @param ausentismo 
      * @usedby addAusentismo()
      */
-    async updateIndicadores(ausentismo){
+    async calcularIndicadores(ausentismo){
         let indicadoresActuales = await this.obtenerIndicadoresActuales(ausentismo);
         let indicadoresRecalculados = await this.distribuirAusentismoEntreIndicadores(indicadoresActuales, ausentismo.cantidadDias);
         return indicadoresRecalculados;
@@ -310,24 +311,8 @@ class LicenciasController {
     }
 
 
-    /**
-     * Consulta y recupera los indicadores actuales tomando como referencia
-     * los ultimos 3 anios desde el momento de la consulta.
-     * Obs: Idealmente se deberia indicar el articulo sobre el cual interesa
-     * recuperar los indicadores, pero a la fecha solo se guardan indicadores
-     * para las licencias
-     * @param ausentismo 
-     */
     async obtenerIndicadoresActuales(ausentismo){
-        const thisYear = new Date().getFullYear();
-        let indicadores = await IndicadorAusentismo.find(
-            {
-                'agente.id': new Types.ObjectId(ausentismo.agente.id),
-                // 'articulo.id': new Types.ObjectId(articulo.id),
-                'vigencia': { $gte : thisYear - 3},
-                'vencido': false
-            }).sort({ vigencia: 1 });
-        return indicadores;
+        return await getIndicadoresLicencia(ausentismo.agente);
     }
 
 

@@ -60,6 +60,8 @@ Routes.post('/login', async (req, res, next) => {
         const password = sha1Hash(req.body.password);
         const user = await Usuario.findOne({ usuario: req.body.usuario, password });
         if (!user) {
+            // Para testing. Crea un usuario con el nombre de
+            // usuario y password especificados.
             // let usuario = new Usuario(
             //     { usuario: 28588178,
             //         activo: true,
