@@ -371,7 +371,7 @@ export function generarAusencias(agente, articulo, diasAusencia){
             }
         });
         if (ausentismo){
-            ausentismos = ausentismos.filter(au => au._id != ausentismo._id);
+            ausentismos = ausentismos.filter(au => !au._id.equals(ausentismo._id));
         }
         return ausentismos;
     }

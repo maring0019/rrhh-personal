@@ -330,7 +330,7 @@ async function getAusenciasAsEvento(req, res, next){
             { $unwind: '$ausencias'},
             { $project:
                 {
-                    _id: "$ausencias._id",
+                    _id: "$_id",
                     title: { $concat: ["ART. ", "$articulo.codigo"] },
                     start: { $dateToString: { date: "$ausencias.fecha", format:"%Y-%m-%d"}},
                     allDay: { $literal: true },
