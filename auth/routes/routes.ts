@@ -67,7 +67,7 @@ Routes.post('/login', async (req, res, next) => {
             //         activo: true,
             //         nombre: 'David',
             //         apellido: 'Nievas',
-            //         password: sha1Hash('')
+            //         password: sha1Hash('pass_here')
             //     }
             // );
             // usuario.save();

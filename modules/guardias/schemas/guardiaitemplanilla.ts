@@ -8,7 +8,7 @@ export const DiaGuardiaSchema = new Schema({
 
 export const GuardiaItemPlanillaSchema = new Schema({
     agente: {
-        id: {
+        _id: {
             type: Types.ObjectId,
             required: true,
             index: true,

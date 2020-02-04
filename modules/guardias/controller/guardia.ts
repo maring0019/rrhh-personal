@@ -53,7 +53,7 @@ class GuardiaController extends BaseController {
             const id = req.params.id;
             if (!id || (id && !Types.ObjectId.isValid(id))) return res.status(404).send();
             let guardia:any = await Guardia.findById(id);
-            if (!guardia) return res.status(404).send();
+            if (!guardia) return res.status(404).send({message: "Not found"});
             let ws = fs.createWriteStream('/tmp/guardia.csv');
             let filasCSV = this._generarFilasCSV(guardia);
             csv.write(filasCSV, {

@@ -54,7 +54,7 @@ export class DocumentoLicenciasPorAgente extends DocumentoPDF {
                             $match: { 
                                 $expr: {
                                     $and: [ 
-                                        { $eq: ["$$agente_id", "$agente.id"]}, // Join con agente id
+                                        { $eq: ["$$agente_id", "$agente._id"]}, // Join con agente id
                                         { $in: ["$vigencia", anios ]},
                                         ]
                                     },

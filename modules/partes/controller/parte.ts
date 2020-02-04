@@ -38,7 +38,7 @@ class ParteController extends BaseController {
             let obj = req.body;
             if (!obj.estado){
                 const estadoSinPresentar = await this.findEstadoParte(this.ESTADO_SIN_PRESENTAR);
-                obj.estado = { id:estadoSinPresentar._id, nombre: estadoSinPresentar.nombre }
+                obj.estado = { _id:estadoSinPresentar._id, nombre: estadoSinPresentar.nombre }
             }
             let parte = new Parte(obj);
             const parteNew = await parte.save();
@@ -52,8 +52,8 @@ class ParteController extends BaseController {
             let partes = [];
             for (const agente of agentes) {
                 const parteAgente = new ParteAgente({
-                    parte: { id: parteNew._id },
-                    agente: { id: agente._id, nombre: agente.nombre, apellido: agente.apellido },
+                    parte: { _id: parteNew._id },
+                    agente: { _id: agente._id, nombre: agente.nombre, apellido: agente.apellido },
                     fecha: obj.fecha
                 });
                 partes.push(parteAgente);
@@ -81,7 +81,7 @@ class ParteController extends BaseController {
             let parte:any = await Parte.findById(id);
             if (!parte) return next(404);
             let pipeline:any = [
-                { $match: { 'parte.id': Types.ObjectId(parte._id) } }
+                { $match: { 'parte._id': Types.ObjectId(parte._id) } }
             ]
             pipeline = pipeline.concat(this.pipelineLookupFichadas).concat(this.pipelineLookupAusentismo);
             let partes = await ParteAgente.aggregate(pipeline);
@@ -104,7 +104,7 @@ class ParteController extends BaseController {
                         documentoId: val => Types.ObjectId(val),
                     },
                     castParams: {
-                        'agente.id': 'documentoId' // castea el param agente.id al tipo ObjectId
+                        'agente._id': 'documentoId' // castea el param agente.id al tipo ObjectId
                     }
                 }
             const params = this.getQueryParams(req, casters);
@@ -114,7 +114,7 @@ class ParteController extends BaseController {
                 { $sort: params.sort || { fecha: -1 }},
                 { $lookup: {
                     from: "partes",
-                    let: { parte_id: "$parte.id"},
+                    let: { parte_id: "$parte._id"},
                     pipeline: 
                         [{ 
                             $match: { 
@@ -149,8 +149,8 @@ class ParteController extends BaseController {
                         documentoId: val => Types.ObjectId(val),
                     },
                     castParams: { // castea los param agente.id  y ubicacion.id al tipo ObjectId
-                        'agente.id': 'documentoId', 
-                        'ubicacion.id': 'documentoId'
+                        'agente._id': 'documentoId', 
+                        'ubicacion._id': 'documentoId'
                     }
                 }
             let params = this.getQueryParams(req, casters);
@@ -174,7 +174,7 @@ class ParteController extends BaseController {
                 { $sort: params.sort || { fecha: -1 }},
                 { $lookup: {
                     from: "agentes",
-                    let: { agente_fichada: "$agente.id", ubicacion: ubicacion },
+                    let: { agente_fichada: "$agente._id", ubicacion: ubicacion },
                     pipeline: [
                         { $match:
                             { $expr:
@@ -216,7 +216,7 @@ class ParteController extends BaseController {
             const id = req.params.id;
             if (!id || (id && !Types.ObjectId.isValid(id))) return res.status(404).send();
             let objToUpdate:any = await Parte.findById(id);
-            if (!objToUpdate) return res.status(404).send();
+            if (!objToUpdate) return res.status(404).send({message:"Not found"});
             const objUpdated = await objToUpdate.updateOne({ $set: { procesado:true } });
             return res.json(objUpdated);
         } catch (err) {
@@ -285,7 +285,7 @@ class ParteController extends BaseController {
             const objUpdated = await objToUpdate.updateOne(
                 { $set: 
                     { 
-                        estado : { id: nuevoEstado._id, nombre: nuevoEstado.nombre } },
+                        estado : { _id: nuevoEstado._id, nombre: nuevoEstado.nombre } },
                         fechaEnvio: new Date()
                     });
             return res.json(objUpdated);
@@ -336,13 +336,13 @@ class ParteController extends BaseController {
         // Join con ausenciasperiodo sobre agente y fecha
         { $lookup: {
             from: "ausenciasperiodo",
-            let: { agente_parte: "$agente.id", fecha_parte: "$fecha"},
+            let: { agente_parte: "$agente._id", fecha_parte: "$fecha"},
             pipeline: [
                 { $match:
                     { $expr:
                         { $and:
                             [
-                                { $eq: [ "$agente.id",  "$$agente_parte" ] },
+                                { $eq: [ "$agente._id",  "$$agente_parte" ] },
                                 // Busqueda solo por fecha, sin importar la hora o tz
                                 { $lte: [
                                     { $dateToString: { date: "$fechaDesde", format:"%Y-%m-%d"}} ,
@@ -369,13 +369,13 @@ class ParteController extends BaseController {
           // Join con fichadascache sobre agente y fecha
           { $lookup: {
             from: "fichadascache",
-            let: { agente_parte: "$agente.id", fecha_parte: "$fecha"},
+            let: { agente_parte: "$agente._id", fecha_parte: "$fecha"},
             pipeline: [
                 { $match:
                     { $expr:
                         { $and:
                             [
-                                { $eq: [ "$agente.id",  "$$agente_parte" ] }, 
+                                { $eq: [ "$agente._id",  "$$agente_parte" ] }, 
                                 { $eq: [
                                      // Busqueda solo por fecha, sin importar la hora o tz
                                      { $dateToString: { date: "$fecha", format:"%Y-%m-%d"}} ,

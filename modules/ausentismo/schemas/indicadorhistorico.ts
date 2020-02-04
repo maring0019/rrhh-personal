@@ -3,13 +3,13 @@ import { Schema, model, Types } from 'mongoose';
 export const IndicadorAusentismoHistoricoSchema = new Schema({
     timestamp: Number,
     ausentismo: {
-        id: {
+        _id: {
             type: Types.ObjectId,
             required: true
         }
     },
     indicador: {
-        id: {
+        _id: {
             type: Types.ObjectId,
             required: true
         }

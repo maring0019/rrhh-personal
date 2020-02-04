@@ -111,10 +111,10 @@ export async function addFile(req, res, next){
         const objId = req.params.objId;
         if (!req.file) return res.status(202).send();
         if (!objId || (objId && !Types.ObjectId.isValid(objId))){
-            _removeFilesFromFs([file.id]);
+            _removeFilesFromFs([file._id]);
             return next(404);
         }
-        const result = await attachFilesToObject([file.id], objId);
+        const result = await attachFilesToObject([file._id], objId);
         return res.json(result);
         
     } catch (err) {
@@ -281,7 +281,7 @@ export function _writeFileFromFsToMongo(file:FileDescriptorDocument, objectId):P
         let stream = fs.createReadStream(path.join(config.app.uploadFilesPath, file.real_id));
         stream.on('error', function()
         { 
-            resolve({ok:false, filename:file.filename, id:file.id}) 
+            resolve({ok:false, filename:file.filename, _id:file._id}) 
         });
 
         const options = ({
@@ -293,7 +293,7 @@ export function _writeFileFromFsToMongo(file:FileDescriptorDocument, objectId):P
         });
         filesModel.write(options, stream, (error, newfile) => {
             if (error){
-                resolve({ok:false, filename:file.filename, id:file.id});
+                resolve({ok:false, filename:file.filename, _id:file._id});
             }
             resolve(newfile);
             // resolve({ok:true, filename:file.filename, id:file.id});
@@ -321,27 +321,3 @@ export async function _findFileDescriptors(ids) {
     let objIds = ids.map(id => id = Types.ObjectId(id));
     return await FileDescriptor.find({ '_id': { $in: objIds } });
 }
-
-
-
-// files = [{ 
-//     fieldname: 'archivos',
-//     filename: 'marianarrhh.jpg',
-//     encoding: '7bit',
-//     mimetype: 'image/jpeg',
-//     id: '5d0ba74f9b178e27d8b6a57b',
-//     adapter: 'file-adapter' },
-// { 
-//     fieldname: 'archivos',
-//     filename: 'foto.jpg',
-//     encoding: '7bit',
-//     mimetype: 'image/jpeg',
-//     id: '5d0ba87a8aba104e7cba0f7f',
-//     adapter: 'file-adapter' },
-// {
-//     fieldname: 'archivos',
-//     filename: 'otro_archivo.pdf',
-//     encoding: '7bit',
-//     mimetype: 'application/pdf',
-//     id: '5d0ba74f9b178e27d8b6a57c',
-//     adapter: 'file-adapter' }]

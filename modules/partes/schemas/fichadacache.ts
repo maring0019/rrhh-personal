@@ -2,7 +2,7 @@ import { Schema, Types, model } from 'mongoose';
 
 export const FichadaCacheSchema = new Schema({
     agente: {
-        id: {
+        _id: {
             type: Types.ObjectId,
             required: true,
             index: true,

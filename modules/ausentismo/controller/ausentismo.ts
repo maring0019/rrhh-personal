@@ -33,10 +33,10 @@ export async function getAusentismo(req, res, next) {
             return res.json(results);
         }
         else{
-            query.where('agente.id').equals(agenteId);
+            query.where('agente._id').equals(agenteId);
         }
         if (articuloId) {
-            query.where('articulo.id').equals(articuloId);
+            query.where('articulo._id').equals(articuloId);
         }
         if (fechaDesde) {
             query.where({'fechaDesde': { $gte: fechaDesde }})
@@ -73,7 +73,7 @@ export async function updateAusentismo(req, res, next){
         
         let ausentismoNewValues = res.locals.ausentismo;
         let controller = res.locals.controller;
-        if (!ausentismoToUpdate.articulo.id.equals(ausentismoNewValues.articulo._id))
+        if (!ausentismoToUpdate.articulo._id.equals(ausentismoNewValues.articulo._id))
             return res.status(400).send({ message:"No se puede editar el Articulo!" });
         
         let response = "";
@@ -360,7 +360,7 @@ export function generarAusencias(agente, articulo, diasAusencia){
      */
     export async function checkSolapamientoPeriodos(agente, articulo, desde, hasta, ausentismo?){
         let ausentismos = await AusenciaPeriodo.find({
-            'agente.id': agente.id,
+            'agente._id': agente._id,
             'ausencias': {
                 $elemMatch: {
                     fecha: {
@@ -371,7 +371,7 @@ export function generarAusencias(agente, articulo, diasAusencia){
             }
         });
         if (ausentismo){
-            ausentismos = ausentismos.filter(au => au.id != ausentismo.id);
+            ausentismos = ausentismos.filter(au => au._id != ausentismo._id);
         }
         return ausentismos;
     }

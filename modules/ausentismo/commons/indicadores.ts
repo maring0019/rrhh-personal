@@ -19,7 +19,7 @@ import { Articulo } from '../schemas/articulo';
  */
 export async function obtenerIndicadores(ausentismo){
     const agente = ausentismo.agente;
-    const articulo = await Articulo.findById(Types.ObjectId(ausentismo.articulo.id)).lean();
+    const articulo = await Articulo.findById(Types.ObjectId(ausentismo.articulo._id)).lean();
     const desde = ausentismo.fechaDesde;
     const hasta = ausentismo.fechaHasta;
     let indicadores = [];
@@ -66,8 +66,8 @@ export async function getIndicadoresConPeriodo(agente, articulo, formula, desde,
     for ( let anio of anios){
         let indicador = await IndicadorAusentismo.findOne(
             {
-                'agente.id': new Types.ObjectId(agente.id),
-                'articulo.id': new Types.ObjectId(articulo.id || articulo._id),
+                'agente._id': new Types.ObjectId(agente._id),
+                'articulo._id': new Types.ObjectId(articulo._id),
                 'periodo': formula.periodo, // TODO Idealmente buscar por ID???
                 'vigencia': anio // TODO analizar el tema de la vigencia correctamente
             });
@@ -103,8 +103,8 @@ export async function getIndicadoresSinPeriodo(agente, articulo, formula, desde?
         // existentes (es decir el historico de ausencias)
         indicador = await IndicadorAusentismo.findOne(
             {
-                'agente.id': new Types.ObjectId(agente.id),
-                'articulo.id': new Types.ObjectId(articulo.id || articulo._id),
+                'agente._id': new Types.ObjectId(agente._id),
+                'articulo._id': new Types.ObjectId(articulo._id),
                 'periodo': null,
             });
         if (!indicador) indicador = await calcularIndicadoresAusentismo(agente, articulo, formula);
@@ -184,7 +184,7 @@ export async function calcularIndicadoresPorIntervalo(agente, articulo, formula,
  */
 export async function getTotalAusenciasPorArticulo(agente, articulo, desde?, hasta?){
     let pipeline:any = [
-        { $match: { 'agente.id': Types.ObjectId(agente.id), 'articulo.id': Types.ObjectId(articulo.id || articulo._id) } },
+        { $match: { 'agente._id': Types.ObjectId(agente._id), 'articulo._id': Types.ObjectId(articulo._id) } },
         { $unwind: '$ausencias'}
     ]
     if (desde && hasta){
@@ -201,7 +201,7 @@ export async function getTotalAusenciasPorArticulo(agente, articulo, desde?, has
 
 export async function getIndicadoresLicenciaHistoricos(ausentismo){
     let indicadores = await IndicadorAusentismoHistorico.find({
-        'ausentismo.id': Types.ObjectId(ausentismo.id)
+        'ausentismo._id': Types.ObjectId(ausentismo._id)
     });
     return indicadores;
 }
@@ -217,7 +217,7 @@ export async function getIndicadoresLicencia(agente){
     const thisYear = new Date().getFullYear();
     return await IndicadorAusentismo.find(
         {
-            'agente.id': Types.ObjectId(agente.id || agente._id),
+            'agente._id': Types.ObjectId(agente._id),
             'vigencia': { $gte : thisYear - 3 },
             'vencido': false,
             'intervalos.totales': { $nin: [ null, "" ] }

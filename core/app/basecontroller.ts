@@ -36,7 +36,7 @@ class BaseController {
             const id = req.params.id;
             if (!id || (id && !Types.ObjectId.isValid(id))) return res.status(404).send();
             let objToUpdate:any = await this._model.findById(id);
-            if (!objToUpdate) return res.status(404).send();
+            if (!objToUpdate) return res.status(404).send({ message:"Not found"});
             let objWithChanges = req.body;
             await objToUpdate.updateOne({ $set: objWithChanges });
             return res.json(objToUpdate);
@@ -71,7 +71,7 @@ class BaseController {
             const id = req.params.id;
             if (!id || (id && !Types.ObjectId.isValid(id))) return res.status(404).send();
             let object:any = await this._model.findById(id);
-            if (!object) return res.status(404).send("Not found");
+            if (!object) return res.status(404).send({ message:"Not found"});
             const objRemoved = await object.remove();
             return res.json(objRemoved);
         } catch (err) {

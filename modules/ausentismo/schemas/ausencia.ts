@@ -2,14 +2,14 @@ import { Schema, model, Types } from 'mongoose';
 
 export const AusenciaSchema = new Schema({
     agente: {
-        id: {
+        _id: {
             type: Types.ObjectId,
             required: true
         }
     }, 
     fecha: Date,
     articulo: {
-        id: {
+        _id: {
             type: Types.ObjectId,
             required: true
         },

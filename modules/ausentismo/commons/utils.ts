@@ -8,7 +8,7 @@ import { Franco } from '../schemas/franco';
 
 export async function parseAusentismo(obj){
     let ausentismo = {
-        id: obj.id, 
+        _id: obj._id, 
         agente: obj.agente, 
         articulo: obj.articulo? await parseArticulo(obj.articulo): null,
         fechaDesde: obj.fechaDesde? parseDate(new Date(obj.fechaDesde)) : null,
@@ -30,8 +30,8 @@ export function parseAusencias(ausencias){
 }
 
 export async function parseArticulo(obj){
-    let articulo = await Articulo.findById(obj.id).lean(); // get articulo con formulas,
-    articulo.id = obj.id;
+    let articulo = await Articulo.findById(obj._id).lean(); // get articulo con formulas,
+    articulo._id = obj._id;
     return articulo
 }
 
@@ -46,7 +46,7 @@ export function addOneDay(fecha){
 }
 
 export async function esFranco(agente, date){
-    const esFranco = await Franco.findOne({ fecha: date, 'agente.id': Types.ObjectId(agente.id)});
+    const esFranco = await Franco.findOne({ fecha: date, 'agente._id': Types.ObjectId(agente._id)});
     return esFranco? true : false;
 }
 

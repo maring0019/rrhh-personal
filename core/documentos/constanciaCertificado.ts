@@ -24,7 +24,7 @@ export class DocumentoConstanciaCertificado extends DocumentoPDF {
         const ausentismo = await AusenciaPeriodo.findById(id).lean();
         if(!ausentismo) return {}
 
-        const agente = await Agente.findById(ausentismo.agente.id);
+        const agente = await Agente.findById(ausentismo.agente._id);
         if(!agente) return {}
 
         let srcImgCertificado;

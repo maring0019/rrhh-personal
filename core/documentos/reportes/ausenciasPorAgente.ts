@@ -57,8 +57,8 @@ export class DocumentoAusenciasPorAgente extends DocumentoPDF {
                             $match: { 
                                 $expr: {
                                     $and: [ 
-                                        { $eq: ["$$agente_id", "$agente.id"]}, // Join con agente id
-                                        (articulosIds.length)?{ $in: ["$articulo.id", articulosIds ]}:{},
+                                        { $eq: ["$$agente_id", "$agente._id"]}, // Join con agente id
+                                        (articulosIds.length)?{ $in: ["$articulo._id", articulosIds ]}:{},
                                         { $gte: ["$fechaDesde", "$$fecha_desde"]},
                                         { $lte: ["$fechaHasta", "$$fecha_hasta"]}
                                         ]

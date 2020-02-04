@@ -10,7 +10,7 @@ export const GuardiaLoteSchema = new Schema({
     },
     servicio: {
         type: {
-            id: {
+            _id: {
                 type: Types.ObjectId,
                 required: true
             },
@@ -22,7 +22,7 @@ export const GuardiaLoteSchema = new Schema({
     tipoGuardia: constantes.TIPOGUARDIA,
     categoria: {
         type: {
-            id: {
+            _id: {
                 type: Types.ObjectId,
                 required: true
             },

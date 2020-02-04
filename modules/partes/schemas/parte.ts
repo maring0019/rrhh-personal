@@ -8,14 +8,14 @@ export const ParteSchema = new Schema({
         index: true
     },
     ubicacion: {
-        id: {
+        _id: {
             type: Types.ObjectId,
             required: true
         },
         nombre: String
     },
     estado: {
-        id: {
+        _id: {
             type: Types.ObjectId,
             required: true
         },
@@ -24,7 +24,7 @@ export const ParteSchema = new Schema({
     procesado: Boolean,
     fechaEnvio: Date,
     usuarioEnvio: { // TODO. Consultar: El usuario es siempre un agente?
-        id: {
+        _id: {
             type: Types.ObjectId,
             // required: true,
             index: true

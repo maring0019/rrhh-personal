@@ -2,13 +2,13 @@ import { Schema, model, Types } from 'mongoose';
 
 export const IndicadorAusentismoSchema = new Schema({
     agente: {
-        id: {
+        _id: {
             type: Types.ObjectId,
             required: true
         }
     }, 
     articulo: {
-        id: {
+        _id: {
             type: Types.ObjectId,
             required: true
         },

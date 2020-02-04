@@ -40,7 +40,7 @@ class FichadaController extends BaseController {
             let object = new Fichada(
                 {
                     agente: {
-                        id: agente._id,
+                        _id: agente._id,
                         nombre: agente.nombre,
                         apellido: agente.apellido
                     },
@@ -70,7 +70,7 @@ class FichadaController extends BaseController {
         else{
             let correspondeNuevaFichadaIO = true;
             // Busco fichadas cache del dia y el dia anterior
-            fichadaIO = await this.findFichadaEntradaPrevia(nuevaFichada.agente.id, nuevaFichada.fecha);
+            fichadaIO = await this.findFichadaEntradaPrevia(nuevaFichada.agente._id, nuevaFichada.fecha);
             if (fichadaIO){
                 if (this.diffHours(nuevaFichada.fecha, fichadaIO.fecha) <= 24) {
                     // Si pasaron menos de 24hs respecto a la fichada de entrada
@@ -105,7 +105,7 @@ class FichadaController extends BaseController {
         let fechaHasta = fichadaSalida;
         let fichadaIO = await FichadaCache
             .findOne({ 
-                'agente.id': Types.ObjectId(agenteID),
+                'agente._id': Types.ObjectId(agenteID),
                 'entrada': { $ne: null },
                 'salida':  null ,
                 $expr : { $and:

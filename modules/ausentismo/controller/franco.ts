@@ -12,7 +12,7 @@ export async function getFrancos(req, res, next) {
             query.where({ fecha: fecha });
         }
         if (req.query.agenteID) {
-            query.where({ 'agente.id': new Types.ObjectId(req.query.agenteID) });
+            query.where({ 'agente._id': new Types.ObjectId(req.query.agenteID) });
         }
         let objs = await query.sort({ fecha: 1 }).exec();
         return res.json(objs);
@@ -25,7 +25,7 @@ export async function getAsEvento(req, res, next) {
     try {
         let matchAgente:any = {};
         if (req.query.agenteID) {
-            matchAgente = { 'agente.id': Types.ObjectId(req.query.agenteID)};
+            matchAgente = { 'agente._id': Types.ObjectId(req.query.agenteID)};
         }
         // TODO: Aplicar algun filtro por anio o similar. Ahora por defecto
         // recupera la info en un periodo de un anio hacia atras y adelante
@@ -39,7 +39,7 @@ export async function getAsEvento(req, res, next) {
             },
             { $project:
                 {
-                    id: "$_id",
+                    _id: "$_id",
                     title: { $ifNull: ['$descripcion', 'Franco'] },
                     start: { $dateToString: { date: "$fecha", format:"%Y-%m-%d"}},
                     allDay: { $literal: true },
@@ -98,7 +98,7 @@ export async function addManyFrancos(req, res, next) {
             const agente = francos[0].agente;
             const francosExistentes = await Franco.find(
                 {
-                    'agente.id': Types.ObjectId(agente.id), 
+                    'agente._id': Types.ObjectId(agente._id), 
                     'fecha': { $in: weekend }
                 }).lean();
             
@@ -135,7 +135,7 @@ export async function deleteFranco(req, res, next) {
     try {
         const id = req.params.id;
         let franco:any = await Franco.findById(id);
-        if (!franco) return res.status(404).send("Not found");
+        if (!franco) return res.status(404).send({message:"Not found"});
         const objRemoved = await franco.remove();
         return res.json(objRemoved);
     } catch (err) {

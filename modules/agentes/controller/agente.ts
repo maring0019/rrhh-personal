@@ -163,7 +163,7 @@ async function deleteAgente(req, res, next) {
         const id = req.params.id;
         if (!id || (id && !Types.ObjectId.isValid(id))) return res.status(404).send();
         let situacion:any = await Agente.findById(id);
-        if (!situacion) return res.status(404).send("Not found");
+        if (!situacion) return res.status(404).send({ message:"Not found" } );
         const situacionEliminada = await situacion.remove();
         return res.json(situacionEliminada);
     } catch (err) {
@@ -298,7 +298,7 @@ async function getAusencias(req, res, next){
         if (!agente) return next(404);
                 
         const pipeline = [
-            { $match: { 'agente.id': Types.ObjectId(agente.id) } },
+            { $match: { 'agente._id': Types.ObjectId(agente._id) } },
             { $unwind: '$ausencias'}
         ]
         let ausencias = await AusenciaPeriodo.aggregate(pipeline)
@@ -320,17 +320,17 @@ async function getAusenciasAsEvento(req, res, next){
         // recupera la info en un periodo de un anio hacia atras y adelante
         const thisYear = (new Date()).getFullYear();
         const fechaHastaMax = new Date((thisYear + 1) + "-12-31");
-        const fechaDesdeMin = new Date((thisYear - 1) + "-01-01") ;
+        const fechaDesdeMin = new Date((thisYear - 5) + "-01-01") ;
         let matchFecha:any = { fechaHasta: { $gt: fechaDesdeMin }, fechaDesde: { $lt: fechaHastaMax}};
                 
         const pipeline = [
             { $match: {
-                ...{'agente.id': Types.ObjectId(agente.id) }, ...matchFecha }
+                ...{'agente._id': Types.ObjectId(agente._id) }, ...matchFecha }
             },
             { $unwind: '$ausencias'},
             { $project:
                 {
-                    id: "$ausencias._id",
+                    _id: "$ausencias._id",
                     title: { $concat: ["ART. ", "$articulo.codigo"] },
                     start: { $dateToString: { date: "$ausencias.fecha", format:"%Y-%m-%d"}},
                     allDay: { $literal: true },
@@ -361,7 +361,7 @@ async function getLicenciasTotales(req, res, next){
         
         const thisYear = new Date().getFullYear();
         const pipeline = [
-            { $match: { 'agente.id': Types.ObjectId(agente._id), vigencia: { $gte: thisYear - 3 } }},
+            { $match: { 'agente._id': Types.ObjectId(agente._id), vigencia: { $gte: thisYear - 3 } }},
             { $unwind: '$intervalos'},
             { $match: { 'intervalos.totales': {  $nin: [ null, "" ] }}},
             { $group: { _id:null, totales: { $sum: "$intervalos.totales"}, ejecutadas: { $sum: "$intervalos.ejecutadas"} }}]
@@ -478,8 +478,6 @@ async function uploadFilesAgente(req, res, next){
         if (!id || (id && !Types.ObjectId.isValid(id))) return next(404);
         let agente:any = await Agente.findById(id);
         if (!agente) return next(404);
-        console.log('Agente Encontrado!!!');
-        console.log(agente.nombre);
         const result = await attachFilesToObject([], agente);
         return res.json(result);
     } catch (err) {

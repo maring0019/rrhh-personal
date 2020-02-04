@@ -2,14 +2,14 @@ import { Schema, Types, model } from 'mongoose';
 
 export const ParteAgenteSchema = new Schema({
     parte: {
-        id: {
+        _id: {
             type: Types.ObjectId,
             required: true,
             index: true
         }
     },
     agente: {
-        id: {
+        _id: {
             type: Types.ObjectId,
             required: true,
             index: true
@@ -28,13 +28,13 @@ export const ParteAgenteSchema = new Schema({
     },
     ausencia: {
         articulo: { 
-            id: Types.ObjectId,
+            _id: Types.ObjectId,
             codigo: String,
             descripcion: String
         }
     },
     justificacion: {
-        id: Types.ObjectId,
+        _id: Types.ObjectId,
         nombre: String
     },
     observaciones: String

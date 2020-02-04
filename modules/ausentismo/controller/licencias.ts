@@ -243,7 +243,7 @@ class LicenciasController {
      */
     async obtenerIndicadoresHistoricos(ausentismo){
         let indicadores:any = await IndicadorAusentismoHistorico.find({
-            'ausentismo.id': Types.ObjectId(ausentismo.id)
+            'ausentismo._id': Types.ObjectId(ausentismo._id)
         });
         if (!indicadores || !indicadores.length){
             // Se debe tratar de un ausentismo legado sin informacion sobre el
@@ -267,7 +267,7 @@ class LicenciasController {
                 const licTotales = indicador.intervalos[0].totales;
                 const licEjecutadas = indicador.intervalos[0].ejecutadas;
                 let pipeline:any = [
-                    { $match: { 'indicador.id': Types.ObjectId(indicador._id)}} ,
+                    { $match: { 'indicador._id': Types.ObjectId(indicador._id)}} ,
                     { $unwind: '$intervalos'},
                     { $group: { _id:null, total_asignadas: { $sum: "$intervalos.asignadas" }}}
                 ]
@@ -289,11 +289,11 @@ class LicenciasController {
                     let indicadorHistorico = 
                         {
                             "indicador" : {
-                                "id" : indicador.id
+                                "_id" : indicador._id
                             },
                             "vigencia" : indicador.vigencia,
                             "ausentismo" : {
-                                "id" : ausentismo.id
+                                "_id" : ausentismo._id
                             },
                             "intervalos" : [ 
                                 {
@@ -320,8 +320,7 @@ class LicenciasController {
         let pipeline:any = [
             { 
                 $match: { 
-                    'agente.id': Types.ObjectId(ausentismo.agente.id || ausentismo.agente._id),
-                    // 'articulo.id': Types.ObjectId(articulo.id),
+                    'agente._id': Types.ObjectId(ausentismo.agente._id),
                     'vencido': false
                 }
             } ,
@@ -362,7 +361,7 @@ class LicenciasController {
 
     async deleteIndicadoresHistoricos(ausentismo){
         await IndicadorAusentismoHistorico.deleteMany({
-                'ausentismo.id': Types.ObjectId(ausentismo.id)
+                'ausentismo._id': Types.ObjectId(ausentismo._id)
         });
     }
     
@@ -388,9 +387,9 @@ class LicenciasController {
             if (intervalosH.length){
                 let indicadorHistorico = new IndicadorAusentismoHistorico({
                     timestamp: timestamp,
-                    indicador: { id: Types.ObjectId(indicador._id)},
+                    indicador: { _id: Types.ObjectId(indicador._id)},
                     vigencia: indicador.vigencia,
-                    ausentismo: { id: Types.ObjectId(ausentismo._id)},
+                    ausentismo: { _id: Types.ObjectId(ausentismo._id)},
                     intervalos: intervalosH
                 });
                 await indicadorHistorico.save();

@@ -13,7 +13,7 @@ export const GuardiaSchema = new Schema({
     estado: String,
     fechaEntrega: Date,
     responsableEntrega: {
-        id: {
+        _id: {
             type: Types.ObjectId
         },
         nombre: String,
@@ -21,7 +21,7 @@ export const GuardiaSchema = new Schema({
     },
     // validado: Boolean,
     responsableValidacion: { // Agente de Gestion de Personal
-        id: {
+        _id: {
             type: Types.ObjectId
         },
         nombre: String,

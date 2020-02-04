@@ -14,7 +14,7 @@ export const ServicioSchema = new Schema({
         type: Number,
         required: true,
     },
-    codigo: {  // TODO Averiguar si es el id interno de base, o es un codigo externo
+    codigo: {  // TODO Averiguar si es el  interno de base, o es un codigo externo
         type: Number,
         required: true,
     },
