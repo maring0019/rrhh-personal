@@ -63,11 +63,11 @@ Routes.post('/login', async (req, res, next) => {
             // Para testing. Crea un usuario con el nombre de
             // usuario y password especificados.
             // let usuario = new Usuario(
-            //     { usuario: 28588178,
+            //     { usuario: req.body.usuario,
             //         activo: true,
-            //         nombre: 'David',
-            //         apellido: 'Nievas',
-            //         password: sha1Hash('pass_here')
+            //         nombre: req.body.usuario,
+            //         apellido: 'Testing',
+            //         password: sha1Hash(req.body.password)
             //     }
             // );
             // usuario.save();
@@ -119,4 +119,17 @@ Routes.post('/login', async (req, res, next) => {
             });
         }
     }
+});
+
+Routes.post('/usuarios', async (req, res, next) => {
+    let usuario = new Usuario(
+        { usuario: req.body.usuario,
+            activo: true,
+            nombre: req.body.usuario,
+            apellido: 'Testing',
+            password: sha1Hash(req.body.password)
+        }
+    );
+    usuario.save();
+    return next(200);
 });

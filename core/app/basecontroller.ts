@@ -99,17 +99,25 @@ class BaseController {
         }
     }
 
+    /**
+     * Override this if necessary
+     */
     protected getQueryParams(req, casters?){
         let queryParams = aqp(req.query, casters);
         return queryParams;
     }
 
 
+    /**
+     * Override this if necessary
+     */
     protected getQueryParamsCasters(){
         return {};
     }
 
-
+    /**
+     * Override this if necessary
+     */
     protected async search(params){
         let objs = await this._model
             .find(params.filter)
@@ -117,31 +125,7 @@ class BaseController {
             .exec();
         return objs;
     }
- 
-    /**
-     * @param {Object} req The request object
-     * @param {Object} res The response object
-     * @param {function} next The callback to the next program handler
-     * @return {Object} res The response object
-     */
-    // create(req, res, next) {
-    //    let obj = req.body;
-    //    const validator = this._model.validateCreate(obj);
-    //    if (validator.passes()) {
-    //       let object = new this._model(obj);
-    //       object.save()
-    //          .then((savedObject) => {
-    //             const meta = getSuccessMeta();
-    //             return res.status(OK).json(formatResponse(meta, savedObject));
-    //          }, (err) => {
-    //             return next(err);
-    //          });
-    //    } else {
-    //       const appError = new AppError('input errors',
-    //          BAD_REQUEST, validator.errors.all());
-    //       return next(appError);
-    //    }
-    // }
+
  }
  
  export default BaseController;
