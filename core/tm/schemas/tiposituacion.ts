@@ -11,9 +11,15 @@ export const TipoSituacionSchema = new Schema({
         required: true,
         index: true,
     },
-    requiereVencimiento: {// Indica si la carga de un agente requerira una fecha de baja automatica
+    requiereVencimiento:{
+        // Indica si la carga de un agente requerira una fecha de baja automatica
         type: Boolean,
         default: false
+    },
+    activo: {
+        // Indica si el tipo de situacion esta activo para uso en el sistema
+        type: Boolean,
+        default: true
     }
 });
 
