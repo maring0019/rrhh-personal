@@ -5,6 +5,11 @@ export const RegimenHorarioSchema = new Schema({
         type: String,
         index: true,
         required: true,
+    },
+    activo: {
+        // Indica si el tipo de situacion esta activo para uso en el sistema
+        type: Boolean,
+        default: true
     }
 });
 
