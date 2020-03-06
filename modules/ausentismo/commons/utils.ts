@@ -8,7 +8,7 @@ import { Franco } from '../schemas/franco';
 
 export async function parseAusentismo(obj){
     let ausentismo = {
-        _id: obj._id, 
+        _id: obj._id? obj._id : undefined, 
         agente: obj.agente, 
         articulo: obj.articulo? await parseArticulo(obj.articulo): null,
         fechaDesde: obj.fechaDesde? parseDate(new Date(obj.fechaDesde)) : null,

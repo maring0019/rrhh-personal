@@ -8,7 +8,7 @@ import { Agente } from '../schemas/agente';
 import { makeFs } from '../../../core/tm/schemas/imagenes';
 import { attachFilesToObject } from '../../../core/files/controller/file'
 import { AusenciaPeriodo } from '../../ausentismo/schemas/ausenciaperiodo';
-import { processImage } from '../../../core/files/utils';
+import { readImage } from '../../../core/files/utils';
 import { IndicadorAusentismo } from '../../ausentismo/schemas/indicador';
 
 async function getAgentes(req, res, next){
@@ -458,7 +458,7 @@ async function _saveImage(imagen, agenteID, migracion?){
     if (!migracion) imagen = imagen.toString().replace(/^data:image\/(png|jpg|jpeg);base64,/, "");
     
     let buffer = Buffer.from(imagen, 'base64');
-    buffer = await processImage(buffer, {quality: 90, w: 256});
+    buffer = await readImage(buffer, {quality: 90, w: 256});
     let stream = new Readable();
     stream.push(buffer);
     stream.push(null);

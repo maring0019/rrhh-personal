@@ -8,7 +8,8 @@ import * as multer from 'multer';
 import * as aqp from 'api-query-params';
 
 import FileSystemStorage from '../storage/FileSystemStorage'
-// import { processImage } from '../utils';
+import { isImage, readImage } from '../utils';
+import { Readable } from 'stream';
 
 const fs = require('fs');
 const path = require('path');
@@ -164,7 +165,6 @@ export async function getFiles(req, res, next){
 export async function readFile(req, res, next){
     try {
         const options = aqp(req.query);
-        console.log(options);
         const id = req.params.id;
         if (!id || (id && !Types.ObjectId.isValid(id))) return next(404);
         const filesModel = FilesModel();
@@ -175,9 +175,9 @@ export async function readFile(req, res, next){
                     if (err) throw err;
                     // Si estamos descargando una imagen podemos preprocesar la misma
                     // a traves de queryparams. Por ejemplo reducir el tamaño
-                    // if (file.contentType == 'image/jpeg' && options){
-                    //     buffer = await processImage(buffer, options.filter);
-                    // }
+                    if (file.contentType == 'image/jpeg' && options){
+                        buffer = await readImage(buffer, options.filter);
+                    }
                     res.setHeader('Content-Type', file.contentType);
                     res.setHeader('Content-Length', file.length);
                     res.setHeader('Content-Disposition', `attachment; filename=${file.filename}`);
@@ -277,8 +277,21 @@ export async function changeFileObjectRef(objID, newObjID){
 
 export function _writeFileFromFsToMongo(file:FileDescriptorDocument, objectId):Promise<any>{
     const filesModel = FilesModel();
-    return new Promise(function(resolve, reject) {
-        let stream = fs.createReadStream(path.join(config.app.uploadFilesPath, file.real_id));
+    return new Promise(async function(resolve, reject) {
+        let stream = new Readable();
+        const filePath = path.join(config.app.uploadFilesPath, file.real_id);
+        
+        if (isImage(file.mimetype)){
+            // Si el archivo es una imagen optimizamos el tamanio
+            // TODO definir correctamente los valores o criterio de optimizacion
+            let buffer = await readImage(filePath, {quality: 90, w: 256});
+            stream.push(buffer);
+            stream.push(null);
+        }
+        else{
+            stream = fs.createReadStream(filePath);
+        }
+        
         stream.on('error', function()
         { 
             resolve({ok:false, filename:file.filename, _id:file._id}) 
@@ -288,7 +301,7 @@ export function _writeFileFromFsToMongo(file:FileDescriptorDocument, objectId):P
             filename: file.filename,
             contentType: file.mimetype,
             metadata: {
-                objID: Types.ObjectId(objectId)
+                objID: Types.ObjectId(objectId) 
             }
         });
         filesModel.write(options, stream, (error, newfile) => {

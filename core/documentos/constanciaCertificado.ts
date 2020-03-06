@@ -40,15 +40,14 @@ export class DocumentoConstanciaCertificado extends DocumentoPDF {
             const files = await filesModel.find({ 'metadata.objID': new Types.ObjectId(ausentismo._id)});
             let file:any;
             if (files && files.length){
-                for (const f of files){
+                for (const f of files){ // Si hay mas de un archivo procesamos el ultimos¿?
                     if (f.contentType =='image/jpeg'){
                         file = f;
                     } 
                 }
             }
             if (file){
-                const opts = '?w=256&h=256'
-                srcImgCertificado  =`${config.app.url}:${config.app.port}/api/core/files/objects/${ausentismo._id}/files/${file._id}/download${opts}`;
+                srcImgCertificado  =`${config.app.url}:${config.app.port}/api/core/files/objects/${ausentismo._id}/files/${file._id}/download`;
             }  
         }
         const fechaHora = this.todayFormatted();
