@@ -47,7 +47,7 @@ export class DocumentoConstanciaCertificado extends DocumentoPDF {
                 }
             }
             if (file){
-                srcImgCertificado  =`${config.app.url}:${config.app.port}/api/core/files/objects/${ausentismo._id}/files/${file._id}/download`;
+                srcImgCertificado = `${config.app.url}:${config.app.port}/api/core/files/objects/${ausentismo._id}/files/${file._id}/download`;
             }  
         }
         const fechaHora = this.todayFormatted();
@@ -55,7 +55,8 @@ export class DocumentoConstanciaCertificado extends DocumentoPDF {
             fechaHora: fechaHora,
             agente: agente,
             extraInfo: ausentismo.extraInfo,
-            srcImgCertificado: srcImgCertificado
+            srcImgCertificado: srcImgCertificado,
+            srcImgLogo: `${config.app.url}:${config.app.port}/public/images/logo_header.png`
         }
     }
 
