@@ -67,12 +67,13 @@ class ParteController extends BaseController {
 
 
     /**
-     * Recupera informacion de los partes de los agentes para un parte diario en particular
-     * cuyo id es especificado por parametro. Si el id es invalido retornamos el status 404.
-     * Los partes de los agentes se deben retornar con informacion de las fichadas del dia y
-     * eventualmente informacion de los articulos que se hayan ingresado en caso de una ausencia.
-     * Para obtener toda esta informacion basicamente se realiza un 'join' con las colecciones
-     * partes, fichadascache, ausenciasperiodo
+     * Recupera informacion de los partes de los agentes para un parte diario en
+     * particular cuyo id es especificado por parametro. Si el id es invalido
+     * retornamos el status 404.
+     * Los partes de los agentes se deben retornar con informacion de las fichadas
+     * del dia y eventualmente informacion de los articulos que se hayan ingresado
+     * en caso de una ausencia. Para obtener toda esta informacion basicamente  se
+     * realiza un 'join' con las colecciones partes, fichadascache, ausenciasperiodo
      */
     async getPartesAgentes(req, res, next){
         try {

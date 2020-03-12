@@ -7,13 +7,15 @@ export const AusenciaPeriodoSchema = new Schema({
     agente: {
         _id: {
             type: Types.ObjectId,
-            required: true
+            required: true,
+            index: true
         }
     }, 
     articulo: {
         _id: {
             type: Types.ObjectId,
-            required: true
+            required: true,
+            index: true
         },
         codigo: {
             type: String,
@@ -24,12 +26,14 @@ export const AusenciaPeriodoSchema = new Schema({
     },
     fechaDesde: {
         type: Date,
-        required: true
+        required: true,
+        index: true
     },
     fechaHasta: {
         type: Date,
         required: true,
-        es_indexed: true
+        es_indexed: true,
+        index: true
     },
     cantidadDias: {
         type: Number,
@@ -42,9 +46,21 @@ export const AusenciaPeriodoSchema = new Schema({
     certificado: CertificadoSchema,
     ausencias: [AusenciaSchema],
     // indicadoresHistoricos: [IndicadorAusentismoSchema]
+    // TODO Definir Schema para Informacion de Certificados Medicos
+    // [Numero de Certificado]
+    // ,[Fecha Inicio]
+    // ,[Fecha Fin]
+    // ,[Medico]
+    // ,[Prestador]
+    // ,[Fecha Inicio Aprobada]
+    // ,[Fecha Fin Aprobada]
+    // ,[Articulo]
+    // ,[Diagnostico_Descripcion]
+    // ,[Diagnostico_Causa]
+    // ,[Diagnostico_Subcausa]
+    // ,[Observaciones]
+    // ,[Aprobado]
+    // ,[Cargado]
 });
-
-// TODO CREATE INDEX!!!!!
-// db.getCollection('ausenciasperiodo').createIndex( { "agente._id": 1, "articulo._id": 1, "fechaDesde":1, "fechaHasta":1, } )
 
 export const AusenciaPeriodo = model('AusenciaPeriodo', AusenciaPeriodoSchema, 'ausenciasperiodo');
