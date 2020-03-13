@@ -11,6 +11,7 @@ Routes.get(`${baseUrl}`, controller.get);
 Routes.get(`${baseUrl}/:id`, controller.getById);
 
 Routes.post(`${baseUrl}`, controller.add);
+Routes.post(`${baseUrl}/batch-insert`, controller.addMany);
 Routes.patch(`${baseUrl}/batch-update`, controller.updateMany);
 Routes.put(`${baseUrl}/:id`, controller.update);
 Routes.delete(`${baseUrl}/:id`, controller.delete);

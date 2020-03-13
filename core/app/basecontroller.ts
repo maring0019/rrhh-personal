@@ -12,6 +12,7 @@ class BaseController {
     constructor(model) {
        this._model = model;
        this.add = this.add.bind(this);
+       this.addMany = this.addMany.bind(this);
        this.update = this.update.bind(this);
        this.updateMany = this.updateMany.bind(this);
        this.delete = this.delete.bind(this);
@@ -26,6 +27,16 @@ class BaseController {
             let object = new this._model(obj);
             const objNuevo = await object.save();
             return res.json(objNuevo);
+        } catch (err) {
+            return next(err);
+        }
+    }
+
+    async addMany(req, res, next){
+        try {
+            let objects = req.body;
+            let newObjects = await this._model.insertMany(objects)
+            return res.json(newObjects);
         } catch (err) {
             return next(err);
         }
