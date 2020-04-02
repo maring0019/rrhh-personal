@@ -21,8 +21,8 @@ class FichadaController extends BaseController {
      * los id internos utilizados en mongodb). Por lo tanto se debe
      * identificar primero correctamente el agente que ha fichado.
      * Luego se actualiza la fichada cache para intentar 'emparejar'
-     * una fichada de entrada con una de salida para asi por ejemplo
-     * poder luego determinar la cantidad de hs trabajadas.
+     * una fichada de entrada con una de salida para asi determinar
+     * luego la cantidad de hs trabajadas.
      * Obs: Este metodo es un reemplazo 'temporal' al trigger que se
      * ejecuta actualmente en el viejo sistema luego de cada insert
      * en la tabla de fichadas.

@@ -81,8 +81,8 @@
                     <td class="tg-xq07" colspan="2"><h3 class="m0">Situacion en Planta</h3></td>
                 </tr>
                 <tr>
-                    <td class="tg-0pky">Situación: <span class="bold"><%= value(situacion,'situacion.nombre') %></span></td>
-                    <td class="tg-0pky">Lugar de Pago:<span class="bold"><%= value(situacion.lugarPago) %></span></td>
+                    <td class="tg-0pky">Situación: <span class="bold"><%= value(situacion,'situacion.tipoSituacion.nombre') %></span></td>
+                    <td class="tg-0pky">Lugar de Pago:<span class="bold"><%= value(situacion, 'situacion.lugarPago') %></span></td>
                 </tr>
                 <tr>
                     <td class="tg-0pky">Fecha de Ingreso al Estado: <span class="bold"><%= value(situacion.fechaIngresoEstado) %></span></td>
@@ -97,8 +97,8 @@
                     <td class="tg-xq07" colspan="3"><h3 class="m0">Cargo Actual</h3></td>
                 </tr>
                 <tr>
-                    <td class="tg-0pky">Norma: <span class="bold"><%= value(situacion, 'cargo.tipoNormaLegal.nombre') %> <%= value(situacion, 'cargo.numeroNormaLegal') %></span></td>
-                    <td class="tg-0pky">Fecha de la Norma:<span class="bold"><%= value(situacion, 'cargo.fechaNormaLegal') %></span></td>
+                    <td class="tg-0pky">Norma: <span class="bold"><%= value(situacion, 'normaLegal.tipoNormaLegal.nombre') %> <%= value(situacion, 'normaLegal.numeroNormaLegal') %></span></td>
+                    <td class="tg-0pky">Fecha de la Norma:<span class="bold"><%= value(situacion, 'normaLegal.fechaNormaLegal') %></span></td>
                 </tr>
                 <tr>
                     <td class="tg-0pky">Agrupamiento: <span class="bold"><%= value(situacion, 'cargo.puesto.nombre') %></span></td>
@@ -128,32 +128,32 @@
                     <td class="tg-xq07" colspan="3"><h3 class="m0">Historia Laboral</h3></td>
                 </tr>
                 <% if (agente.historiaLaboral && agente.historiaLaboral.length) { %> 
-                    <% for (const historia of agente.historiaLaboral) { %> 
+                    <% for (const historia of agente.historiaLaboral) { %>
                         <tr>
-                            <td class="tg-0pky">Norma: <span class="bold"><%= value(historia, 'cargo.tipoNormaLegal.nombre') %> <%= value(historia, 'cargo.numeroNormaLegal') %></span></td>
-                            <td class="tg-0pky">Fecha de la Norma:<span class="bold"><%= value(historia, 'cargo.fechaNormaLegal') %></span></td>
+                            <td class="tg-0pky">Norma: <span class="bold"><%= value(historia, 'changeset.normaLegal.tipoNormaLegal.nombre') %> <%= value(historia, 'changeset.normaLegal.numeroNormaLegal') %></span></td>
+                            <td class="tg-0pky">Fecha de la Norma:<span class="bold"><%= value(historia, 'changeset.normaLegal.fechaNormaLegal') %></span></td>
                         </tr>
                         <tr>
-                            <td class="tg-0pky">Agrupamiento: <span class="bold"><%= value(historia, 'cargo.puesto.nombre') %></span></td>
-                            <td class="tg-0pky">Función:<span class="bold"><%= value(historia, 'cargo.subpuesto.nombre') %></span></td>
+                            <td class="tg-0pky">Agrupamiento: <span class="bold"><%= value(historia, 'changeset.cargo.puesto.nombre') %></span></td>
+                            <td class="tg-0pky">Función:<span class="bold"><%= value(historia, 'changeset.cargo.subpuesto.nombre') %></span></td>
                         </tr>
                         <tr>
-                            <td class="tg-0pky" colspan="2">Lugar de Trabajo: <span class="bold"><%= value(historia, 'cargo.sector.nombre') %></span></td>
+                            <td class="tg-0pky" colspan="2">Lugar de Trabajo: <span class="bold"><%= value(historia, 'changeset.cargo.sector.nombre') %></span></td>
                         </tr>
                         <tr>
-                            <td class="tg-0pky" colspan="2">Servicio: <span class="bold"><%= value(historia, 'cargo.servicio.nombre') %></span></td>
+                            <td class="tg-0pky" colspan="2">Servicio: <span class="bold"><%= value(historia, 'changeset.cargo.servicio.nombre') %></span></td>
                         </tr>
                         <tr>
-                            <td class="tg-0pky">Régimen Horario: <span class="bold"><%= value(historia, 'regimen.regimenHorario.nombre') %></span></td>
-                            <td class="tg-0pky">Actividad Crítica:<span class="bold"><%= value(historia, 'regimen.actividadCritica') %></span></td>
+                            <td class="tg-0pky">Régimen Horario: <span class="bold"><%= value(historia, 'changeset.regimen.regimenHorario.nombre') %></span></td>
+                            <td class="tg-0pky">Actividad Crítica:<span class="bold"><%= value(historia, 'changeset.regimen.actividadCritica') %></span></td>
                         </tr>
                         <tr>
-                            <td class="tg-0pky">Dedicación Exclusiva: <span class="bold"><%= value(historia, 'regimen.dedicacionExclusiva') %></span></td>
-                            <td class="tg-0pky">Tiempo Pleno:<span class="bold"><%= value(historia, 'regimen.tiempoPleno') %></span></td>
+                            <td class="tg-0pky">Dedicación Exclusiva: <span class="bold"><%= value(historia, 'changeset.regimen.dedicacionExclusiva') %></span></td>
+                            <td class="tg-0pky">Tiempo Pleno:<span class="bold"><%= value(historia, 'changeset.regimen.tiempoPleno') %></span></td>
                         </tr>
                         <tr>
-                            <td class="tg-0pky">Guardias Activas: <span class="bold"><%= value(historia, 'regimen.guardiasActivas') %></span></td>
-                            <td class="tg-0pky">Guardias Pasivas:<span class="bold"><%= value(historia, 'regimen.guardiasPasivas') %></span></td>
+                            <td class="tg-0pky">Guardias Activas: <span class="bold"><%= value(historia, 'changeset.regimen.guardiasActivas') %></span></td>
+                            <td class="tg-0pky">Guardias Pasivas:<span class="bold"><%= value(historia, 'changeset.regimen.guardiasPasivas') %></span></td>
                         </tr>
                     <% } %>
                 <% } else { %>
