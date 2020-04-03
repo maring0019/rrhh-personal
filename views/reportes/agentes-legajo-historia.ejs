@@ -1,0 +1,62 @@
+<% switch (historia.tipo) {
+    case 'modificacion': %>
+        <tr>
+            <td class="tg-0pky" colspan="2"><span class="bold">MODIFICACIÓN</span></td>
+        </tr>
+        <tr>
+            <td class="tg-0pky">Norma: <span class="bold"><%= value(historia, 'changeset.normaLegal.tipoNormaLegal.nombre') %> <%= value(historia, 'changeset.normaLegal.numeroNormaLegal') %></span></td>
+            <td class="tg-0pky">Fecha de la Norma: <span class="bold"><%= value(historia, 'changeset.normaLegal.fechaNormaLegal') %></span></td>
+        </tr>
+        <tr>
+            <td class="tg-0pky">Agrupamiento: <span class="bold"><%= value(historia, 'changeset.cargo.puesto.nombre') %></span></td>
+            <td class="tg-0pky">Función: <span class="bold"><%= value(historia, 'changeset.cargo.subpuesto.nombre') %></span></td>
+        </tr>
+        <tr>
+            <td class="tg-0pky" colspan="2">Lugar de Trabajo: <span class="bold"><%= value(historia, 'changeset.cargo.sector.nombre') %></span></td>
+        </tr>
+        <tr>
+            <td class="tg-0pky" colspan="2">Servicio: <span class="bold"><%= value(historia, 'changeset.cargo.servicio.nombre') %></span></td>
+        </tr>
+        <tr>
+            <td class="tg-0pky">Régimen Horario: <span class="bold"><%= value(historia, 'changeset.regimen.regimenHorario.nombre') %></span></td>
+            <td class="tg-0pky">Actividad Crítica: <span class="bold"><%= value(historia, 'changeset.regimen.actividadCritica') %></span></td>
+        </tr>
+        <tr>
+            <td class="tg-0pky">Dedicación Exclusiva: <span class="bold"><%= value(historia, 'changeset.regimen.dedicacionExclusiva') %></span></td>
+            <td class="tg-0pky">Tiempo Pleno: <span class="bold"><%= value(historia, 'changeset.regimen.tiempoPleno') %></span></td>
+        </tr>
+        <tr>
+            <td class="tg-0pky">Guardias Activas: <span class="bold"><%= value(historia, 'changeset.regimen.guardiasActivas') %></span></td>
+            <td class="tg-0pky">Guardias Pasivas: <span class="bold"><%= value(historia, 'changeset.regimen.guardiasPasivas') %></span></td>
+        </tr>    
+        <% break;    
+    case 'baja': %>
+        <td class="tg-0pky" colspan="2"><span class="bold">BAJA</span></td>
+        <tr>
+            <td class="tg-0pky">Fecha: <span class="bold"><%= value(historia, 'changeset.fecha') %></span></td>
+            <td class="tg-0pky">Causa: <span class="bold"><%= value(historia, 'changeset.causa.nombre') %></span></td>
+        </tr>
+        <tr>
+            <td class="tg-0pky">Norma: <span class="bold"><%= value(historia, 'changeset.normaLegal.tipoNormaLegal.nombre') %> <%= value(historia, 'changeset.normaLegal.numeroNormaLegal') %></span></td>
+            <td class="tg-0pky">Fecha de la Norma: <span class="bold"><%= value(historia, 'changeset.normaLegal.fechaNormaLegal') %></span></td>
+        </tr>
+        <tr>
+            <td class="tg-0pky" colspan="2">Observaciones: <span class="bold"><%= value(historia, 'changeset.normaLegal.observaciones') %></span></td>
+        </tr>
+        <% break;
+    case 'reactivacion': %>
+        <td class="tg-0pky" colspan="2"><span class="bold">REACTIVACIÓN</span></td>
+        <tr>
+            <td class="tg-0pky">Fecha: <span class="bold"><%= value(historia, 'changeset.fecha') %></span></td>
+            <td class="tg-0pky">Causa: <span class="bold"><%= value(historia, 'changeset.causa') %></span></td>
+        </tr>
+        <tr>
+            <td class="tg-0pky">Norma: <span class="bold"><%= value(historia, 'changeset.normaLegal.tipoNormaLegal.nombre') %> <%= value(historia, 'changeset.normaLegal.numeroNormaLegal') %></span></td>
+            <td class="tg-0pky">Fecha de la Norma: <span class="bold"><%= value(historia, 'changeset.normaLegal.fechaNormaLegal') %></span></td>
+        </tr>
+        <tr>
+            <td class="tg-0pky" colspan="2">Observaciones: <span class="bold"><%= value(historia, 'changeset.normaLegal.observaciones') %></span></td>
+        </tr>
+    <% break;    
+} %>
+

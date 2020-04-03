@@ -181,7 +181,7 @@ async function bajaAgente(req, res, next) {
         agente.activo = false;
         let nuevaHistoria = {
             tipo: 'baja',
-            fecha: baja.fecha,
+            timestamp: new Date(),
             changeset: baja
         }
         agente.historiaLaboral.push(nuevaHistoria);
@@ -197,13 +197,13 @@ async function reactivarAgente(req, res, next) {
         const id = req.params.id;
         if (!id || (id && !Types.ObjectId.isValid(id))) return res.status(404).send();
         let agente:any = await Agente.findById(id);
-        if (!agente) return res.status(404).send("Not found");
+        if (!agente) return res.status(404).send({message:"Agente not found"});
         agente.activo = true;
+        let reactivacion = req.body;
         let nuevaHistoria = {
-            tipo: 'reactivar',
-            fecha: new Date(),
+            tipo: 'reactivacion',
             timestamp: new Date(),
-            changeset: {} // TODO Definir que colocar como changeset
+            changeset: reactivacion
         }
         agente.historiaLaboral.push(nuevaHistoria);
         let agenteActualizado = await agente.save();// TODO Optimizar para solo actualizar la historiaLaboral?
