@@ -8,5 +8,6 @@ export const HistoriaLaboralSchema = new Schema({
     tipo: String,
     fecha: Date, // Fecha Norma Legal
     timestamp: Date,
+    esSituacionActual: Boolean,
     changeset: Schema.Types.Mixed
 });

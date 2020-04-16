@@ -1,4 +1,4 @@
-import { Schema } from 'mongoose';
+import { Schema, model } from 'mongoose';
 
 import { CargoSchema } from './cargo';
 import { RegimenSchema } from './regimen';
@@ -15,9 +15,15 @@ export const SituacionLaboralSchema = new Schema({
     antiguedadVacaciones: Date,
     antiguedadPago: Date,
     codigoFichado: String,
-    // Datos de Interes para la Historia Laboral
     normaLegal: NormaLegalSchema,
     situacion: SituacionSchema,
     cargo: CargoSchema,
-    regimen: RegimenSchema
+    regimen: RegimenSchema,
+    // Metadatos para utilizar en la historia laboral
+    // al registrarse cambios por diferentes motivos
+    fecha: Date,
+    motivo: String,
+    esAlta: Boolean // Uso interno
 });
+
+export const SituacionLaboral = model('SituacionLaboral', SituacionLaboralSchema);

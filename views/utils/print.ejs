@@ -9,12 +9,21 @@ value = function(val, arg1) {
     }
     
     if (val instanceof Date) {
-        return formatDate(new Date(val)); // Es una fecha
+        return formatDate(new Date(val)); 
     }
 
-    if (typeof val === 'String' || typeof val === 'number'){
+    if (typeof val === 'String' || typeof val === 'string'){
+        if (isIso8601(val)){
+            return formatDate(new Date(val));// Es una fecha
+        }
+        else{
+            return titleCase(''+val);
+        }
+    }
+    if (typeof val === 'number'){
         return titleCase(''+val);
     }
+
     if (arg1){
         const accesors = arg1.split('.');
         if (accesors.length) {
@@ -57,6 +66,11 @@ formatDate = function(date) {
     const year = date.getFullYear();
     return  day + "/" + month + "/" + year;
 }
+
+isIso8601 = function(value) {
+    return new Date(value).toJSON() === value;
+}
+
 
 existArticulo = function(element){
     return element._id.toString() == this._id.toString() ;

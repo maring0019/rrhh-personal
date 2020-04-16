@@ -1,7 +1,9 @@
 <% switch (historia.tipo) {
-    case 'modificacion': %>
+    case 'modificacion': 
+    case  'alta': %>
         <tr>
-            <td class="tg-0pky" colspan="2"><span class="bold">MODIFICACIÓN</span></td>
+            <td class="tg-hl">Tipo: <span class="bold"><%= historia.tipo=='alta'? 'ALTA': 'MODIFICACIÓN' %></td>
+            <td class="tg-hl">Causa: <span class="bold"><%= value(historia, 'changeset.motivo') %></span></td>
         </tr>
         <tr>
             <td class="tg-0pky">Norma: <span class="bold"><%= value(historia, 'changeset.normaLegal.tipoNormaLegal.nombre') %> <%= value(historia, 'changeset.normaLegal.numeroNormaLegal') %></span></td>
@@ -31,10 +33,10 @@
         </tr>    
         <% break;    
     case 'baja': %>
-        <td class="tg-0pky" colspan="2"><span class="bold">BAJA</span></td>
+        <td class="tg-hl">Tipo: <span class="bold">BAJA</td>
+        <td class="tg-hl">Causa: <span class="bold"><%= value(historia, 'changeset.motivo.nombre') %></span></td>
         <tr>
-            <td class="tg-0pky">Fecha: <span class="bold"><%= value(historia, 'changeset.fecha') %></span></td>
-            <td class="tg-0pky">Causa: <span class="bold"><%= value(historia, 'changeset.causa.nombre') %></span></td>
+            <td colspan="2" class="tg-0pky">Fecha: <span class="bold"><%= value(historia, 'changeset.fecha') %></span></td>
         </tr>
         <tr>
             <td class="tg-0pky">Norma: <span class="bold"><%= value(historia, 'changeset.normaLegal.tipoNormaLegal.nombre') %> <%= value(historia, 'changeset.normaLegal.numeroNormaLegal') %></span></td>
@@ -45,10 +47,10 @@
         </tr>
         <% break;
     case 'reactivacion': %>
-        <td class="tg-0pky" colspan="2"><span class="bold">REACTIVACIÓN</span></td>
+        <td class="tg-hl">Tipo: <span class="bold">REACTIVACIÓN</td>
+        <td class="tg-hl">Causa: <span class="bold"><%= value(historia, 'changeset.motivo') %></span></td>
         <tr>
-            <td class="tg-0pky">Fecha: <span class="bold"><%= value(historia, 'changeset.fecha') %></span></td>
-            <td class="tg-0pky">Causa: <span class="bold"><%= value(historia, 'changeset.causa') %></span></td>
+            <td colspan="2" class="tg-0pky">Fecha: <span class="bold"><%= value(historia, 'changeset.fecha') %></span></td>
         </tr>
         <tr>
             <td class="tg-0pky">Norma: <span class="bold"><%= value(historia, 'changeset.normaLegal.tipoNormaLegal.nombre') %> <%= value(historia, 'changeset.normaLegal.numeroNormaLegal') %></span></td>
