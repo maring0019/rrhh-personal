@@ -121,5 +121,14 @@ mapLicenciasPorAnio = function(anios, ausentismo){
      return anios;
 }
 
+/**
+* Used by agente-legajo.ejs
+* Metodo de ayuda para recuperar la ultima baja del agente
+**/
+agenteBaja = function(agente){
+    var bajas = agente.historiaLaboral.filter( value => value.tipo == 'baja');
+    return (bajas && bajas.length)? bajas[0]:null;
+}
+
 %>
 

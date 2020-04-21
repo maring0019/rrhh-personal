@@ -510,7 +510,12 @@ async function uploadFilesAgente(req, res, next){
 }
 
 
-
+    // Repasar todo el proceso
+    // Ver como impacta en la migracion
+    // Ver como impactan los nuevos datos de las bajas en la migracion
+    // Ver como se visualizan un reporte completo con toda la historia laboral.
+    // Ver como adjuntar los archivos por norma legal 
+    // Ver como mostrar este historial en la app. y como editar si es necesario!!! FUCK FUCK FUCK
 
 
 

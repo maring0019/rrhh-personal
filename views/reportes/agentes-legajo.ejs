@@ -18,13 +18,25 @@
                 </tr>
                 <tr>
                     <td class="tg-0pky" style="width:50%">Numero de Agente: <span class="bold"><%= agente.numero %></span></td>
-                    <td class="tg-0pky" style="width:50%">Estado: <span class="bold"><%= agente.activo? 'Activo': 'Baja' %></span></td>
+                    <td class="tg-0pky" style="width:50%">Estado:
+                        <span class="bold">
+                            <% if (agente.activo) { %>
+                                <%= 'Activo' %>
+                            <% } else { %>
+                                <% baja = agenteBaja(agente) %>
+                                <% if (baja) { %>
+                                    <%= `Inactivo (Desde ${value(baja, 'changeset.fecha')} por ${value(baja, 'changeset.motivo.nombre')})` %>
+                                <% } else { %>
+                                    <%= 'Inactivo' %>
+                                <% } %>
+                            <% } %>
+                        </span></td>
                 </tr>
                 <tr>
                     <td class="tg-0pky" colspan="2">Nombre: <span class="bold"><%= agente.nombre %></span></td>
                 </tr>
                 <tr>
-                    <td class="tg-0pky" colspan="2">Documento: <span class="bold"><%= agente.documento %></span></td>
+                    <td class="tg-0pky" colspan="2">Documento: <span class="bold"> DNI/D.U <%= agente.documento %></span></td>
                 </tr>
                 <tr>
                     <td class="tg-0pky" colspan="2">CUIL: <span class="bold"><%= agente.cuil %></span></td>

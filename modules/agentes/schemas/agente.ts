@@ -1,5 +1,6 @@
 import { Schema, model } from 'mongoose';
 
+import { parseDate } from '../../../core/utils/dates';
 import { constantes } from '../../../core/constants/index';
 import { DireccionSchema } from '../../../core/tm/schemas/direccion';
 import { PaisSchema } from '../../../core/tm/schemas/pais';
@@ -8,7 +9,7 @@ import { EducacionSchema } from '../../../core/tm/schemas/educacion';
 import { EspecialidadSchema } from '../../../core/tm/schemas/especialidad';
 import { SituacionLaboralSchema } from './situacionlaboral';
 import { HistoriaLaboralSchema } from './historialaboral';
-import { BajaSchema } from './baja';
+
 
 
 export const AgenteSchema = new Schema({
@@ -41,6 +42,7 @@ export const AgenteSchema = new Schema({
     genero: constantes.GENERO,
     fechaNacimiento: {
         type: Date,
+        set: parseDate,
         es_indexed: true
     },
     nacionalidad: PaisSchema,
@@ -50,7 +52,6 @@ export const AgenteSchema = new Schema({
     especialidad: EspecialidadSchema, // TODO Ver especialidadSchema
     situacionLaboral: SituacionLaboralSchema,
     historiaLaboral: [HistoriaLaboralSchema],
-    bajas: [BajaSchema],
     activo: Boolean,
     
 });
