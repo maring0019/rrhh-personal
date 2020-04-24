@@ -1,13 +1,9 @@
 import { format } from 'util';
 
 export function parseDate(date){
-    let parsedDate = null;
-    if (date) {
-        const d1 = new Date(date)
-        parsedDate = new Date(d1.getFullYear(), d1.getMonth(), d1.getDate());
-    }
-    return parsedDate;
+    return date;
 }
+
 
 export function addOneDay(fecha){
     let tomorrow = new Date(fecha);

@@ -43,6 +43,7 @@ export const AgenteSchema = new Schema({
     fechaNacimiento: {
         type: Date,
         set: parseDate,
+        get: parseDate,
         es_indexed: true
     },
     nacionalidad: PaisSchema,

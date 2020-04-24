@@ -7,8 +7,6 @@ export const ContactoSchema = new Schema({
         type: String,
         required:true
     },
-    ranking: Number,
-    ultimaActualizacion: Date,
     activo: {
         type: Boolean,
         default: true

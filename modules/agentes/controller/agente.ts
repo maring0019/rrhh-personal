@@ -83,6 +83,7 @@ async function addAgente(req, res, next){
             situacionLaboral.fecha = (situacionLaboral.normaLegal && situacionLaboral.normaLegal.fechaNormaLegal ) ? situacionLaboral.normaLegal.fechaNormaLegal: new Date();
         }
         const agente = new Agente({
+            idLegacy: req.body.idLegacy,
             numero: req.body.numero,
             // tipoDocumento
             documento: req.body.documento,
