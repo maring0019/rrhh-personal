@@ -18,11 +18,13 @@ Routes.get('/agentes/:id/ausencias/periodo', AgenteController.getAusencias);
 Routes.post('/agentes', AgenteController.addAgente);
 Routes.post('/agentes/:id/fotos', AgenteController.uploadFotoPerfil);
 Routes.post('/agentes/:id/files', AgenteController.uploadFilesAgente);
-// 5cfea24202890c22fcad0e46
+
 
 Routes.put('/agentes/:id', AgenteController.updateAgente);
 Routes.put('/agentes/:id/baja', AgenteController.bajaAgente);
 Routes.put('/agentes/:id/reactivar', AgenteController.reactivarAgente);
-Routes.put('/agentes/:id/nuevaHistoriaLaboral', AgenteController.addHistorialLaboral);
+Routes.put('/agentes/:id/historia/add', AgenteController.addHistoriaLaboral);
+Routes.put('/agentes/:id/historia/update', AgenteController.updateHistoriaLaboral);
+Routes.put('/agentes/:id/historia/delete', AgenteController.deleteHistoriaLaboral);
 Routes.delete('/agentes/:id', AgenteController.deleteAgente);
 

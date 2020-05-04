@@ -196,6 +196,7 @@ async function bajaAgente(req, res, next) {
     }
 }
 
+
 async function reactivarAgente(req, res, next) {
     try {
         const id = req.params.id;
@@ -226,7 +227,7 @@ async function reactivarAgente(req, res, next) {
  * @param res 
  * @param next 
  */
-async function addHistorialLaboral(req, res, next){
+async function addHistoriaLaboral(req, res, next){
     try {
         const id = req.params.id;
         if (!id || (id && !Types.ObjectId.isValid(id))) return res.status(404).send();
@@ -242,6 +243,47 @@ async function addHistorialLaboral(req, res, next){
     }
 }
 
+
+async function updateHistoriaLaboral(req, res, next){
+    try {
+        const id = req.params.id;
+        if (!id || (id && !Types.ObjectId.isValid(id))) return res.status(404).send();
+        
+        let agente:any = await Agente.findById(id);
+        if (!agente) return res.status(404).send({message:"Agente not found"});
+        
+        let historia = req.body;
+        const idx = agente.historiaLaboral.findIndex((obj => obj._id == historia._id));
+        if (idx < 0) return res.status(404).send({message:"Historia not found"});
+
+        agente.historiaLaboral[idx] = historia;
+        let agenteActualizado = await agente.save();
+        return res.json(agenteActualizado);
+    } catch (err) {
+        return next(err);
+    }
+    
+}
+
+async function deleteHistoriaLaboral(req, res, next){
+    try {
+        const id = req.params.id;
+        if (!id || (id && !Types.ObjectId.isValid(id))) return res.status(404).send();
+        
+        let agente:any = await Agente.findById(id);
+        if (!agente) return res.status(404).send({message:"Agente not found"});
+        
+        let historia = req.body;
+        const idx = agente.historiaLaboral.findIndex((obj => obj._id == historia._id));
+        if (idx < 0) return res.status(404).send({message:"Historia not found"});
+
+        agente.historiaLaboral.splice(idx,1)
+        let agenteActualizado = await agente.save();
+        return res.json(agenteActualizado);
+    } catch (err) {
+        return next(err);
+    }
+}
 
 /**
  * Mueve los datos de la situacion laboral modificada al historial
@@ -525,7 +567,9 @@ const AgenteController = {
     addAgente,
     bajaAgente,
     reactivarAgente,
-    addHistorialLaboral,
+    addHistoriaLaboral,
+    updateHistoriaLaboral,
+    deleteHistoriaLaboral,
     updateAgente,
     deleteAgente,
     searchAgentes,
