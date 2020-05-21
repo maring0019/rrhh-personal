@@ -11,6 +11,7 @@ import { AusenciaPeriodo } from '../../ausentismo/schemas/ausenciaperiodo';
 import { readImage } from '../../../core/files/utils';
 import { IndicadorAusentismo } from '../../ausentismo/schemas/indicador';
 import { SituacionLaboral } from '../schemas/situacionlaboral';
+import { NormaLegal } from '../schemas/normaLegal';
 
 async function getAgentes(req, res, next){
     try {
@@ -177,6 +178,10 @@ async function bajaAgente(req, res, next) {
         let agente:any = await Agente.findById(id);
         if (!agente) return res.status(404).send({message:"Agente not found"});
         let baja = req.body;
+        // Forzamos la creacion de la Norma Legal con un id valido
+        // ya que necesitamos este dato para posteriormente asociar
+        // los documentos de la misma
+        baja.normaLegal = new NormaLegal(baja.normaLegal); 
         agente.activo = false;
         // Antes de colocar la baja en el historial, guardamos
         // tambien la ultima situacion para que cronologicamente
@@ -295,25 +300,22 @@ async function deleteHistoriaLaboral(req, res, next){
 function moveSituacionLaboralToHistorial(agente, newSituacionLaboral){
     let agenteCopy = agente.toObject();
     let oldSituacionLaboral = agenteCopy.situacionLaboral;
-    // Ver como impacta en la migracion
-    // Ver como impactan los nuevos datos de las bajas en la migracion
-    // Ver como se visualizan un reporte completo con toda la historia laboral.
-    // Ver como adjuntar los archivos por norma legal 
-    // Ver como mostrar este historial en la app. y como editar si es necesario!!! FUCK FUCK FUCK
-    // Definiciones:
-    // Al dar de alta un usuario guardamos su situación como parte de la historia laboral
-    //   * Agregar un atributo como situacionActual de tipo boolean
-    
+
+    // Recordar que los datos siguientes son para utilizar en el
+    // futuro para almacenarse como parte de la historia cuando
+    // se vuelva a modificar la situacion del agente por una nueva
     agente.situacionLaboral.fecha = newSituacionLaboral.fecha;
     agente.situacionLaboral.motivo = newSituacionLaboral.motivo;
     agente.situacionLaboral.esAlta = false;
+    
+    // Datos de la nueva situacion laboral del agente
     agente.situacionLaboral.normaLegal = newSituacionLaboral.normaLegal;
     agente.situacionLaboral.situacion = newSituacionLaboral.situacion; 
     agente.situacionLaboral.cargo = newSituacionLaboral.cargo;
     agente.situacionLaboral.regimen = newSituacionLaboral.regimen;
+    // Almacenamos la vieja situacion en el historial del agente
     let nuevaHistoria = {
         tipo: oldSituacionLaboral.esAlta? 'alta' : 'modificacion',
-        // fecha: (oldSituacionLaboral.normaLegal)? oldSituacionLaboral.normaLegal.fechaNormaLegal: null,
         timestamp: new Date(),
         changeset: { ...oldSituacionLaboral }
     }
@@ -559,6 +561,10 @@ async function uploadFilesAgente(req, res, next){
     // Ver como se visualizan un reporte completo con toda la historia laboral.
     // Ver como adjuntar los archivos por norma legal 
     // Ver como mostrar este historial en la app. y como editar si es necesario!!! FUCK FUCK FUCK
+    // Al editar una situacion laboral actual, al momento de guardar se pierde parece la fecha y
+    // motivo anterior. Se puede comprobar al generar luego una nueva historia laboral y ver que
+    // en el registro anterior no estan presentes esos datos
+
 
 
 
