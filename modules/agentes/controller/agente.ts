@@ -265,6 +265,10 @@ async function updateHistoriaLaboral(req, res, next){
         const idx = agente.historiaLaboral.findIndex((obj => obj._id == historia._id));
         if (idx < 0) return res.status(404).send({message:"Historia not found"});
 
+        // Si la norma legal no tiene id forzamos la creacion ya que
+        // es necesario para asociarle los documentos adjuntos.
+        // La falta de id es un problema que se arrastra de la migracion 
+        if (!historia.changeset.normaLegal._id) historia.changeset.normaLegal = new NormaLegal(historia.changeset.normaLegal);
         agente.historiaLaboral[idx] = historia;
         let agenteActualizado = await agente.save();
         return res.json(agenteActualizado);
