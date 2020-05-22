@@ -194,7 +194,7 @@ async function bajaAgente(req, res, next) {
             changeset: baja
         }
         agente.historiaLaboral.unshift(nuevaHistoria);
-        let agenteActualizado = await agente.save(); // TODO Optimizar para solo actualizar la historiaLaboral?
+        let agenteActualizado = await agente.save();
         return res.json(agenteActualizado);
     } catch (err) {
         return next(err);
@@ -210,13 +210,17 @@ async function reactivarAgente(req, res, next) {
         if (!agente) return res.status(404).send({message:"Agente not found"});
         agente.activo = true;
         let reactivacion = req.body;
+        // Forzamos la creacion de la Norma Legal con un id valido
+        // ya que necesitamos este dato para posteriormente asociar
+        // los documentos de la misma
+        reactivacion.normaLegal = new NormaLegal(reactivacion.normaLegal); 
         let nuevaHistoria = {
             tipo: 'reactivacion',
             timestamp: new Date(),
             changeset: reactivacion
         }
         agente.historiaLaboral.unshift(nuevaHistoria);
-        let agenteActualizado = await agente.save();// TODO Optimizar para solo actualizar la historiaLaboral?
+        let agenteActualizado = await agente.save();
         return res.json(agenteActualizado);
     } catch (err) {
         return next(err);
@@ -555,17 +559,16 @@ async function uploadFilesAgente(req, res, next){
 }
 
 
-    // Repasar todo el proceso
-    // Ver como impacta en la migracion
-    // Ver como impactan los nuevos datos de las bajas en la migracion
     // Ver como se visualizan un reporte completo con toda la historia laboral.
-    // Ver como adjuntar los archivos por norma legal 
-    // Ver como mostrar este historial en la app. y como editar si es necesario!!! FUCK FUCK FUCK
     // Al editar una situacion laboral actual, al momento de guardar se pierde parece la fecha y
     // motivo anterior. Se puede comprobar al generar luego una nueva historia laboral y ver que
     // en el registro anterior no estan presentes esos datos
-
-
+    // Luego de una reactivacion es posible ir a la historia laboral del agente y cargar una nueva
+    // historia. Esto es un problema actualmente ya que internamente intenta mover la situacion 
+    // actual al historial para dar lugar a la nueva situacion, pero en la situacion actual en 
+    // realidad no hay nada. En esos casos se deberia cargar la situacion como actual...pero en 
+    // algun lugar hay que dejar datos sobre el motivo...(que seria algo como nueva situacion post reactivacion??)
+    // En el listado general de agentes, ver si es posible en las bajas indicar el motivo (jubilacion, etc)
 
 
 const AgenteController = {
