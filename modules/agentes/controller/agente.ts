@@ -146,9 +146,13 @@ async function updateAgente(req, res, next) {
         // TODO Test
         agente.contactos= req.body.contactos;
         agente.educacion= req.body.educacion;
-        agente.situacionLaboral= req.body.situacionLaboral;
-        // agente.historiaLaboral= req.body.historiaLaboral;
-
+        // Hacemos una copia de la situacion para preservar
+        // algunos valores internos que no son provistos por el front
+        const situacionCopy = agente.situacionLaboral.toObject();
+        agente.situacionLaboral = req.body.situacionLaboral;
+        agente.situacionLaboral.fecha = situacionCopy.fecha;
+        agente.situacionLaboral.motivo = situacionCopy.motivo;
+        agente.situacionLaboral.esAlta = situacionCopy.esAlta;
         const agenteActualizado = await agente.save();
         return res.json(agenteActualizado);
     } catch (err) {
@@ -178,15 +182,18 @@ async function bajaAgente(req, res, next) {
         let agente:any = await Agente.findById(id);
         if (!agente) return res.status(404).send({message:"Agente not found"});
         let baja = req.body;
+        agente.activo = false;
+        
         // Forzamos la creacion de la Norma Legal con un id valido
         // ya que necesitamos este dato para posteriormente asociar
         // los documentos de la misma
         baja.normaLegal = new NormaLegal(baja.normaLegal); 
-        agente.activo = false;
+        
         // Antes de colocar la baja en el historial, guardamos
         // tambien la ultima situacion para que cronologicamente
         // quede registrado.
         moveSituacionLaboralToHistorial(agente, new SituacionLaboral());
+        
         // Datos de la baja para el historial
         let nuevaHistoria = {
             tipo: 'baja',
@@ -209,17 +216,13 @@ async function reactivarAgente(req, res, next) {
         let agente:any = await Agente.findById(id);
         if (!agente) return res.status(404).send({message:"Agente not found"});
         agente.activo = true;
-        let reactivacion = req.body;
-        // Forzamos la creacion de la Norma Legal con un id valido
-        // ya que necesitamos este dato para posteriormente asociar
-        // los documentos de la misma
-        reactivacion.normaLegal = new NormaLegal(reactivacion.normaLegal); 
-        let nuevaHistoria = {
-            tipo: 'reactivacion',
-            timestamp: new Date(),
-            changeset: reactivacion
-        }
-        agente.historiaLaboral.unshift(nuevaHistoria);
+        const reactivacion = req.body;
+        agente.situacionLaboral.fecha = reactivacion.fecha;
+        agente.situacionLaboral.motivo = "Reactivación"; // Hardcodeamos el motivo
+        agente.situacionLaboral.normaLegal = reactivacion.normaLegal;
+        agente.situacionLaboral.situacion = reactivacion.situacion;
+        agente.situacionLaboral.cargo = reactivacion.cargo;
+        agente.situacionLaboral.regimen = reactivacion.regimen;
         let agenteActualizado = await agente.save();
         return res.json(agenteActualizado);
     } catch (err) {
@@ -561,19 +564,6 @@ async function uploadFilesAgente(req, res, next){
         return next(err);
     }
 }
-
-
-    // Ver como se visualizan un reporte completo con toda la historia laboral.
-    // Al editar una situacion laboral actual, al momento de guardar se pierde parece la fecha y
-    // motivo anterior. Se puede comprobar al generar luego una nueva historia laboral y ver que
-    // en el registro anterior no estan presentes esos datos
-    // Luego de una reactivacion es posible ir a la historia laboral del agente y cargar una nueva
-    // historia. Esto es un problema actualmente ya que internamente intenta mover la situacion 
-    // actual al historial para dar lugar a la nueva situacion, pero en la situacion actual en 
-    // realidad no hay nada. En esos casos se deberia cargar la situacion como actual...pero en 
-    // algun lugar hay que dejar datos sobre el motivo...(que seria algo como nueva situacion post reactivacion??)
-    // En el listado general de agentes, ver si es posible en las bajas indicar el motivo (jubilacion, etc)
-
 
 const AgenteController = {
     getAgentes,
