@@ -5,7 +5,7 @@ export const ParteEstadoSchema = new Schema({
         type: String,
         required: true
     },
-
+    codigo: Number
 })
 
 export const ParteEstado = model('ParteEstado', ParteEstadoSchema, 'parteestados');
