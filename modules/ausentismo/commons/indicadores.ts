@@ -210,7 +210,7 @@ export async function getIndicadoresLicenciaHistoricos(ausentismo){
 
 /**
  * Consulta y recupera los indicadores de licencia tomando como referencia
- * los ultimos 3 anios desde el momento de la consulta.
+ * los ultimos 2 anios desde el momento de la consulta.
  * 
  */
 export async function getIndicadoresLicencia(agente){
@@ -218,11 +218,11 @@ export async function getIndicadoresLicencia(agente){
     return await IndicadorAusentismo.find(
         {
             'agente._id': Types.ObjectId(agente._id),
-            'vigencia': { $gte : thisYear - 3 },
+            'vigencia': { $gte : thisYear - 2 },
             'vencido': false,
             'intervalos.totales': { $nin: [ null, "" ] }
         }
-    )
+    ).sort({ vigencia: 1 })
 }
 
 

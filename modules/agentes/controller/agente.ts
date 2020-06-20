@@ -440,7 +440,7 @@ async function getLicenciasTotales(req, res, next){
         
         const thisYear = new Date().getFullYear();
         const pipeline = [
-            { $match: { 'agente._id': Types.ObjectId(agente._id), vigencia: { $gte: thisYear - 3 } }},
+            { $match: { 'agente._id': Types.ObjectId(agente._id), vigencia: { $gte: thisYear - 2 } }},
             { $unwind: '$intervalos'},
             { $match: { 'intervalos.totales': {  $nin: [ null, "" ] }}},
             { $group: { _id:null, totales: { $sum: "$intervalos.totales"}, ejecutadas: { $sum: "$intervalos.ejecutadas"} }}]
