@@ -410,11 +410,12 @@ async function getAusenciasAsEvento(req, res, next){
             { $project:
                 {
                     _id: "$_id",
-                    title: { $concat: ["ART. ", "$articulo.codigo"] },
+                    title: "$articulo.codigo",
                     start: { $dateToString: { date: "$ausencias.fecha", format:"%Y-%m-%d"}},
                     allDay: { $literal: true },
                     backgroundColor: "transparent",
-                    textColor: { $ifNull: ['$articulo.color', '#002738'] },
+                    textColor: { $ifNull: ['$articulo.color', '#00A8E0'] },
+                    className: "ausencia-event-class",
                     type: "AUSENCIA",
                     ausentismoFechaDesde: { $dateToString: { date: "$fechaDesde", format:"%Y-%m-%dT00:00:00"}},
                     ausentismoFechaHasta: { $dateToString: { date: "$fechaHasta", format:"%Y-%m-%dT00:00:00"}},
