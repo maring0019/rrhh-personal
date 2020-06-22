@@ -70,9 +70,11 @@ AgenteSchema.index({
     documento: 'text',
     cuil: 'text',
     nombre: 'text',
-    apellido: 'text'
+    apellido: 'text',
+    numero: 'text'
   }, {
     weights: {
+      numero: 6,
       cuil: 5,
       documento: 4,
       nombre: 3,

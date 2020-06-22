@@ -55,11 +55,11 @@ async function getAgenteByID(req, res, next){
     }
 }
 
-// TODO Implementar testing
+
 async function searchAgentes(req, res, next){
     try { 
         const params = aqp(req.query);
-        let agentes = await Agente.find(params.filter).sort({apellido:1}).exec();
+        let agentes = await Agente.find(params.filter).sort({activo: -1, apellido:1});
         return res.json(agentes);
     } catch (err) {
         return next(err);
