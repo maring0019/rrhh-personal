@@ -59,6 +59,13 @@ async function getAgenteByID(req, res, next){
 async function searchAgentes(req, res, next){
     try { 
         const params = aqp(req.query);
+        // console.log(params.filter)
+        // for (const f of params.filter.$and) {
+        //     console.log(f)
+        //     for (const obj of f.$or) {
+        //         console.log(obj);    
+        //     }
+        // }
         let agentes = await Agente.find(params.filter).sort({activo: -1, apellido:1});
         return res.json(agentes);
     } catch (err) {

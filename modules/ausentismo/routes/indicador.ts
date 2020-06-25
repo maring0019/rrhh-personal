@@ -1,6 +1,13 @@
 import * as express from 'express';
-import * as IndicadorController from '../controller/indicador';
+import { IndicadorAusentismo } from '../schemas/indicador';
+import IndicadorController from '../controller/indicador';
 
 export const Routes = express.Router();
 
-Routes.post('/indicadores', IndicadorController.addIndicador);
+const controller = new IndicadorController(IndicadorAusentismo); 
+
+Routes.get('/indicadores', controller.get);
+Routes.get('/indicadores/licencias', controller.getIndicadorLicencia);
+
+Routes.post('/indicadores', controller.add);
+Routes.post('/indicadores/licencias', controller.addIndicadorLicencia);
