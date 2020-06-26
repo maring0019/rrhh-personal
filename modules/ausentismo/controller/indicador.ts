@@ -1,6 +1,9 @@
 import BaseController from '../../../core/app/basecontroller';
 
 import { IndicadorAusentismo } from '../schemas/indicador';
+import { Types } from 'mongoose';
+import { Articulo } from '../schemas/articulo';
+
 
 class IndicadorController extends BaseController {
     
@@ -8,6 +11,8 @@ class IndicadorController extends BaseController {
         super(model);
         this.getIndicadorLicencia = this.getIndicadorLicencia.bind(this);
         this.addIndicadorLicencia = this.addIndicadorLicencia.bind(this);
+        this.updateIndicadorLicencia = this.updateIndicadorLicencia.bind(this);
+        this.deleteIndicadorLicencia = this.deleteIndicadorLicencia.bind(this);
         
     }
 
@@ -23,6 +28,45 @@ class IndicadorController extends BaseController {
             });
             const objNuevo = await obj.save();
             return res.json(objNuevo);
+        } catch (err) {
+            return next(err);
+        }
+    }
+
+    async getIndicadorLicenciaById(req, res, next){
+        try {
+            const id = req.params.id;
+            if (!id || (id && !Types.ObjectId.isValid(id))) return res.status(404).send({ message:"Not found"});
+
+            let pipeline:any = [
+                { $match: { '_id': Types.ObjectId(id) }},
+                { $lookup: {
+                        from: 'agentes',
+                        localField: 'agente._id',
+                        foreignField: '_id',
+                        as: 'agentes'}
+                },
+                { $unwind: '$intervalos'},
+                { $unwind: '$agentes'},
+                { $project: { 
+                    'agente': {
+                        '_id': '$agentes._id',
+                        'nombre': '$agentes.nombre',
+                        'apellido': '$agentes.apellido',
+                        'numero': '$agentes.numero'
+                        },
+                    'vigencia':1,
+                    'totales': '$intervalos.totales',
+                    'ejecutadas': '$intervalos.ejecutadas' }
+                }
+            ]
+            let objs = await IndicadorAusentismo.aggregate(pipeline);
+            if (objs.length == 1){
+                return res.json(objs[0]);
+            }
+            else {
+                return res.status(404).send({ message:"Not found"});
+            }
         } catch (err) {
             return next(err);
         }
@@ -67,6 +111,49 @@ class IndicadorController extends BaseController {
     }
     
     async addIndicadorLicencia(req, res, next){
+        try {
+            const artLicencia = await Articulo.findById(Types.ObjectId("5eea58e8f1d00a4d9f616928"));
+            const obj = new IndicadorAusentismo({
+                agente: req.body.agente,
+                articulo: artLicencia,
+                vigencia: req.body.vigencia,
+                periodo: req.body.periodo,
+                vencido: req.body.vencido,
+                intervalos: [ { totales:req.body.totales, ejecutadas: req.body.ejecutadas }] 
+            });
+            const objNuevo = await obj.save();
+            return res.json(objNuevo);
+        } catch (err) {
+            return next(err);
+        }
+    }
+
+    async updateIndicadorLicencia(req, res, next){
+        try {
+            const id = req.params.id;
+            if (!id || (id && !Types.ObjectId.isValid(id))) return res.status(404).send({ message:"Not found"});
+            
+            let objToUpdate:any = await IndicadorAusentismo.findById(id);
+            if (!objToUpdate) return res.status(404).send({ message:"Not found"});
+
+            let obj = objToUpdate.toObject(); // To allow ... operator
+            
+            let objWithChanges = {
+                vigencia: req.body.vigencia,
+                intervalos: [{
+                    ...obj.intervalos[0],// Keep some values and ovewrite updated fields
+                    ...{ totales:req.body.totales, ejecutadas:req.body.ejecutadas}}]
+            };
+
+            await objToUpdate.updateOne({ $set: objWithChanges });
+            return res.json(objToUpdate);
+        } catch (err) {
+            return next(err);
+        }
+    }
+
+    async deleteIndicadorLicencia(req, res, next){
+        return super.delete(req, res, next);
     }
 }
 

@@ -80,7 +80,7 @@ class BaseController {
     async delete(req, res, next) {
         try {
             const id = req.params.id;
-            if (!id || (id && !Types.ObjectId.isValid(id))) return res.status(404).send();
+            if (!id || (id && !Types.ObjectId.isValid(id))) return res.status(404).send({ message:"Not found"});
             let object:any = await this._model.findById(id);
             if (!object) return res.status(404).send({ message:"Not found"});
             const objRemoved = await object.remove();
