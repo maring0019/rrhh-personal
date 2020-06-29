@@ -10,6 +10,7 @@ class IndicadorController extends BaseController {
     constructor(model) {
         super(model);
         this.getIndicadorLicencia = this.getIndicadorLicencia.bind(this);
+        this.getIndicadorLicenciaById = this.getIndicadorLicenciaById.bind(this);
         this.addIndicadorLicencia = this.addIndicadorLicencia.bind(this);
         this.updateIndicadorLicencia = this.updateIndicadorLicencia.bind(this);
         this.deleteIndicadorLicencia = this.deleteIndicadorLicencia.bind(this);
@@ -32,34 +33,38 @@ class IndicadorController extends BaseController {
             return next(err);
         }
     }
+    
+    // Pipeline reutilizable en las busquedas. Realiza un 'join'
+    // sobre la coleccion de agentes y ajusta los datos proyectados
+    joinAgentePipeline:any = [
+        { $lookup: {
+            from: 'agentes',
+                localField: 'agente._id',
+                foreignField: '_id',
+                as: 'agentes'}
+        },
+        { $unwind: '$intervalos'},
+        { $unwind: '$agentes'},
+        { $project: { 
+            'agente': {
+                '_id': '$agentes._id',
+                'nombre': '$agentes.nombre',
+                'apellido': '$agentes.apellido',
+                'numero': '$agentes.numero'
+                },
+            'vigencia':1,
+            'totales': '$intervalos.totales',
+            'ejecutadas': '$intervalos.ejecutadas' }
+        }
+    ]
 
     async getIndicadorLicenciaById(req, res, next){
         try {
             const id = req.params.id;
             if (!id || (id && !Types.ObjectId.isValid(id))) return res.status(404).send({ message:"Not found"});
 
-            let pipeline:any = [
-                { $match: { '_id': Types.ObjectId(id) }},
-                { $lookup: {
-                        from: 'agentes',
-                        localField: 'agente._id',
-                        foreignField: '_id',
-                        as: 'agentes'}
-                },
-                { $unwind: '$intervalos'},
-                { $unwind: '$agentes'},
-                { $project: { 
-                    'agente': {
-                        '_id': '$agentes._id',
-                        'nombre': '$agentes.nombre',
-                        'apellido': '$agentes.apellido',
-                        'numero': '$agentes.numero'
-                        },
-                    'vigencia':1,
-                    'totales': '$intervalos.totales',
-                    'ejecutadas': '$intervalos.ejecutadas' }
-                }
-            ]
+            let pipeline:any = [{ $match: { '_id': Types.ObjectId(id) }}].concat(this.joinAgentePipeline);
+            
             let objs = await IndicadorAusentismo.aggregate(pipeline);
             if (objs.length == 1){
                 return res.json(objs[0]);
@@ -68,6 +73,7 @@ class IndicadorController extends BaseController {
                 return res.status(404).send({ message:"Not found"});
             }
         } catch (err) {
+            console.log(err);
             return next(err);
         }
     }
@@ -79,29 +85,8 @@ class IndicadorController extends BaseController {
             const params = this.getQueryParams(req, casters);
             let filters = params.filter;
             if (JSON.stringify(filters) !== JSON.stringify({})){
-                let pipeline:any = [
-                    { $lookup: {
-                            from: 'agentes',
-                            localField: 'agente._id',
-                            foreignField: '_id',
-                            as: 'agentes'}
-                    },
-                    { $unwind: '$intervalos'},
-                    { $unwind: '$agentes'},
-                    { $project: { 
-                        'agente': {
-                            '_id': '$agentes._id',
-                            'nombre': '$agentes.nombre',
-                            'apellido': '$agentes.apellido',
-                            'numero': '$agentes.numero'
-                            },
-                        'vigencia':1,
-                        'totales': '$intervalos.totales',
-                        'ejecutadas': '$intervalos.ejecutadas' }
-                    },
-                    { $match: filters },
-                    { $sort: { 'agente.apellido': 1, 'vigencia': -1 }}
-                ]
+                let pipeline:any = this.joinAgentePipeline.concat(
+                    [{ $match: filters },{ $sort: { 'agente.apellido': 1, 'vigencia': -1 }}])
                 objs = await IndicadorAusentismo.aggregate(pipeline);
             }
             return res.json(objs);
@@ -112,9 +97,15 @@ class IndicadorController extends BaseController {
     
     async addIndicadorLicencia(req, res, next){
         try {
-            const artLicencia = await Articulo.findById(Types.ObjectId("5eea58e8f1d00a4d9f616928"));
+            const agente = req.body.agente;
+            const artLicencia = await Articulo.findOne({codigo:"53"});
+            let indicadorSimilar =  await IndicadorAusentismo.find(
+                { "agente._id": agente._id, "articulo._id": artLicencia._id, "vigencia": req.body.vigencia });
+            
+            if (indicadorSimilar.length > 0 ) return res.status(400).send({ message:"Ya existe otro registro con el mismo periodo."});
+            
             const obj = new IndicadorAusentismo({
-                agente: req.body.agente,
+                agente: agente,
                 articulo: artLicencia,
                 vigencia: req.body.vigencia,
                 periodo: req.body.periodo,
@@ -135,6 +126,13 @@ class IndicadorController extends BaseController {
             
             let objToUpdate:any = await IndicadorAusentismo.findById(id);
             if (!objToUpdate) return res.status(404).send({ message:"Not found"});
+
+            if (req.body.vigencia != objToUpdate.vigencia){
+                const indicadorSimilar =  await IndicadorAusentismo.find(
+                    { "agente._id": objToUpdate.agente._id, "articulo._id": objToUpdate.articulo._id, "vigencia": req.body.vigencia });
+
+                if (indicadorSimilar.length > 0 ) return res.status(400).send({ message:"Ya existe otro registro con el mismo periodo."});
+            }            
 
             let obj = objToUpdate.toObject(); // To allow ... operator
             
