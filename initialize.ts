@@ -10,6 +10,7 @@ import { Auth } from './auth';
 import errorMiddleware from './middleware/error.middleware';
 import loggerMiddleware from './middleware/logger.middleware';
 
+const audit = require('./packages/mongoose-audit-trail');
 
 export function initAPI(app: Express) {
 
@@ -41,9 +42,12 @@ export function initAPI(app: Express) {
 
     // LOAD ALL ROUTES
     app.use(loggerMiddleware);
+    
     let AUTH = require('./auth');
     app.use('/api/auth/', AUTH.Routes);
 
+    // app.use(Auth.authenticate());
+    app.use(audit.middleware); 
     for (const m in config.modules) {
         if (config.modules[m].active) {
             const routes = requireDir(config.modules[m].path);
@@ -58,6 +62,7 @@ export function initAPI(app: Express) {
             }
         }
     }
+    
     // Error handler
     app.use(errorMiddleware);
 }

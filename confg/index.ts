@@ -33,6 +33,7 @@ export default {
         }
     },
     database: {
-        mongo: env('MONGO_HOST', 'mongodb://localhost:27017/test')
+        // mongo: env('MONGO_HOST', 'mongodb://localhost:27017/test')
+        mongo: env('MONGO_HOST', 'mongodb://admin:golitoMon04@mongolito.hospitalneuquen.org.ar:27028/rrhh?authSource=admin')
     },
 };

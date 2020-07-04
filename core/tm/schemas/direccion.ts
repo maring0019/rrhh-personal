@@ -1,4 +1,4 @@
-import { Schema } from 'mongoose';
+import { Schema, model } from 'mongoose';
 import { LocalidadSchema } from './localidad';
 
 
@@ -23,3 +23,6 @@ export const DireccionSchema = new Schema({
     },
     ultimaActualizacion: Date,
 });
+
+
+export const DireccionContacto = model('DireccionContacto', DireccionSchema);

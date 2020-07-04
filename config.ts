@@ -1,3 +1,4 @@
+
 // Habilita/deshabilita módulos de la API
 export const modules = {
     tm: {
@@ -52,6 +53,12 @@ export const modules = {
         active: true,
         path: './modules/reportes/routes',
         route: '/modules/reportes',
+        middleware: null,
+    },
+    audit:{
+        active: true,
+        path: './modules/audit/routes',
+        route: '/modules/audits',
         middleware: null,
     }
 };

@@ -2,7 +2,6 @@ import * as express from 'express';
 import { Articulo } from '../schemas/articulo';
 import ArticuloController from '../controller/articulo';
 
-
 const controller = new ArticuloController(Articulo); 
 
 export const Routes = express.Router();

@@ -5,7 +5,7 @@ import { Articulo } from '../schemas/articulo';
 import { AusenciaPeriodo } from '../schemas/ausenciaperiodo';
 
 class ArticuloController extends BaseController {
-
+    
     /**
      * Actualiza los datos de un articulo existente, y posteriormente
      * se intenta actualizar en forma masiva todas las referencias al

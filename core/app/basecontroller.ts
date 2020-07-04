@@ -1,6 +1,9 @@
 import * as aqp from 'api-query-params';
 import { Types } from 'mongoose';
 
+const diffHistory = require("../../packages/mongoose-audit-trail");
+const expandableFields = ["codigo", "nombre", "color"];
+
 class BaseController {
     /**
      * @param {Model} model The default model object
@@ -8,9 +11,12 @@ class BaseController {
      * an instance of the controller
      */
     private _model:any;
+    
+    protected messageNotFound = "";
+    protected modelName = "";
 
-    constructor(model) {
-       this._model = model;
+    constructor(modelClass) {
+       this._model = modelClass;
        this.add = this.add.bind(this);
        this.addMany = this.addMany.bind(this);
        this.update = this.update.bind(this);
@@ -18,6 +24,7 @@ class BaseController {
        this.delete = this.delete.bind(this);
        this.get = this.get.bind(this);
        this.getById = this.getById.bind(this);
+       this.getHistory = this.getHistory.bind(this);
     }
 
 
@@ -44,13 +51,11 @@ class BaseController {
 
     async update(req, res, next) {
         try {
-            const id = req.params.id;
-            if (!id || (id && !Types.ObjectId.isValid(id))) return res.status(404).send();
-            let objToUpdate:any = await this._model.findById(id);
-            if (!objToUpdate) return res.status(404).send({ message:"Not found"});
+            let object:any = await this.getObject(req.params.id);
+            if (!object) return res.status(404).send({ message: this.getMessageNotFound()});
             let objWithChanges = req.body;
-            await objToUpdate.updateOne({ $set: objWithChanges });
-            return res.json(objToUpdate);
+            await object.updateOne({ $set: objWithChanges });
+            return res.json(object);
         } catch (err) {
             return next(err);
         }
@@ -79,10 +84,8 @@ class BaseController {
 
     async delete(req, res, next) {
         try {
-            const id = req.params.id;
-            if (!id || (id && !Types.ObjectId.isValid(id))) return res.status(404).send({ message:"Not found"});
-            let object:any = await this._model.findById(id);
-            if (!object) return res.status(404).send({ message:"Not found"});
+            let object:any = await this.getObject(req.params.id);
+            if (!object) return res.status(404).send({ message: this.getMessageNotFound()});
             const objRemoved = await object.remove();
             return res.json(objRemoved);
         } catch (err) {
@@ -108,6 +111,31 @@ class BaseController {
         } catch (err) {
             return next(err);
         }
+    }
+
+    async getHistory(req, res, next){
+        let object:any = await this.getObject(req.params.id);
+        if (!object) return res.status(404).send({ message: this.getMessageNotFound()});
+
+        diffHistory
+            .getHistories(this.getModelName(), object._id, expandableFields)
+            .then(histories => {
+                return res.json(histories)
+            })
+            .catch(err => {return next(err)});
+    }
+
+    protected async getObject(objectId){
+        if (!objectId || (objectId && !Types.ObjectId.isValid(objectId))) return;
+        return await this._model.findById(objectId);
+    }
+
+    protected getMessageNotFound(){
+        return this.messageNotFound? this.messageNotFound : "Not found";
+    }
+
+    protected getModelName(){
+        return this.modelName? this.modelName : this._model.modelName;
     }
 
     /**

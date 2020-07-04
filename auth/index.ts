@@ -157,4 +157,15 @@ export class Auth {
         }
     }
 
+
+    static authenticate() {
+        return passport.authenticate('jwt', { session: false });
+        // return [
+        //     passport.authenticate('jwt', { session: false }),
+        //     this.appTokenProtected(),
+        //     this.extractToken(),
+        //     this.recovertPayloadMiddleware()
+        // ];
+    }
+
 }
