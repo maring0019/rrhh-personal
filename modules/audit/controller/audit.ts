@@ -6,8 +6,11 @@ const expandableFields = ["codigo", "nombre", "color"];
 class AuditController extends BaseController {
 
     models = {
-        "articulos" : "Articulo",
-        "feriados"  :  "Feriado"
+        "articulo"       : "Articulo",
+        "feriado"        : "Feriado",
+        "tipo-situacion" : "TipoSituacion",
+        "guardia-lote"   : "GuardiaLote",
+        "agente"         : "Agente"
     }
 
     async get(req, res, next) {
