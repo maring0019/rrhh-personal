@@ -56,7 +56,7 @@ export class DocumentoConstanciaCertificado extends DocumentoPDF {
             agente: agente,
             extraInfo: ausentismo.extraInfo,
             srcImgCertificado: srcImgCertificado,
-            srcImgLogo: `${config.app.url}:${config.app.port}/public/images/logo_header.png`
+            srcImgLogo: `${config.app.url}:${config.app.port}/public/images/logo_hospital.jpeg`
         }
     }
 

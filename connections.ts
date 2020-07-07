@@ -2,7 +2,7 @@ import * as mongoose from 'mongoose';
 import * as debug from 'debug';
 import config from './confg';
 
-const audit = require('./packages/mongoose-audit-trail');
+// const audit = require('./packages/mongoose-audit-trail');
 
 function schemaDefaults(schema) {
     schema.set('toJSON', {
@@ -25,7 +25,7 @@ export class Connections {
         // Configura Mongoose
         (mongoose as any).Promise = global.Promise;
         mongoose.plugin(schemaDefaults);
-        mongoose.plugin(audit.plugin, { omit: ["_id", "id"] });
+        // mongoose.plugin(audit.plugin, { omit: ["_id", "id"] });
 
         // Configura logger de consultas
         const queryLogger = debug('mongoose');
