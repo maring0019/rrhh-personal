@@ -21,3 +21,7 @@ node_modules
 typings
 typings/*
 .vscode
+
+# Exceptions
+!**/mongoose-plugin-audit/auditModel.js
+!**/mongoose-plugin-audit/index.js
