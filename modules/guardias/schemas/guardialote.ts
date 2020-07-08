@@ -2,6 +2,7 @@
 import { Schema, Types,  model } from 'mongoose';
 import { constantes } from '../../../core/constants';
 
+const audit = require('../../../packages/mongoose-audit-trail');
 
 export const GuardiaLoteSchema = new Schema({
     numero: {
@@ -32,5 +33,7 @@ export const GuardiaLoteSchema = new Schema({
     }
 });
 
+
+GuardiaLoteSchema.plugin(audit.plugin, { omit: ["_id", "id"] })
 
 export const GuardiaLote = model('GuardiaLote', GuardiaLoteSchema, 'guardiaslotes');

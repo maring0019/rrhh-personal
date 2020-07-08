@@ -1,5 +1,5 @@
 import { Schema, model } from 'mongoose';
-
+const audit = require('../../../packages/mongoose-audit-trail');
 
 /**
  * Situacion en planta de los agentes ingresados al sistema.
@@ -22,5 +22,7 @@ export const TipoSituacionSchema = new Schema({
         default: true
     }
 });
+
+TipoSituacionSchema.plugin(audit.plugin, { omit: ["_id", "id"] })
 
 export const TipoSituacion = model('TipoSituacion', TipoSituacionSchema, 'tiposituaciones');

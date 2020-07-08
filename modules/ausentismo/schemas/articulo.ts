@@ -1,6 +1,8 @@
 import { Schema, model } from 'mongoose';
 import { FormulaSchema } from './formula';
 
+const audit = require('../../../packages/mongoose-audit-trail');
+
 export const ArticuloSchema = new Schema({
     
     idInterno: {                // Codigo Interno Sistema Anterior. TODO Remover si no es mas necesario
@@ -39,5 +41,8 @@ export const ArticuloSchema = new Schema({
     tituloInformacionAdicional: String,
     codigoOTI: String
 })
+
+
+ArticuloSchema.plugin(audit.plugin, { omit: ["_id", "id"] })
 
 export const Articulo = model('Articulo', ArticuloSchema, 'articulos');
