@@ -12,6 +12,7 @@ import { readImage } from '../../../core/files/utils';
 import { IndicadorAusentismo } from '../../ausentismo/schemas/indicador';
 import { SituacionLaboral } from '../schemas/situacionlaboral';
 import { NormaLegal } from '../schemas/normaLegal';
+import { Nota } from '../../notas/schemas/nota';
 
 async function getAgentes(req, res, next){
     try {
@@ -407,6 +408,23 @@ async function getAusencias(req, res, next){
     }
 }
 
+async function getNotas(req, res, next){
+    try {
+        const id = req.params.id;
+        if (!id || (id && !Types.ObjectId.isValid(id))) return next(404);
+        let agente:any = await Agente.findById(id);
+        if (!agente) return next(404);
+                
+        const pipeline = [
+            { $match: { 'agente._id': Types.ObjectId(agente._id) } },
+        ]
+        let notas = await Nota.aggregate(pipeline)
+        return res.json(notas);
+    } catch (err) {
+        return next(err);
+    }
+}
+
 
 async function getAusenciasAsEvento(req, res, next){
     try {
@@ -602,6 +620,7 @@ const AgenteController = {
     getAusencias,
     getAusenciasAsEvento,
     getLicenciasTotales,
+    getNotas,
     uploadFotoPerfil,
     uploadFilesAgente,
     _findFotoPerfil,

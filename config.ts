@@ -60,6 +60,12 @@ export const modules = {
         path: './modules/audit/routes',
         route: '/modules/audits',
         middleware: null,
+    },
+    nota:{
+        active: true,
+        path: './modules/notas/routes',
+        route: '/modules/notas',
+        middleware: null,
     }
 };
 

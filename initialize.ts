@@ -46,7 +46,7 @@ export function initAPI(app: Express) {
     let AUTH = require('./auth');
     app.use('/api/auth/', AUTH.Routes);
 
-    app.use(Auth.authenticate());
+    // app.use(Auth.authenticate());
     app.use(audit.middleware); 
     for (const m in config.modules) {
         if (config.modules[m].active) {

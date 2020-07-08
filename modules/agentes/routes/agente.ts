@@ -13,6 +13,7 @@ Routes.get('/agentes/:id/ausencias', AgenteController.getAusencias);
 Routes.get('/agentes/:id/ausencias/eventos', AgenteController.getAusenciasAsEvento);
 Routes.get('/agentes/:id/licencias/totales', AgenteController.getLicenciasTotales);
 Routes.get('/agentes/:id/ausencias/periodo', AgenteController.getAusencias);
+Routes.get('/agentes/:id/notas', AgenteController.getNotas);
 
 
 Routes.post('/agentes', AgenteController.addAgente);
