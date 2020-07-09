@@ -25,6 +25,7 @@ class BaseController {
        this.get = this.get.bind(this);
        this.getById = this.getById.bind(this);
        this.getHistory = this.getHistory.bind(this);
+       this.getUser = this.getUser.bind(this); 
     }
 
 
@@ -54,8 +55,9 @@ class BaseController {
             let object:any = await this.getObject(req.params.id);
             if (!object) return res.status(404).send({ message: this.getMessageNotFound()});
             let objWithChanges = req.body;
-            await object.updateOne({ $set: objWithChanges });
-            return res.json(object);
+            await object.updateOne({ $set: objWithChanges });        
+            let objUpdated = await this.getObject(req.params.id);
+            return res.json(objUpdated);
         } catch (err) {
             return next(err);
         }
@@ -136,6 +138,15 @@ class BaseController {
 
     protected getModelName(){
         return this.modelName? this.modelName : this._model.modelName;
+    }
+
+    /**
+     * Metodo de ayuda para obtener el usuario del request
+     * si esta presente
+     * @param req 
+     */
+    protected getUser(req){
+        return req.user? req.user.usuario:{};
     }
 
     /**

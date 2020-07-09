@@ -417,6 +417,7 @@ async function getNotas(req, res, next){
                 
         const pipeline = [
             { $match: { 'agente._id': Types.ObjectId(agente._id) } },
+            { $sort: { 'fecha':- 1 }}
         ]
         let notas = await Nota.aggregate(pipeline)
         return res.json(notas);
