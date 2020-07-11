@@ -21,14 +21,14 @@ export class DocumentoConstanciaCertificado extends DocumentoPDF {
         const id = this.request.params.id;
         if (!id || (id && !Types.ObjectId.isValid(id))) return {}
         
-        const ausentismo = await AusenciaPeriodo.findById(id).lean();
+        const ausentismo:any = await AusenciaPeriodo.findById(id).lean();
         if(!ausentismo) return {}
 
         const agente = await Agente.findById(ausentismo.agente._id);
         if(!agente) return {}
 
         let srcImgCertificado;
-        if (ausentismo.extraInfo){
+        if (ausentismo.extra){
             // Vamos a intentar obtener la info del medico y demas dato
             // del certificado (sin imagen/escaneo del certificado) para
             // incluirla en la impresion

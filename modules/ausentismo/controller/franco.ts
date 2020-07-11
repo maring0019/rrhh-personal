@@ -96,7 +96,7 @@ export async function addManyFrancos(req, res, next) {
                 }));
             const weekend = francos.map(f=>f.fecha);
             const agente = francos[0].agente;
-            const francosExistentes = await Franco.find(
+            const francosExistentes:any = await Franco.find(
                 {
                     'agente._id': Types.ObjectId(agente._id), 
                     'fecha': { $in: weekend }

@@ -30,7 +30,7 @@ export function parseAusencias(ausencias){
 }
 
 export async function parseArticulo(obj){
-    let articulo = await Articulo.findById(obj._id).lean(); // get articulo con formulas,
+    let articulo:any = await Articulo.findById(obj._id).lean(); // get articulo con formulas,
     articulo._id = obj._id;
     return articulo
 }

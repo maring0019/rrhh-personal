@@ -37,14 +37,14 @@ class ParteController extends BaseController {
         try {
             let obj = req.body;
             if (!obj.estado){
-                const estadoSinPresentar = await this.findEstadoParte(this.ESTADO_SIN_PRESENTAR);
+                const estadoSinPresentar:any = await this.findEstadoParte(this.ESTADO_SIN_PRESENTAR);
                 obj.estado = { _id:estadoSinPresentar._id, nombre: estadoSinPresentar.nombre }
             }
             let parte = new Parte(obj);
             const parteNew = await parte.save();
             // Una vez creado el parte 'general' creamos los partes
             // de los agentes que pertenecen a la ubicacion indicada
-            let agentes = await Agente.find(
+            let agentes:any = await Agente.find(
                 {
                     'situacionLaboral.cargo.servicio.ubicacion': obj.ubicacion.codigo,
                     'activo': true
@@ -282,7 +282,7 @@ class ParteController extends BaseController {
                 )
             )
             // 2. Actualizamos el estado del parte al que pertenecen
-            const nuevoEstado = await this.findEstadoParte(estadoParte);
+            const nuevoEstado:any = await this.findEstadoParte(estadoParte);
             const objUpdated = await objToUpdate.updateOne(
                 { $set: 
                     { 

@@ -19,7 +19,7 @@ import { Articulo } from '../schemas/articulo';
  */
 export async function obtenerIndicadores(ausentismo){
     const agente = ausentismo.agente;
-    const articulo = await Articulo.findById(Types.ObjectId(ausentismo.articulo._id)).lean();
+    const articulo:any = await Articulo.findById(Types.ObjectId(ausentismo.articulo._id)).lean();
     const desde = ausentismo.fechaDesde;
     const hasta = ausentismo.fechaHasta;
     let indicadores = [];

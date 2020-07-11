@@ -33,7 +33,7 @@ class FichadaController extends BaseController {
             // Primero necesitamos recuperar el agente en mongodb a partir 
             // del numero de agente del viejo sistema
             if (! obj.agente) return res.status(404).send();
-            const agente = await Agente.findOne({ numero: obj.agente }, { _id: 1, nombre: 1, apellido: 1}).lean();
+            const agente:any = await Agente.findOne({ numero: obj.agente }, { _id: 1, nombre: 1, apellido: 1}).lean();
             if (!agente) return res.status(404).send();
             // El agente existe. Creamos la fichada con sus respectivos 
             // datos y guardamos en la base.
