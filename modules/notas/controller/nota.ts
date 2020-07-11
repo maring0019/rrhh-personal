@@ -7,10 +7,10 @@ class NotaController extends BaseController {
     async add(req, res, next) {
         try {
             let obj = req.body;
+            obj = this.cleanObjectID(obj);
             obj.usuario = this.getUser(req);// Append user
-            let object = new Nota(obj);
+            let object = await new Nota(obj);
             const objNuevo = await object.save();
-            console.log("Objeto Creado", objNuevo);
             return res.json(objNuevo);
         } catch (err) {
             return next(err);

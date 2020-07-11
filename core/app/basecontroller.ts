@@ -25,13 +25,19 @@ class BaseController {
        this.get = this.get.bind(this);
        this.getById = this.getById.bind(this);
        this.getHistory = this.getHistory.bind(this);
-       this.getUser = this.getUser.bind(this); 
+       this.getUser = this.getUser.bind(this);
+       this.cleanObjectID = this.cleanObjectID.bind(this);
     }
 
+    cleanObjectID(obj){
+        obj._id = undefined;
+        return obj;
+    }
 
     async add(req, res, next) {
         try {
             let obj = req.body;
+            obj = this.cleanObjectID(obj);
             let object = new this._model(obj);
             const objNuevo = await object.save();
             return res.json(objNuevo);
