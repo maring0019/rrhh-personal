@@ -43,6 +43,6 @@ export const ArticuloSchema = new Schema({
 })
 
 
-ArticuloSchema.plugin(audit.plugin, { omit: ["_id", "id"] })
+ArticuloSchema.plugin(audit.plugin, { omit: ["_id", "id"] });
 
 export const Articulo = model('Articulo', ArticuloSchema, 'articulos');

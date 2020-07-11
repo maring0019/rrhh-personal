@@ -10,7 +10,8 @@ class AuditController extends BaseController {
         "feriado"        : "Feriado",
         "tipo-situacion" : "TipoSituacion",
         "guardia-lote"   : "GuardiaLote",
-        "agente"         : "Agente"
+        "agente"         : "Agente",
+        "nota"           : "Nota"
     }
 
     async get(req, res, next) {
