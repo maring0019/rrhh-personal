@@ -1,4 +1,5 @@
 import { Schema, model } from 'mongoose';
+const audit = require('../../../packages/mongoose-audit-trail');
 
 import { parseDate } from '../../../core/utils/dates';
 import { constantes } from '../../../core/constants/index';
@@ -9,8 +10,6 @@ import { EducacionSchema } from '../../../core/tm/schemas/educacion';
 import { EspecialidadSchema } from '../../../core/tm/schemas/especialidad';
 import { SituacionLaboralSchema } from './situacionlaboral';
 import { HistoriaLaboralSchema } from './historialaboral';
-
-
 
 export const AgenteSchema = new Schema({
     idLegacy: Number,      // ID Sistema anterior.
@@ -81,5 +80,8 @@ AgenteSchema.index({
       apellido: 2
     },
   });
+
+// AgenteSchema.plugin(audit.plugin);
+AgenteSchema.plugin(audit.plugin, { omit: ["_id"] });
 
 export const Agente = model('Agente', AgenteSchema, 'agentes');

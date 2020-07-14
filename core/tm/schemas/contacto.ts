@@ -6,9 +6,5 @@ export const ContactoSchema = new Schema({
     valor: {
         type: String,
         required:true
-    },
-    activo: {
-        type: Boolean,
-        default: true
-    },
+    }
 });

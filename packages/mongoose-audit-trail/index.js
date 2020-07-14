@@ -1,6 +1,5 @@
 const omit = require("omit-deep");
 const pick = require("lodash.pick");
-const lodash = require('lodash')
 const mongoose = require("mongoose");
 const { assign } = require("power-assign");
 const empty = require("deep-empty-object");
@@ -24,7 +23,17 @@ function getUserContext(){
 
 // try to find an id property, otherwise just use the index in the array
 const objectHash = (obj, idx) => obj._id || obj.id || `$$index: ${idx}`;
-const diffPatcher = require("jsondiffpatch").create({ objectHash });
+
+/**
+ * This optional function can be specified to ignore object properties (eg. volatile data)
+ * @param {*} name property name, present in either context.left or context.right objects
+ * @param {*} context the diff context (has context.left and context.right objects)
+ */
+const propertyFilter = function(name, context) {
+  return name != '_id' && name != 'id' && name != '__v';
+}
+
+const diffPatcher = require("jsondiffpatch").create({ objectHash, propertyFilter });
 
 const History = require("./auditModel").model;
 
@@ -64,20 +73,9 @@ function saveDiffObject(
     
   user = user || getUserContext();
   
-  let originalClone = lodash.cloneDeep(original);
-  let updatedClone = lodash.cloneDeep(updated);
-  if (opts.omit) {
-    console.log('Vamos a omitir:', opts.omit);
-    omit(originalClone, opts.omit, { cleanEmpty: true });
-    omit(updatedClone, opts.omit, { cleanEmpty: true });
-  }
-  console.log("ORIGINAL", original);
-  console.log("UPDATED", originalClone);
-
-
   let diff = diffPatcher.diff(
-    JSON.parse(JSON.stringify(originalClone)),
-    JSON.parse(JSON.stringify(updatedClone))
+    JSON.parse(JSON.stringify(original)),
+    JSON.parse(JSON.stringify(updated))
   );
 
   if (opts.omit) {
