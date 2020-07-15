@@ -5,6 +5,12 @@ const expandableFields = ["codigo", "nombre", "color"];
 
 class AuditController extends BaseController {
 
+
+    constructor(model) {
+        super(model);
+        this.getHtmlDiff = this.getHtmlDiff.bind(this);
+    }
+
     models = {
         "articulo"       : "Articulo",
         "feriado"        : "Feriado",
@@ -23,6 +29,20 @@ class AuditController extends BaseController {
             .getHistories(this.models[modelName], id, expandableFields)
             .then(histories => {
                 return res.json(histories)
+            })
+            .catch(err => {return next(err)});
+    }
+
+    async getHtmlDiff(req, res, next) {
+        diffHistory
+            .getHistory(req.params.id)
+            .then( history => {
+                let html = history.htmlDiff;
+                res.writeHead(200, {
+                    'Content-Type': 'text/html'
+                });
+                res.write(html);
+                res.end();
             })
             .catch(err => {return next(err)});
     }

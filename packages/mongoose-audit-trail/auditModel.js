@@ -7,6 +7,7 @@ const historySchema = new Schema(
     collectionId: Schema.Types.ObjectId,
     method: String,
     diff: {},
+    htmlDiff: String,
     user: {},
     reason: String,
     version: { type: Number, min: 0 }

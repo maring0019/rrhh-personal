@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const { assign } = require("power-assign");
 const empty = require("deep-empty-object");
 const moment = require("moment");
+const jsondiffpatch = require("jsondiffpatch")
 
 var userContext = {};
 
@@ -32,8 +33,7 @@ const objectHash = (obj, idx) => obj._id || obj.id || `$$index: ${idx}`;
 const propertyFilter = function(name, context) {
   return name != '_id' && name != 'id' && name != '__v';
 }
-
-const diffPatcher = require("jsondiffpatch").create({ objectHash, propertyFilter });
+const diffPatcher = jsondiffpatch.create({ objectHash, propertyFilter });
 
 const History = require("./auditModel").model;
 
@@ -78,6 +78,9 @@ function saveDiffObject(
     JSON.parse(JSON.stringify(updated))
   );
 
+  let htmlDiff = jsondiffpatch.formatters.html.format(diff, original);
+  
+
   if (opts.omit) {
     omit(diff, opts.omit, { cleanEmpty: true });
   }
@@ -102,6 +105,7 @@ function saveDiffObject(
         collectionName,
         method,
         diff,
+        htmlDiff,
         user,
         reason,
         version: lastHistory ? lastHistory.version + 1 : 0
@@ -208,11 +212,8 @@ const getDiffs = (modelName, id, opts, cb) => {
 const titleCase = function(str) {
   var splitStr = str.toLowerCase().split(' ');
   for (var i = 0; i < splitStr.length; i++) {
-      // You do not need to check if i is larger than splitStr length, as your for does that for you
-      // Assign it back to the array
       splitStr[i] = splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);     
   }
-  // Directly return the joined string
   return splitStr.join(' '); 
 }
 
@@ -238,8 +239,22 @@ const parse = function(val){
   return val
 }
 
-isIso8601 = function(value) {
+const isIso8601 = function(value) {
   return new Date(value).toJSON() === value;
+}
+
+const diffText = function(diff, key){
+  let text = "[" +  titleKey(key) + "]";
+  const oldValue = diff[key][0];
+  const newValue = diff[key][1];
+  if (oldValue != undefined && oldValue != null &&
+      newValue != undefined && newValue != null &&
+      typeof newValue != 'object') text =  "[" +  titleKey(key) + ": " + parse(oldValue) + " --> " + parse(newValue) + "]";
+  return text;
+}
+
+const getHistory =  (objectId) => {
+  return History.findById(objectId);
 }
 
 const getHistories = (modelName, id, expandableFields, cb) => {
@@ -260,25 +275,7 @@ const getHistories = (modelName, id, expandableFields, cb) => {
       const changedFields = [];
       for (const key in history.diff) {
         if (history.diff.hasOwnProperty(key)) {
-          if (history.diff[key][0]){
-            const oldValue = history.diff[key][0];
-            const newValue = history.diff[key][1];
-            changedValues.push("[" +  titleKey(key) + ": " + parse(oldValue) + " --> " + parse(newValue) + "]");
-          }
-          else{
-            changedFields.push("[" + titleKey(key) + "]");
-          }
-          // const oldValue = history.diff[key][0];
-          // const newValue = history.diff[key][1];
-          // changedValues.push(titleKey(key) + " desde " + oldValue + " hacia " + newValue);
-          
-          // if (expandableFields.indexOf(key) > -1) {
-          //   const oldValue = history.diff[key][0];
-          //   const newValue = history.diff[key][1];
-          //   changedValues.push(key + " from " + oldValue + " to " + newValue);
-          // } else {
-          //   changedFields.push(key);
-          // }
+          changedValues.push(diffText(history.diff, key));
         }
       }
       const comment = (history.method != 'remove')?
@@ -398,5 +395,6 @@ module.exports = {
   getVersion,
   getDiffs,
   getHistories,
+  getHistory,
   middleware
 };

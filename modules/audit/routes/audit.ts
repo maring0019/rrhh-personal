@@ -9,4 +9,5 @@ const controller = new AuditController(Audit);
 export const Routes = express.Router();
 
 Routes.get('/', controller.get);
+Routes.get('/diff/:id', controller.getHtmlDiff);
 
