@@ -78,7 +78,8 @@ function saveDiffObject(
     JSON.parse(JSON.stringify(updated))
   );
 
-  let htmlDiff = jsondiffpatch.formatters.html.format(diff, original);
+  // let htmlDiff = jsondiffpatch.formatters.html.format(diff, original);
+  let htmlDiff = jsondiffpatch.formatters.html.format(diff);
   
 
   if (opts.omit) {

@@ -1,5 +1,10 @@
 import BaseController from '../../../core/app/basecontroller';
 
+import * as fs from 'fs';
+import * as path from 'path';
+import * as ejs from 'ejs';
+import config from '../../../confg';
+
 const diffHistory = require("../../../packages/mongoose-audit-trail");
 const expandableFields = ["codigo", "nombre", "color"];
 
@@ -37,7 +42,9 @@ class AuditController extends BaseController {
         diffHistory
             .getHistory(req.params.id)
             .then( history => {
-                let html = history.htmlDiff;
+                const template = fs.readFileSync(path.join(config.app.templateRootPath, 'audit/diff.ejs'), 'utf8');
+                const diffContent = history.htmlDiff;
+                const html = ejs.render(template, {diff:diffContent});
                 res.writeHead(200, {
                     'Content-Type': 'text/html'
                 });
