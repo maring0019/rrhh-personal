@@ -8,6 +8,8 @@ export interface IUsuario {
     password: string;
     foto: string;
     permisos: string[];
+    // servicios: any[];
+    extra:any; // En extra vamos a incluir servicios
 }
 
 export interface IUsuarioDoc extends IUsuario, Document {}
@@ -19,7 +21,9 @@ export const UsuarioSchema = new Schema({
     apellido: String,
     password: String,
     foto: String,
-    permisos: [String]
+    permisos: [String],
+    // servicios: [Schema.Types.Mixed],
+    extra:Schema.Types.Mixed
 });
 
 export const Usuario = model<IUsuarioDoc>('usuarios', UsuarioSchema, 'usuarios');

@@ -2,6 +2,6 @@ import * as mongoose from 'mongoose';
 
 export interface Token {
     id: mongoose.Types.ObjectId;
-    permisos: string[];
+    // permisos: string[];
     type: string;
 }

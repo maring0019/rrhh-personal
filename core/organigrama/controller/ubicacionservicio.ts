@@ -11,7 +11,7 @@ class UbicacionServicioController extends BaseController {
      */
     async getByUserId(req, res, next) {
         try {
-            let obj = await UbicacionServicio.find({ codigo: { $in: [ 352, 343]}});
+            let obj = await UbicacionServicio.find({ codigo: { $in: [ 352, 343, 100030]}});
             return res.json(obj);
         } catch (err) {
             return next(err);

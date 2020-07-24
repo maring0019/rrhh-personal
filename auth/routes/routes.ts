@@ -1,7 +1,7 @@
 import * as express from 'express';
 import * as ldapjs from 'ldapjs';
 import { Auth } from '../index';
-import { authenticate } from '../middleware';
+import { authenticateSession } from '../middleware';
 import { Usuario } from '../schemas/Usuarios';
 
 import config from '../../confg';
@@ -16,7 +16,7 @@ export const Routes = express.Router();
  * @get /api/auth/sesion
  */
 
-Routes.get('/sesion', authenticate(), (req, res) => {
+Routes.get('/sesion', authenticateSession(), (req, res) => {
     res.json((req as any).user);
 });
 

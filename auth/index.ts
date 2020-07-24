@@ -42,22 +42,7 @@ export class Auth {
         app.use(passport.initialize());
     }
 
-    /**
-     * Genera los registros de auditoría en el documento indicado
-     *
-     * @static
-     * @param {mongoose.Document} document Instancia de documento de Mongoose
-     * @param {express.Request} req Corresponde al request actual
-     *
-     * @memberOf Auth
-     */
-    // static audit(document: mongoose.Document, req: express.Request) {
-    //     // Obtiene el usuario o app que está autenticada
-    //     const i = (Object as any).assign({}, (req as any).user.usuario || (req as any).user.app);
 
-    //     // El método 'audit' lo define el plugin 'audit'
-    //     (document as any).audit(i);
-    // }
 
     /**
      * Devuelve una instancia de shiro. Implementa un cache en el request actual para mejorar la performance
@@ -124,7 +109,6 @@ export class Auth {
      * @memberOf Auth
      */
     static generateUserToken(user: IUsuarioDoc): any {
-        // Crea el token con los datos de sesión
         const token: UserToken = {
             id: mongoose.Types.ObjectId(),
             usuario: {
@@ -133,7 +117,6 @@ export class Auth {
                 apellido: user.apellido,
                 documento: String(user.usuario)
             },
-            permisos: user.permisos,
             type: 'user-token'
         };
         return jwt.sign(token, config.app.key, { expiresIn: config.app.expiresIn });
@@ -155,17 +138,6 @@ export class Auth {
         } catch (e) {
             return null;
         }
-    }
-
-
-    static authenticate() {
-        return passport.authenticate('jwt', { session: false });
-        // return [
-        //     passport.authenticate('jwt', { session: false }),
-        //     this.appTokenProtected(),
-        //     this.extractToken(),
-        //     this.recovertPayloadMiddleware()
-        // ];
     }
 
 }
