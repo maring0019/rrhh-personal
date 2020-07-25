@@ -8,8 +8,12 @@ export const ParteSchema = new Schema({
         index: true
     },
     ubicacion: {
-        _id: {
-            type: Types.ObjectId,
+        // _id: {
+        //     type: Types.ObjectId,
+        //     required: true
+        // },
+        codigo: {
+            type: Number,
             required: true
         },
         nombre: String
