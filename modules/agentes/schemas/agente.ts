@@ -62,6 +62,15 @@ AgenteSchema.methods.nombreCompleto = function(cb) {
     return `${apellido}, ${nombre}`
   };
 
+AgenteSchema.methods.servicios = function(cb) {
+    if (this.activo && this.situacionLaboral && this.situacionLaboral.cargo){
+      return this.situacionLaboral.cargo.jefeServicios;
+    }
+    else {
+      return [];
+    }
+}
+
 /**
  * Indice para la busquedas de texto libre en los campos definidos
  */
