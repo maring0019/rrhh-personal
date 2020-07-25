@@ -2,7 +2,8 @@ import * as passport from 'passport';
 import * as passportJWT from 'passport-jwt';
 import * as jwt from 'jsonwebtoken';
 import config from '../confg';
-import { Usuario } from 'auth/schemas/Usuarios';
+import { Usuario } from './schemas/Usuarios';
+import { Agente } from '../modules/agentes/schemas/agente';
 
 /**
  * Autentica la ejecución de un middleware
@@ -92,26 +93,29 @@ export const recovertPayload = () => {
         const fullToken = await getTokenPayload(req.token, req.user);
         req.user = fullToken;
         return next();
-
     };
 }
 
   /**
      * Recupera datos extras del Token. Seria conveniente utilizar
      * una cache como lo hace ANDES.
-     * Actualmente en Gestion de Personal toda la info necesaria se
-     * encuentra en el usuario. Sin embargo ANDES utiliza estructuras
-     * mas 'complejas'. Por compatibilidad o futuras refactorizaciones
-     * este metodo se deja asi
      * @param token 
      * @param user
      */
      async function getTokenPayload(token, user) {
         //La idea es utilizar el token como una hash key para una cache
         //en el futuro y extrear desde ahi (la cache) la informacion 
-        //extra del usuario.  
-
-        return  await Usuario.findOne({ usuario: user.usuario });
+        //extra del usuario. 
+        let usuario = await Usuario.findOne({ usuario: user.usuario.documento });
+        let agente:any = await Agente.findOne({ documento: user.usuario.documento });
+        let permisos = [];
+        let payload = {
+            usuario : usuario,
+            profesional: agente,
+            servicios: agente.servicios(),
+            permisos: permisos
+        }
+        return payload;
     }
 
 
