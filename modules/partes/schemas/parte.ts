@@ -1,5 +1,7 @@
 import { Schema, Types, model } from 'mongoose';
 
+const audit = require('../../../packages/mongoose-audit-trail');
+
 export const ParteSchema = new Schema({
     idLegacy: Number,              // ID Sistema anterior.
     fecha: {
@@ -41,5 +43,7 @@ export const ParteSchema = new Schema({
     audit_user: Number,
     audit_fecha: Date
 });
+
+ParteSchema.plugin(audit.plugin, { omit: ["_id", "id"] })
 
 export const Parte = model('Parte', ParteSchema, 'partes');
