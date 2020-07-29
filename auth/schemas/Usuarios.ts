@@ -7,6 +7,8 @@ export interface IUsuario {
     apellido: string;
     password: string;
     foto: string;
+    authMethod: string;
+    lastLogin: Date;
 }
 
 export interface IUsuarioDoc extends IUsuario, Document {}
@@ -18,6 +20,8 @@ export const UsuarioSchema = new Schema({
     apellido: String,
     password: String,
     foto: String,
+    authMethod: String,
+    lastLogin: Date,
 });
 
 export const Usuario = model<IUsuarioDoc>('usuarios', UsuarioSchema, 'usuarios');

@@ -35,5 +35,22 @@ export default {
     database: {
         // mongo: env('MONGO_HOST', 'mongodb://localhost:27017/test')
         mongo: env('MONGO_HOST', 'mongodb://admin:golitoMon04@mongolito.hospitalneuquen.org.ar:27028/rrhh?authSource=admin')
-    },
+    }
+};
+
+// Configuración de Passport
+export const auth = {
+    useLdap: env('LDAP', false),
+    jwtKey: env('APP_KEY', '5gCYFZPp3dfA2m5UNElVkgRLFcFnBfZp'),
+    ldapOU: env('LDAP_HOST', 'ou=People,o=integrabilidad,o=neuquen')
+};
+
+// Hosts
+export const hosts = {
+    ldap: env('LDAP_HOST', 'ldap.neuquen.gov.ar'),
+};
+
+// Puerto de LDAP
+export const ports = {
+    ldapPort: env('LDAP_PORT', ':389')
 };

@@ -96,26 +96,26 @@ export const recovertPayload = () => {
     };
 }
 
-  /**
-     * Recupera datos extras del Token. Seria conveniente utilizar
-     * una cache como lo hace ANDES.
-     * @param token 
-     * @param user
-     */
-     async function getTokenPayload(token, user) {
-        //La idea es utilizar el token como una hash key para una cache
-        //en el futuro y extrear desde ahi (la cache) la informacion 
-        //extra del usuario. 
-        let usuario = await Usuario.findOne({ usuario: user.usuario.documento });
-        let agente:any = await Agente.findOne({ documento: user.usuario.documento });
-        let permisos = [];
-        let payload = {
-            usuario : usuario,
-            profesional: agente,
-            servicios: agente.servicios(),
-            permisos: permisos
-        }
-        return payload;
+/**
+ * Recupera datos extras del Token. Seria conveniente utilizar
+ * una cache como lo hace ANDES.
+ * @param token 
+ * @param user
+ */
+async function getTokenPayload(token, user) {
+    //La idea es utilizar el token como una hash key para una cache
+    //en el futuro y extrear desde ahi (la cache) la informacion 
+    //extra del usuario. 
+    let usuario = await Usuario.findOne({ usuario: user.usuario.documento });
+    let agente:any = await Agente.findOne({ documento: user.usuario.documento });
+    let permisos = [];
+    let payload = {
+        usuario : usuario,
+        profesional: agente,
+        servicios: agente.servicios(),
+        permisos: permisos
     }
+    return payload;
+}
 
 
