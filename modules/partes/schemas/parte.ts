@@ -26,6 +26,8 @@ export const ParteSchema = new Schema({
         nombre: String
     },
     procesado: Boolean,
+    novedades: Boolean, // Flag. True si al menos uno de los partes de los agentes tiene novedades
+    editadoPostProcesado: Boolean, 
     fechaEnvio: Date,
     usuarioEnvio: { // TODO. Consultar: El usuario es siempre un agente?
         _id: {
@@ -38,6 +40,6 @@ export const ParteSchema = new Schema({
     },
     audit_user: Number,
     audit_fecha: Date
-})
+});
 
 export const Parte = model('Parte', ParteSchema, 'partes');

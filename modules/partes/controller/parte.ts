@@ -84,7 +84,10 @@ class ParteController extends BaseController {
             let pipeline:any = [
                 { $match: { 'parte._id': Types.ObjectId(parte._id) } }
             ]
-            pipeline = pipeline.concat(this.pipelineLookupFichadas).concat(this.pipelineLookupAusentismo);
+            pipeline = pipeline
+                .concat(this.pipelineLookupFichadas)
+                .concat(this.pipelineLookupAusentismo)
+                .concat([{ $sort: { 'agente.apellido': 1 }}]);
             let partes = await ParteAgente.aggregate(pipeline);
             return res.json(partes);
         } catch (err) {
@@ -130,7 +133,9 @@ class ParteController extends BaseController {
                 { $unwind: { path: "$parte", preserveNullAndEmptyArrays: true} }
             ]
 
-            pipeline = pipeline.concat(this.pipelineLookupFichadas).concat(this.pipelineLookupAusentismo);
+            pipeline = pipeline
+                .concat(this.pipelineLookupFichadas)
+                .concat(this.pipelineLookupAusentismo);
             let objs = await ParteAgente.aggregate(pipeline);
             return res.json(objs);
         } catch (err) {
@@ -283,11 +288,28 @@ class ParteController extends BaseController {
             )
             // 2. Actualizamos el estado del parte al que pertenecen
             const nuevoEstado:any = await this.findEstadoParte(estadoParte);
+            // 3. Actualizamos el flag de novedades del parte. Si algun
+            // parte de agente tiene inconsistencias o no.
+            let novedades = false;
+            let results:any = await ParteAgente.find({ 'parte._id': objToUpdate._id});
+            for (const parteAgente of results) {
+                novedades = parteAgente.hasNovedades();
+                if (novedades)break;
+            }
+            // 4. Actualizamos el flag para indicar si fue editado luego
+            // de haber sido confirmado
+            let editadoPostProcesado = objToUpdate.editadoPostProcesado;
+            if (objToUpdate.procesado) editadoPostProcesado = true;
+            
+            // Aplicamos todos los cambios sobre el parte
             const objUpdated = await objToUpdate.updateOne(
                 { $set: 
                     { 
                         estado : { _id: nuevoEstado._id, nombre: nuevoEstado.nombre } },
-                        fechaEnvio: new Date()
+                        fechaEnvio: new Date(),
+                        novedades: novedades,
+                        procesado: false, // Siempre se vuelve al estado de no procesado
+                        editadoPostProcesado: editadoPostProcesado
                     });
             return res.json(objUpdated);
         } catch (err) {

@@ -38,6 +38,32 @@ export const ParteAgenteSchema = new Schema({
         nombre: String
     },
     observaciones: String
-})
+});
+
+
+ParteAgenteSchema.methods.hasNovedades = function(cb) {
+    
+    let parte = this.toObject(); // Sin esta 'transformacion' no me funcionan las condiciones!
+    if (!parte.fichadas && !parte.ausencia &&
+        parte.justificacion && parte.justificacion.nombre != "Sin novedad"){
+            // console.log('Condicion 1')
+            return true;  
+        }
+    if (!parte.fichadas && parte.ausencia &&
+        parte.justificacion && parte.justificacion.nombre == "Inasistencia justificada"){
+            // console.log('Condicion 2')
+            return true;
+        } 
+    if (parte.fichadas && (!parte.fichadas.entrada || !parte.fichadas.salida) &&
+        parte.justificacion && (parte.justificacion.nombre == "Presente" ||
+            parte.justificacion.nombre == "Cumplió jornada laboral")
+        ){
+            // console.log('Condicion 3')
+            return true;
+        }
+    // console.log("Condicion 4")
+    return false;
+    
+  };
 
 export const ParteAgente = model('ParteAgente', ParteAgenteSchema, 'partesagentes');
