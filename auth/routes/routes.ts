@@ -73,11 +73,12 @@ Routes.post('/login', async (req, res, next) => {
 
 Routes.post('/usuarios', async (req, res, next) => {
     let usuario = new Usuario(
-        { usuario: req.body.usuario,
+        {   usuario: req.body.usuario,
             activo: true,
-            nombre: req.body.usuario,
-            apellido: 'Testing',
-            password: sha1Hash(req.body.password)
+            nombre: req.body.nombre,
+            apellido: req.body.apellido,
+            password: sha1Hash(req.body.password),
+            authMethod: 'password',
         }
     );
     usuario.save();

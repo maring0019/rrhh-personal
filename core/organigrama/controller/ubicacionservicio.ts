@@ -3,13 +3,28 @@ import BaseController from '../../../core/app/basecontroller';
 
 class UbicacionServicioController extends BaseController {
 
+    constructor(model) {
+        super(model);
+        this.getUbicaciones = this.getUbicaciones.bind(this);
+    }
+
+    async getUbicaciones(req, res, next) {
+        try {
+            const params = this.getCustomQueryParams(req);
+            let objs = await this.search(params);
+            return res.json(objs);
+        } catch (err) {
+            return next(err);
+        }
+    }
+
     
     /**
      * Unicamente interesan las ubicaciones cuyos codigos 
      * sean ... (under development)
      * @param req 
      */
-    getQueryParams(req){
+    getCustomQueryParams(req){
         let params = super.getQueryParams(req);
         params.sort = { nombre: 1 };
         params.filter.codigo = { $in: [5, 7, 9, 11, 14, 15, 17, 18, 19, 20,

@@ -14,7 +14,11 @@ export interface IUsuario {
 export interface IUsuarioDoc extends IUsuario, Document {}
 
 export const UsuarioSchema = new Schema({
-    usuario: Number,
+    usuario: {
+        type: Number,
+        required: true,
+        unique: true
+    }, 
     activo: Boolean,
     nombre: String,
     apellido: String,

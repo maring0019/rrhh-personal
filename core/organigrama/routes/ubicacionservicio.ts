@@ -9,6 +9,7 @@ export const Routes = express.Router();
 
 Routes.get(`${baseUrl}`, controller.get);
 Routes.get(`${baseUrl}/:id`, controller.getById);
+Routes.get(`${baseUrl}/mock`, controller.getUbicaciones);
 
 
 Routes.post(`${baseUrl}`, controller.add);
