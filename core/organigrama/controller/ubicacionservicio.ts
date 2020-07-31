@@ -1,4 +1,5 @@
 import BaseController from '../../../core/app/basecontroller';
+import { UbicacionServicio } from '../schemas/ubicacionservicio';
 
 
 class UbicacionServicioController extends BaseController {
@@ -6,7 +7,18 @@ class UbicacionServicioController extends BaseController {
     constructor(model) {
         super(model);
         this.getUbicaciones = this.getUbicaciones.bind(this);
+        this.getByCodigo = this.getByCodigo.bind(this);
     }
+
+    async getByCodigo(req, res, next) {
+        try {
+            let obj = await UbicacionServicio.findOne({ codigo:req.params.codigo });
+            return res.json(obj);
+        } catch (err) {
+            return next(err);
+        }
+    }
+
 
     async getUbicaciones(req, res, next) {
         try {

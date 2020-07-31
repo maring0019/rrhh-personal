@@ -1,4 +1,5 @@
 import { Schema, Types, model } from 'mongoose';
+const audit = require('../../../packages/mongoose-audit-trail');
 
 export const ParteAgenteSchema = new Schema({
     parte: {
@@ -65,5 +66,7 @@ ParteAgenteSchema.methods.hasNovedades = function(cb) {
     return false;
     
   };
+
+ParteAgenteSchema.plugin(audit.plugin, { omit: ["_id", "id"] })
 
 export const ParteAgente = model('ParteAgente', ParteAgenteSchema, 'partesagentes');

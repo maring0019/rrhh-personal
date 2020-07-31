@@ -16,11 +16,6 @@ export const DireccionSchema = new Schema({
     calleDerecha: String,
     calleParalela: String,
     complementarios: String, 
-    activo: {
-        type: Boolean,
-        required: true,
-        default: true
-    },
     ultimaActualizacion: Date,
 });
 

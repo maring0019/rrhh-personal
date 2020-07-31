@@ -9,7 +9,8 @@ export const Routes = express.Router();
 
 Routes.get(`${baseUrl}`, controller.get);
 Routes.get(`${baseUrl}/:id`, controller.getById);
-Routes.get(`${baseUrl}/mock`, controller.getUbicaciones);
+Routes.get(`${baseUrl}/mock/ubicaciones`, controller.getUbicaciones);
+Routes.get(`${baseUrl}/codigo/:codigo`, controller.getByCodigo);
 
 
 Routes.post(`${baseUrl}`, controller.add);

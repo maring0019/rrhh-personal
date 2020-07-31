@@ -302,7 +302,7 @@ class ParteController extends BaseController {
             if (objToUpdate.procesado) editadoPostProcesado = true;
             
             // Aplicamos todos los cambios sobre el parte
-            const objUpdated = await objToUpdate.updateOne(
+            let objUpdated = await objToUpdate.updateOne(
                 { $set: 
                     { 
                         estado : { _id: nuevoEstado._id, nombre: nuevoEstado.nombre } },
@@ -311,6 +311,7 @@ class ParteController extends BaseController {
                         procesado: false, // Siempre se vuelve al estado de no procesado
                         editadoPostProcesado: editadoPostProcesado
                     });
+            objUpdated = await this.getObject(req.params.id);
             return res.json(objUpdated);
         } catch (err) {
             return next(err);
