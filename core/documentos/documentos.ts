@@ -90,13 +90,16 @@ export class DocumentoPDF {
     }
 
     protected generarCSS() {
-         let scssFile = path.join(config.app.templateRootPath, 'styles/main.scss');
-         let css = '<style>\n\n';
-         css += scss.renderSync({ // SCSS => CSS
-             file: scssFile
-         }).css;
-         css += '</style>';
-         return css;
+        let css = '<style>\n\n';
+        let files = ['css/style.scss']
+        for (const file of files) {
+            let scssFile = path.join(config.app.publicFolder, file);
+            css += scss.renderSync({ // SCSS => CSS
+                file: scssFile
+            }).css;
+        }
+        css += '</style>';
+        return css;
     }
 
     protected parseHTML(htmlTemplate, ctx){

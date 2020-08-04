@@ -1,35 +1,61 @@
+import BaseDocumentoController from '../../app/basedocumentocontroller';
+
 import { DocumentoConstanciaCertificado } from '../../../core/documentos/constanciaCertificado';
+import { DocumentoCredencialAgente } from '../../../core/documentos/credencialAgente';
 
-export async function downloadCertificado(req, res, next, options = null) {
-    try {
-        let doc = new DocumentoConstanciaCertificado();
-        let file = await doc.getPDF(req);
-        res.download((file as string), (err) => {
-            if (err) {
-                next(err);
-            } else {
-                next();
-            }
-        });
+
+class DescargasController extends BaseDocumentoController {
+
+    constructor(){
+        super();
+        this.getCredencial = this.getCredencial.bind(this);
+        this.downloadCredencial = this.downloadCredencial.bind(this);
+        this.getCertificado = this.getCertificado.bind(this);
+        this.downloadCertificado = this.downloadCertificado.bind(this);
     }
-    catch(err){
-        return next(err);
+
+    async getCredencial(req, res, next, options = null) {
+        try {
+            let doc = new DocumentoCredencialAgente();
+            return await this.getDocumentoHTML(req, res, next, doc);
+        }
+        catch(err){
+            return next(err);
+        }
+    }
+
+
+    async downloadCredencial(req, res, next, options = null) {
+        try {
+            let doc = new DocumentoCredencialAgente();
+            return await this.downloadDocumentoPDF(req, res, next, doc);
+        }
+        catch(err){
+            return next(err);
+        }
+    }
+
+    async downloadCertificado(req, res, next, options = null) {
+        try {
+            let doc = new DocumentoConstanciaCertificado();
+            return await this.downloadDocumentoPDF(req, res, next, doc);
+        }
+        catch(err){
+            return next(err);
+        }
     }
     
+    async getCertificado(req, res, next) {
+        try {
+            let doc = new DocumentoConstanciaCertificado();
+            return await this.getDocumentoHTML(req, res, next, doc);
+        }
+        catch(err){
+            return next(err);
+        }
+        
+    }
+
 }
 
-export async function getCertificado(req, res, next) {
-    try {
-        let doc = new DocumentoConstanciaCertificado();
-        let html = await doc.getHTML(req);
-        res.writeHead(200, {
-            'Content-Type': 'text/html'
-        });
-        res.write(html);
-        res.end();
-    }
-    catch(err){
-        return next(err);
-    }
-    
-}
+export default DescargasController;

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <!-- <link rel="stylesheet" href="/static/css/bootstrap.min.css"> -->
+        <link rel="stylesheet" href="/static/css/style.scss">
+    </head>
+    <body>
+        <%- include("../utils/print") %>
+            <div class="container">
+                <div class="credencial">
+                    <div class="header">
+                        <% if (funcion) { %>
+                            <%= value(funcion) %>
+                        <% } %>
+                    </div>
+                    <div class="body">
+                        <% if (srcImgCredencial) { %>
+                            <img src="<%= srcImgCredencial %>" class="foto" alt="...">
+                        <% } %>
+                        <% if (agente) { %>
+                            <h1><%= value(agente.apellido) %>, <%= value(agente.nombre) %></h1>
+                        <% } %>
+                        
+                        <div class="break"></div>
+                        <% if (servicio) { %>
+                            <h5 class="servicio"><%= value(servicio) %></h5>
+                        <% } %>    
+                    </div>
+                    <div class="footer">
+                        <img src='<%= srcImgLogo %>'>
+                    </div>
+                </div>
+            </div>
+    </body>
+</html>

@@ -371,24 +371,43 @@ async function uploadFotoPerfil(req, res, next){
 
 async function getFotoPerfil(req, res, next){
         const id = req.params.id;
+        const queryParams = req.query;
         const foto = await AgenteController._findFotoPerfil(id);
         if (foto){
-            foto.read((err, buffer) => {
-                if (err) {
-                    console.log('ERROR!!')
-                    return next(err);
+            if (queryParams && queryParams.attachment){
+                foto.read(async (err, buffer) => {
+                    try {
+                        if (err) throw err;
+                        res.setHeader('Content-Type', foto.contentType);
+                        res.setHeader('Content-Length', foto.length);
+                        res.setHeader('Content-Disposition', `attachment; filename=${foto.filename}`);
+                        return res.send(buffer);
+                    } catch (err) {
+                        console.log('Encontramos un error'); // TODO Procesar correctamente
+                        return next(err);
+                    }
+                });
+            }
+            else{
+                foto.read((err, buffer) => {
+                    if (err) {
+                        console.log('ERROR!!')
+                        return next(err);
+                    }
+                    else{
+                        res.setHeader('Content-Type', foto.contentType);
+                        res.setHeader('Content-Length', foto.length);
+                        return res.send(buffer.toString('base64'));
+                    }
+                });
                 }
-                else{
-                    res.setHeader('Content-Type', foto.contentType);
-                    res.setHeader('Content-Length', foto.length);
-                    return res.send(buffer.toString('base64'));
-                }
-            });
         }
         else{
             return res.send(null);
         }
 }
+
+
 
 async function getAusencias(req, res, next){
     try {

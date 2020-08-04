@@ -22,7 +22,8 @@ export default {
         expiresIn: env('EXPIRS_IN', 1000 * 60 * 60 * 24 * 10, 'n'),
         uploadFilesPath: env('UPLOADS_FOLDER', 'tempUploads'),
         url: env('APP_URL', 'http://localhost'),
-        templateRootPath: env('TEMPLATES_ROOT', path.join(__dirname, '../views'))
+        templateRootPath: env('TEMPLATES_ROOT', path.join(__dirname, '../views')),
+        publicFolder: env('PUBLIC_FOLDER', path.join(__dirname, '../public'))
     },
     auth: {
         method: env('AUTH', ''),
