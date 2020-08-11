@@ -1,21 +1,24 @@
 import * as express from 'express';
-import * as ReportesController from '../controller/reportes';
+import ReportesController from '../controller/reportes';
 
+const controller = new ReportesController(); 
 
 export const Routes = express.Router();
 
+Routes.get('/agentes/legajo', controller.getLegajoAgente);
+Routes.get('/agentes/legajo/download', controller.downloadLegajoAgente);
 
-Routes.get('/agentes/legajo', ReportesController.getLegajoAgente);
-Routes.get('/agentes/legajo/download', ReportesController.downloadLegajoAgente);
+Routes.get('/agentes/listado', controller.getListadoAgente);
+Routes.get('/agentes/listado/download', controller.downloadListadoAgente);
 
-Routes.get('/agentes/listado', ReportesController.getListadoAgente);
-Routes.get('/agentes/listado/download', ReportesController.downloadListadoAgente);
+Routes.get('/agentes/ausentismo/totalesporarticulo', controller.getTotalesPorArticulo);
+Routes.get('/agentes/ausentismo/totalesporarticulo/download', controller.downloadTotalesPorArticulo);
 
-Routes.get('/agentes/ausentismo/totalesporarticulo', ReportesController.getTotalesPorArticulo);
-Routes.get('/agentes/ausentismo/totalesporarticulo/download', ReportesController.downloadTotalesPorArticulo);
+Routes.get('/agentes/ausentismo', controller.getAusenciasPorAgente);
+Routes.get('/agentes/ausentismo/download', controller.downloadAusenciasPorAgente);
 
-Routes.get('/agentes/ausentismo', ReportesController.getAusenciasPorAgente);
-Routes.get('/agentes/ausentismo/download', ReportesController.downloadAusenciasPorAgente);
+Routes.get('/agentes/licencias', controller.getLicenciasPorAgente);
+Routes.get('/agentes/licencias/download', controller.downloadLicenciasPorAgente);
 
-Routes.get('/agentes/licencias', ReportesController.getLicenciasPorAgente);
-Routes.get('/agentes/licencias/download', ReportesController.downloadLicenciasPorAgente);
+Routes.get('/agentes/partes', controller.getPartes);
+Routes.get('/agentes/partes/download', controller.downloadPartes);

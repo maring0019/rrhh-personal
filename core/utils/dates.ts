@@ -1,7 +1,13 @@
 import { format } from 'util';
 
+export function getDate(date:Date):Date{
+    // return date.setHours(0,0,0,0)
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
 export function parseDate(date){
-    return date;
+    return date.toDateString()
+    // return date;
 }
 
 
@@ -14,10 +20,28 @@ export function esFinDeSemana(date){
     return  (date.getDay() == 6 || date.getDay() == 0);
 }
 
-export function isSameDay(d1, d2){
+export function isSameDay(d1:Date, d2:Date){
+    const f1 = new Date(Date.UTC(d1.getUTCFullYear(),d1.getUTCMonth(),d1.getUTCDate()));
+    const f2 = new Date(Date.UTC(d2.getUTCFullYear(),d2.getUTCMonth(),d2.getUTCDate())); 
+    return f1.getTime() == f2.getTime();
+}
+
+export function equal(d1, d2){
     const f1:Date = this.parseDate(d1);
     const f2:Date = this.parseDate(d2);
     return f1.getTime() == f2.getTime();
+}
+
+export function isDateEqual(d1:Date, d2:Date){
+    const f1 = new Date(Date.UTC(d1.getUTCFullYear(),d1.getUTCMonth(),d1.getUTCDate()));
+    const f2 = new Date(Date.UTC(d2.getUTCFullYear(),d2.getUTCMonth(),d2.getUTCDate())); 
+    return f1.getTime() == f2.getTime();
+}
+
+export function isDateBefore(d1, d2){
+    const f1 = new Date(Date.UTC(d1.getUTCFullYear(),d1.getUTCMonth(),d1.getUTCDate()));
+    const f2 = new Date(Date.UTC(d2.getUTCFullYear(),d2.getUTCMonth(),d2.getUTCDate())); 
+    return f1.getTime() < f2.getTime();
 }
 
 

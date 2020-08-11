@@ -10,7 +10,8 @@ var userContext = {};
 
 const middleware = function (req, res, next) {
     if (!req.user){
-    	// Warning! Se deberia ejecutar antes el middleware de autenticacion
+      // Warning! Se deberia ejecutar antes el middleware de autenticacion
+      console.log("WARNING!!")
     }	
     userContext.user = req.user? req.user.usuario: undefined;
     userContext.timestamp = Date.now();

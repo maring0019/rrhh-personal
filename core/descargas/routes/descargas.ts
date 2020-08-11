@@ -11,3 +11,6 @@ Routes.get('/ausentismo/:id/comprobantes/certificado', controller.getCertificado
 
 Routes.get('/agentes/:id/credencial', controller.getCredencial);
 Routes.get('/agentes/:id/credencial/download', controller.downloadCredencial);
+
+Routes.get('/agentes/:id/partes', controller.getPartes);
+Routes.get('/agentes/:id/partes/download', controller.downloadPartes);

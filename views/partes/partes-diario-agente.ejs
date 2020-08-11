@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <link rel="stylesheet" href="/static/css/style.scss">
+        <%- include("../reportes/base-header") %>
+    </head>
+    
+    <body style="margin:30px 25px;">
+
+        <%- include("../utils/print") %>
+            <div style="margin-bottom:50px; float: right;"> 
+                <img src='<%= srcImgLogo %>' />
+            </div>
+            <!-- REPORT HEADER  -->
+            <table class="tg tgw no-border">
+                <tr>
+                    <td class="tg-0pky" style="width:50%"><span class="bold">Agente:</span> <%= agente.apellido %>, <%= agente.nombre %> </td>
+                    <td class="tg-0pky" style="width:50%"><span class="bold">Periodo de los partes en la impresión</span></td>
+                </tr>
+                <tr>
+                    <td class="tg-0pky" style="width:50%"><span class="bold">Número de Agente:</span> <%= agente.numero %></td>
+                    <td class="tg-0pky" style="width:50%"><span class="bold">Fecha de Inicio:</span> <%= value(fechaDesde) %></td>
+                </tr>
+                <tr>
+                    <td class="tg-0pky" style="width:50%"><span class="bold">Documento:</span> <%= agente.documento %></td>
+                    <td class="tg-0pky" style="width:50%"><span class="bold">Fecha de Finalización:</span> <%= value(fechaHasta) %></td>
+                </tr>                
+            </table>
+            <br>
+            
+            
+            <!-- REPORT DATA -->
+            <table class="tg tgw">
+                <!-- SHEADER  -->
+                <tr> 
+                    <td class="tg-xq07" style="width:10%">Fecha parte</td>
+                    <td class="tg-xq07" style="width:10%">Enviado por</td>
+                    <td class="tg-xq07" style="width:10%">Fecha envio</td>
+                    <td class="tg-xq07" style="width:10%">Entrada</td>
+                    <td class="tg-xq07" style="width:10%">Salida</td>
+                    <td class="tg-xq07" style="width:20%">Justificación</td>
+                    <td class="tg-xq07" style="width:20%">Observaciones</td>
+                    <td class="tg-xq07" style="width:10%">Artículo</td>
+                </tr>
+                
+                <!-- DATA  -->     
+                <% for (const parte of partes) { %>
+                    <tr>
+                        <td><%= value(parte.fecha) %></td>
+                        <td><%= value(parte, 'parte.usuarioEnvio.apellido') %></td>
+                        <td><%= value(parte, 'parte.fechaEnvio') %></td>
+                        
+                        <% if (parte.fichadas) { %>
+                            <td><%= fullDateValue(parte.fichadas.entrada) %></td>
+                            <td><%= fullDateValue(parte.fichadas.salida) %></td>    
+                        <% } else { %>  
+                            <td>---</td>
+                            <td>---</td>    
+                        <% } %>        
+                        
+                        <td><%= value(parte, 'justificacion.nombre') %></td>
+                        <td><%= value(parte, 'ausencia.articulo.codigo') %></td>
+                        <td><%= value(parte.observaciones) %></td>
+                    </tr>
+                <% } %>
+            </table>
+            <br>
+    </body>
+</html>

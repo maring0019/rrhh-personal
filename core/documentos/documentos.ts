@@ -17,6 +17,7 @@ export class DocumentoPDF {
     html:any = '';
     ctx:any = {};
     outputFilename = 'documento.pdf';
+    headerLogo = `${config.app.url}:${config.app.port}/static/images/logo_hospital.jpeg`;
     
     request:any;
 

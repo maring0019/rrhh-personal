@@ -5,6 +5,7 @@ import { ParteAgente } from '../schemas/parteagente';
 import { ParteEstado } from '../schemas/parteestado';
 import { Agente } from '../../agentes/schemas/agente';
 import { FichadaCache } from '../schemas/fichadacache';
+import { isDateEqual, isDateBefore, addOneDay } from '../../../core/utils/dates';
 
 class ParteController extends BaseController {
     
@@ -16,6 +17,8 @@ class ParteController extends BaseController {
         this.getPartesAgentes = this.getPartesAgentes.bind(this);
         this.getPartesAgenteReporte = this.getPartesAgenteReporte.bind(this);
         this.getFichadasAgentesReporte = this.getFichadasAgentesReporte.bind(this);
+        this.cleanQueryParams = this.cleanQueryParams.bind(this);
+        this.queryPartesAgente = this.queryPartesAgente.bind(this);
      }
  
     // Posibles estados del parte diario
@@ -25,6 +28,19 @@ class ParteController extends BaseController {
 
     async findEstadoParte(estadoFilter){
         return await ParteEstado.findOne({ codigo: estadoFilter}).lean();
+    }
+
+
+    async get(req, res, next) {
+        try {
+            const casters = this.getQueryParamsCasters();
+            const queryParams = this.getQueryParams(req, casters);
+            let params = this.cleanQueryParams(queryParams);
+            let objs = await this.search(params);
+            return res.json(objs);
+        } catch (err) {
+            return next(err);
+        }
     }
 
     /**
@@ -96,51 +112,96 @@ class ParteController extends BaseController {
     }
 
     /**
-     * Recupera informacion de los partes de un agente en particular en un rango de fechas.
-     * Para recuperar los datos de las fichadas y ausencias, utiliza los mismos pipelines
-     * que el metodo 'getPartesAgentes'
+     * Recupera informacion de los partes de un agente en particular
+     * en un rango de fechas.
      */
     async getPartesAgenteReporte(req, res, next){
         try {
-            let casters = 
-                {
-                    casters: {
-                        documentoId: val => Types.ObjectId(val),
-                    },
-                    castParams: {
-                        'agente._id': 'documentoId' // castea el param agente.id al tipo ObjectId
-                    }
-                }
-            const params = this.getQueryParams(req, casters);
-            // Search Pipeline
-            let pipeline:any = [
-                { $match: params.filter || {}} ,
-                { $sort: params.sort || { fecha: -1 }},
-                { $lookup: {
-                    from: "partes",
-                    let: { parte_id: "$parte._id"},
-                    pipeline: 
-                        [{ 
-                            $match: { 
-                                $expr: { 
-                                    $eq: ["$$parte_id", "$_id"] // Join con parte id
-                                },
-                            }
-                        }],
-                    as: "parte"
-                    }
-                },
-                { $unwind: { path: "$parte", preserveNullAndEmptyArrays: true} }
-            ]
-
-            pipeline = pipeline
-                .concat(this.pipelineLookupFichadas)
-                .concat(this.pipelineLookupAusentismo);
-            let objs = await ParteAgente.aggregate(pipeline);
+            let objs = await this.queryPartesAgente(req);
             return res.json(objs);
         } catch (err) {
             return next(err);
         }
+    }
+
+    
+    /**
+     * Query final para recuperar informacion de los partes de un agente
+     * en particular en un rango de fechas.  Para recuperar los datos de
+     * las fichadas y ausencias, utiliza los mismos pipelines que el metodo
+     * 'getPartesAgentes'.
+     * Esta consulta se utiliza tambien para la generacion del reporte pdf.
+     */
+    async queryPartesAgente(req){
+        let casters = 
+            {
+                casters: {
+                    documentoId: val => Types.ObjectId(val),
+                },
+                castParams: {
+                    'agente._id': 'documentoId' // castea el param agente.id al tipo ObjectId
+                }
+            }
+        const qp = this.getQueryParams(req, casters);
+        // Se utilizan posteriormente
+        if (!qp.filter.fecha || !qp.filter.fecha.$gte || !qp.filter.fecha.$lte){
+            return [];
+        }
+        let fechaDesde = new Date(qp.filter.fecha.$gte);
+        let fechaHasta = new Date(qp.filter.fecha.$lte);
+        const params = this.cleanQueryParams(qp);
+        
+        // Search Pipeline
+        let pipeline:any = [
+            { $match: params.filter || {}} ,
+            { $sort: params.sort || { fecha: 1 }},
+            { $lookup: {
+                from: "partes",
+                let: { parte_id: "$parte._id"},
+                pipeline: 
+                    [{ 
+                        $match: { 
+                            $expr: { 
+                                $eq: ["$$parte_id", "$_id"] // Join con parte id
+                            },
+                        }
+                    }],
+                as: "parte"
+                }
+            },
+            { $unwind: { path: "$parte", preserveNullAndEmptyArrays: true} }
+        ]
+
+        pipeline = pipeline
+            .concat(this.pipelineLookupFichadas)
+            .concat(this.pipelineLookupAusentismo);
+        let partes = await ParteAgente.aggregate(pipeline);
+        // Renellamos con partes 'vacios' para aquellos dias del rango consultado
+        // que no se encontraron partes (Por ej sab y dom).
+        let partesFull = [];
+        let index = 0;
+        while (fechaDesde <= fechaHasta){
+            if (index < partes.length){
+                const parte = partes[index];
+                if (isDateEqual(parte.fecha, fechaDesde)){
+                    partesFull.push(parte);
+                    index +=1;
+                    fechaDesde = addOneDay(fechaDesde);
+                } else if (isDateBefore(parte.fecha, fechaDesde)) {
+                    partesFull.push(parte);
+                    index +=1;
+                }
+                else{
+                    partesFull.push(new ParteAgente({fecha:fechaDesde}));
+                    fechaDesde = addOneDay(fechaDesde);
+                }
+            }
+            else{
+                partesFull.push(new ParteAgente({fecha:fechaDesde}));
+                fechaDesde = addOneDay(fechaDesde);
+            }
+        }
+        return partesFull;
     }
 
     /**
@@ -159,7 +220,8 @@ class ParteController extends BaseController {
                         'ubicacion._id': 'documentoId'
                     }
                 }
-            let params = this.getQueryParams(req, casters);
+            const queryParams = this.getQueryParams(req, casters);
+            let params = this.cleanQueryParams(queryParams);
             let ubicacion;
             // Si se aplica un filtro por ubicacion, por el momento solo es requerido
             // al realizar el lookup con agentes, por lo tanto lo quitamos del conjunto
@@ -275,6 +337,8 @@ class ParteController extends BaseController {
             if (!id || (id && !Types.ObjectId.isValid(id))) return res.status(404).send();
             let objToUpdate:any = await Parte.findById(id);
             if (!objToUpdate) return res.status(404).send();
+            if (!req.user || !req.user.usuario) return res.status(403).send();
+
             // 1. Guardamos primeramente los partes de agentes
             let partesAgentes = req.body;
             await ParteAgente.bulkWrite(
@@ -300,7 +364,9 @@ class ParteController extends BaseController {
             // de haber sido confirmado
             let editadoPostProcesado = objToUpdate.editadoPostProcesado;
             if (objToUpdate.procesado) editadoPostProcesado = true;
-            
+            // 5. Recuperamos el usuario del request y se lo adjuntamos
+            // al parte que estamos guardando
+            const usuario = req.user.usuario;
             // Aplicamos todos los cambios sobre el parte
             let objUpdated = await objToUpdate.updateOne(
                 { $set: 
@@ -309,7 +375,12 @@ class ParteController extends BaseController {
                         fechaEnvio: new Date(),
                         novedades: novedades,
                         procesado: false, // Siempre se vuelve al estado de no procesado
-                        editadoPostProcesado: editadoPostProcesado
+                        editadoPostProcesado: editadoPostProcesado,
+                        usuarioEnvio: {
+                            _id: usuario.id,
+                            nombre: usuario.nombre, 
+                            apellido: usuario.apellido
+                        },
                     });
             objUpdated = await this.getObject(req.params.id);
             return res.json(objUpdated);
@@ -318,8 +389,8 @@ class ParteController extends BaseController {
         }   
     }
 
-    getQueryParams(req, casters?){
-        let queryParams = super.getQueryParams(req, casters);
+    cleanQueryParams(params){
+        let queryParams = {...params}
         // El parametro fecha puede venir de dos formas diferentes en la url:
         //  - como una fecha en particular fecha=valor
         //  - como un rango de fechas fecha>=valor&fecha<=valor

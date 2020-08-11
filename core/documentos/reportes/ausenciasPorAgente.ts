@@ -74,7 +74,6 @@ export class DocumentoAusenciasPorAgente extends DocumentoPDF {
         ]
 
         let gruposAgentes = await Agente.aggregate(pipeline);
-
         return { 
                 gruposAgente: gruposAgentes
             }

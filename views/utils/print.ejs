@@ -9,12 +9,12 @@ value = function(val, arg1) {
     }
     
     if (val instanceof Date) {
-        return formatDate(new Date(val)); 
+        return dateValue(val); 
     }
 
     if (typeof val === 'String' || typeof val === 'string'){
         if (isIso8601(val)){
-            return formatDate(new Date(val));// Es una fecha
+            return dateValue(val)// Es una fecha
         }
         else{
             return titleCase(''+val);
@@ -65,6 +65,25 @@ formatDate = function(date) {
     const day = date.getDate();
     const year = date.getFullYear();
     return  day + "/" + month + "/" + year;
+}
+
+dateValue = function(date){
+    const month = date.getUTCMonth() + 1;
+    const day = date.getUTCDate();
+    const year = date.getUTCFullYear();
+    return  day + "/" + month + "/" + year;
+}
+
+fullDateValue = function(date){
+    if(date==null || date=='undefined'){
+        return '---';
+    }
+    const month = date.getUTCMonth() + 1;
+    const day = date.getUTCDate();
+    const year = date.getUTCFullYear();
+    const hour = date.getUTCHours();
+    const minutes = date.getUTCMinutes();
+    return  day + "/" + month + "/" + year + " " + hour + ":" + minutes;
 }
 
 isIso8601 = function(value) {

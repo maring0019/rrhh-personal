@@ -7,7 +7,7 @@ const requireDir = require('require-dir');
 import * as config from './config';
 import { Connections } from './connections';
 import { Auth } from './auth';
-// import { authenticate } from './auth/middleware';
+import { authenticate } from './auth/middleware';
 import errorMiddleware from './middleware/error.middleware';
 import loggerMiddleware from './middleware/logger.middleware';
 
@@ -47,7 +47,7 @@ export function initAPI(app: Express) {
     let AUTH = require('./auth');
     app.use('/api/auth/', AUTH.Routes);
 
-    // app.use(authenticate());
+    app.use(authenticate());
     app.use(audit.middleware); 
     for (const m in config.modules) {
         if (config.modules[m].active) {

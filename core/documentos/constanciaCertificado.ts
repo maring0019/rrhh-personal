@@ -13,7 +13,7 @@ export class DocumentoConstanciaCertificado extends DocumentoPDF {
     outputFilename = `${config.app.uploadFilesPath}/constanciaCertificado.pdf`;
 
     generarCSS() {
-        return '';
+         return '';
     }
     
 
@@ -56,7 +56,7 @@ export class DocumentoConstanciaCertificado extends DocumentoPDF {
             agente: agente,
             extraInfo: ausentismo.extraInfo,
             srcImgCertificado: srcImgCertificado,
-            srcImgLogo: `${config.app.url}:${config.app.port}/static/images/logo_hospital.jpeg`
+            srcImgLogo: this.headerLogo
         }
     }
 

@@ -15,23 +15,29 @@ export class DocumentoLegajoAgente extends DocumentoPDF {
     }
     
     async getContextData(){
-        // Este reporte no tiene opciones de agrupamiento
-        let query = aqp(this.request.query, {
-            casters: {
-                documentoId: val => Types.ObjectId(val),
-              },
-              castParams: {
-                '_id': 'documentoId',
-                'situacionLaboral.cargo.sector._id': 'documentoId'
-              }
-        })
-        // Search Pipeline
-        let pipeline:any = [
-            { $match: query.filter || {}} ,
-            { $sort: query.sort || { apellido: 1 }}
-        ]
-
-        let agentes = await Agente.aggregate(pipeline);
-        return { agentes: agentes }
+        let agentes = [];
+        try{
+            // Este reporte no tiene opciones de agrupamiento
+            let query = aqp(this.request.query, {
+                casters: {
+                    documentoId: val => Types.ObjectId(val),
+                },
+                castParams: {
+                    '_id': 'documentoId',
+                    'situacionLaboral.cargo.sector._id': 'documentoId'
+                }
+            })
+            // Search Pipeline
+            let pipeline:any = [
+                { $match: query.filter || {}} ,
+                { $sort: query.sort || { apellido: 1 }}
+            ]
+            agentes = await Agente.aggregate(pipeline);
+            return { agentes: agentes }
+        }
+        catch{
+            return { agentes: agentes }
+        }
+        
     }
 }
