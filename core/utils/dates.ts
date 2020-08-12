@@ -6,8 +6,7 @@ export function getDate(date:Date):Date{
 }
 
 export function parseDate(date){
-    return date.toDateString()
-    // return date;
+    return date;
 }
 
 
