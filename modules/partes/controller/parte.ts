@@ -5,7 +5,7 @@ import { ParteAgente } from '../schemas/parteagente';
 import { ParteEstado } from '../schemas/parteestado';
 import { Agente } from '../../agentes/schemas/agente';
 import { FichadaCache } from '../schemas/fichadacache';
-import { isDateEqual, isDateBefore, addOneDay } from '../../../core/utils/dates';
+import { isDateEqual, isDateBefore, addOneDay, dateOnly } from '../../../core/utils/dates';
 
 class ParteController extends BaseController {
     
@@ -210,6 +210,7 @@ class ParteController extends BaseController {
      */
     async getFichadasAgentesReporte(req, res, next){
         try {
+            let objs = [];
             let casters = 
                 {
                     casters: {
@@ -220,8 +221,7 @@ class ParteController extends BaseController {
                         'ubicacion._id': 'documentoId'
                     }
                 }
-            const queryParams = this.getQueryParams(req, casters);
-            let params = this.cleanQueryParams(queryParams);
+            const qp = this.getQueryParams(req, casters);
             let ubicacion;
             // Si se aplica un filtro por ubicacion, por el momento solo es requerido
             // al realizar el lookup con agentes, por lo tanto lo quitamos del conjunto
@@ -232,14 +232,43 @@ class ParteController extends BaseController {
             // ubicacion al momento de fichar. Sí seria posible obtener esta info desde 
             // el parte (ya que el parte si tiene ubicacion), sin embargo no siempre se
             // emiten los partes para todos los agentes.
-            if (params.filter.ubicacion) {
-                ubicacion = params.filter.ubicacion;
-                delete params.filter['ubicacion']
+            if (qp.filter.ubicacion) {
+                ubicacion = qp.filter.ubicacion;
+                delete qp.filter['ubicacion']
+            }
+            // Filtros por fecha.
+            let fechaDesde:Date;
+            let fechaHasta:Date;
+            if ( qp.filter && qp.filter.fecha){
+                const paramFecha = qp.filter.fecha;
+                if (paramFecha instanceof Date){
+                    fechaDesde = dateOnly(paramFecha);
+                    fechaHasta = dateOnly(paramFecha);
+                }
+                else{
+                    fechaDesde = dateOnly(paramFecha.$gte) || null;
+                    fechaHasta = dateOnly(paramFecha.$lte) || null;
+                }
+                delete qp.filter['fecha'];
+            }
+            if (fechaDesde == null || fechaHasta == null)
+                return res.status(400).send({message:"Fecha desde y Fecha hasta son obligatorios"});
+            qp.filter.fecha = {
+                $gte: fechaDesde,
+                $lte: fechaHasta
+            }
+            // 'Paginado'
+            let skipDocs = 0;
+            if (qp.filter && qp.filter.page){
+                skipDocs = qp.filter.page * 50;
+                delete qp.filter['page'];
             }
             // Search Pipeline
             let pipeline:any = [
-                { $match: params.filter || {}} ,
-                { $sort: params.sort || { fecha: -1 }},
+                { $match: qp.filter || {}} ,
+                { $sort: qp.sort || { fecha: -1 }},
+                { $skip: skipDocs },
+                { $limit: 50 },
                 { $lookup: {
                     from: "agentes",
                     let: { agente_fichada: "$agente._id", ubicacion: ubicacion },
@@ -271,7 +300,7 @@ class ParteController extends BaseController {
                 } 
             ]
             
-            let objs = await FichadaCache.aggregate(pipeline);
+            objs = await FichadaCache.aggregate(pipeline);
             return res.json(objs);
         } catch (err) {
             return next(err);
@@ -423,6 +452,12 @@ class ParteController extends BaseController {
                     { $dateToString: { date: fechaDesde, format:"%Y-%m-%d"}}
                 ]}
             ]}
+        // queryParams.filter = { fecha: {
+        //         $gte: fechaDesde,
+        //         $lte: fechaHasta
+        //     }
+        // }
+        
         return queryParams;
     }
 
