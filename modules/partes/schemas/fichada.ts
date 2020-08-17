@@ -6,7 +6,9 @@ export const FichadaSchema = new Schema({
             type: Types.ObjectId,
             required: true,
             index: true
-        }
+        },
+        nombre: String,
+        apellido: String
     },
     fecha:{
         type: Date,
