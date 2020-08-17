@@ -103,17 +103,16 @@ export const recovertPayload = () => {
  * @param user
  */
 async function getTokenPayload(token, user) {
-    //La idea es utilizar el token como una hash key para una cache
+    //La idea es utilizar el token como un hash key para una cache
     //en el futuro y extrear desde ahi (la cache) la informacion 
     //extra del usuario. 
     let usuario = await Usuario.findOne({ usuario: user.usuario.documento });
     let agente:any = await Agente.findOne({ documento: user.usuario.documento });
-    let permisos = [];
     let payload = {
         usuario : usuario,
         profesional: agente,
         servicios: agente? agente.servicios(): [],
-        permisos: permisos
+        permisos: usuario.permisos
     }
     return payload;
 }

@@ -8,6 +8,7 @@ export interface IUsuario {
     password: string;
     foto: string;
     authMethod: string;
+    permisos: [String];
     lastLogin: Date;
 }
 
@@ -25,6 +26,7 @@ export const UsuarioSchema = new Schema({
     password: String,
     foto: String,
     authMethod: String,
+    permisos: [String],
     lastLogin: Date,
 });
 
