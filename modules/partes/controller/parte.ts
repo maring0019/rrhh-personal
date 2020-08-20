@@ -257,33 +257,32 @@ class ParteController extends BaseController {
                 $gte: fechaDesde,
                 $lte: fechaHasta
             }
-            // 'Paginado'
-            let skipDocs = 0;
-            if (qp.filter && qp.filter.page){
-                skipDocs = qp.filter.page * 50;
-                delete qp.filter['page'];
+            // Identificamos primero los agentes que se utilizaran como filtro en
+            // el pipeline. Los agentes se pueden filtrar por id o por ubicacion.
+            let agentesID;
+            let agenteID = qp.filter['agente._id']? Types.ObjectId(qp.filter['agente._id']):null;
+
+            if (ubicacion){
+                agentesID = await Agente.find({"situacionLaboral.cargo.servicio.ubicacion" : ubicacion}).distinct('_id')
             }
+           
+            // Si el agente buscado no pertenece al servicio filtrado evitamos seguir 
+            // con la consulta general y simplemente retornamos un array vacio.
+            if (agentesID && agenteID && agentesID.findIndex((e) => e.equals( agenteID))==-1) return res.json([]);
+            
+            // Aqui determinamos si buscamos las fichadas de un agente particular o las
+            // las fichadas de todos los agentes de un servicio/ubicacion
+            if (agentesID && !qp.filter['agente._id']) qp.filter['agente._id'] = {"$in":  agentesID };
+
             // Search Pipeline
             let pipeline:any = [
                 { $match: qp.filter || {}} ,
-                { $sort: qp.sort || { fecha: -1 }},
-                { $skip: skipDocs },
-                { $limit: 50 },
+                { $sort: qp.sort || { fecha: 1 }},
                 { $lookup: {
                     from: "agentes",
-                    let: { agente_fichada: "$agente._id", ubicacion: ubicacion },
-                    pipeline: [
-                        { $match:
-                            { $expr:
-                                { $and:
-                                    [
-                                        { $eq: [ "$_id",  "$$agente_fichada" ] },
-                                        (ubicacion)? { $eq: [ "$situacionLaboral.cargo.servicio.ubicacion",  "$$ubicacion" ] }: {},
-                                    ]
-                                }
-                            }
-                        },
-                    ],
+                    localField: "agente._id",
+                    foreignField: "_id",
+
                     as: "agente"
                     }
                 },
