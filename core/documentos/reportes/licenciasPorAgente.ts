@@ -3,11 +3,13 @@ import * as aqp from 'api-query-params';
 
 import { DocumentoPDF } from "../documentos";
 import { Agente } from "../../../modules/agentes/schemas/agente";
+
 import * as utils from "../utils";
+import config from '../../../confg';
 
 export class DocumentoLicenciasPorAgente extends DocumentoPDF {
     templateName = 'reportes/agentes-licencias.ejs';
-    outputFilename = './licenciasporarticulo.pdf';
+    outputFilename = `${config.app.uploadFilesPath}/licenciasporarticulo.pdf`;
 
     generarCSS() {
         return '';

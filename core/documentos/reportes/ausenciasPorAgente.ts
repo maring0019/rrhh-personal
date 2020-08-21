@@ -5,10 +5,11 @@ import { DocumentoPDF } from "../documentos";
 import { Agente } from "../../../modules/agentes/schemas/agente";
 
 import * as utils from "../utils";
+import config from '../../../confg';
 
 export class DocumentoAusenciasPorAgente extends DocumentoPDF {
     templateName = 'reportes/agentes-ausencias.ejs';
-    outputFilename = './ausenciasporagente.pdf';
+    outputFilename = `${config.app.uploadFilesPath}/ausenciasporagente.pdf`;
 
     generarCSS() {
         return '';

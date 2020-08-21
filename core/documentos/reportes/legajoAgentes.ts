@@ -1,14 +1,17 @@
-import { DocumentoPDF } from "../documentos";
-import { Agente } from "../../../modules/agentes/schemas/agente";
 import { Types } from "mongoose";
 import * as aqp from 'api-query-params';
+
+import { DocumentoPDF } from "../documentos";
+import { Agente } from "../../../modules/agentes/schemas/agente";
+
+import config from '../../../confg';
 
 // TODO Falta implementar el tema de las bajas!!!
 // Faltan crear los indices por defecto
 
 export class DocumentoLegajoAgente extends DocumentoPDF {
     templateName = 'reportes/agentes-legajo.ejs';
-    outputFilename = './legajo.pdf';
+    outputFilename = `${config.app.uploadFilesPath}/legajo.pdf`;
 
     generarCSS() {
         return '';

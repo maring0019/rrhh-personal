@@ -16,7 +16,7 @@ import { Agente } from '../modules/agentes/schemas/agente';
 export const authenticate = () => {
     return [
         passport.authenticate('jwt', { session: false }),
-        // extractToken(),
+        extractToken(),
         // recovertPayloadMiddleware()
     ];
 };

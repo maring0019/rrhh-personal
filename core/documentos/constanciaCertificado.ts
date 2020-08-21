@@ -1,5 +1,7 @@
+import { Types } from "mongoose";
+import * as aqp from 'api-query-params';
+
 import { DocumentoPDF } from './documentos';
-import { Types } from 'mongoose';
 import { AusenciaPeriodo } from '../../modules/ausentismo/schemas/ausenciaperiodo';
 import { Agente } from '../../modules/agentes/schemas/agente';
 import { FilesModel } from '../tm/schemas/imagenes';
@@ -18,7 +20,17 @@ export class DocumentoConstanciaCertificado extends DocumentoPDF {
     
 
     async getContextData(){
-        const id = this.request.params.id;
+        const token = this.request.token;
+        // Recuperamos los parametros de busqueda aplicados
+        let params = aqp(this.request.query, {
+            casters: {
+                documentoId: val => Types.ObjectId(val),
+              },
+              castParams: {
+                '_id': 'documentoId'
+              }
+        });
+        const id = params.filter['_id'];
         if (!id || (id && !Types.ObjectId.isValid(id))) return {}
         
         const ausentismo:any = await AusenciaPeriodo.findById(id).lean();
@@ -47,7 +59,7 @@ export class DocumentoConstanciaCertificado extends DocumentoPDF {
                 }
             }
             if (file){
-                srcImgCertificado = `${config.app.url}:${config.app.port}/api/core/files/objects/${ausentismo._id}/files/${file._id}/download`;
+                srcImgCertificado = `${config.app.url}:${config.app.port}/api/core/files/objects/${ausentismo._id}/files/${file._id}/download?token=${token}`;
             }  
         }
         const fechaHora = this.todayFormatted();

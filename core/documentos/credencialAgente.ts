@@ -1,5 +1,7 @@
-import { DocumentoPDF } from './documentos';
 import { Types } from 'mongoose';
+import * as aqp from 'api-query-params';
+
+import { DocumentoPDF } from './documentos';
 import { Agente } from '../../modules/agentes/schemas/agente';
 import { makeFs } from '../../core/tm/schemas/imagenes';
 
@@ -17,7 +19,18 @@ export class DocumentoCredencialAgente extends DocumentoPDF {
     
 
     async getContextData(){
-        const id = this.request.params.id;
+        const token = this.request.token;
+        // Recuperamos los parametros de busqueda aplicados
+        let params = aqp(this.request.query, {
+            casters: {
+                documentoId: val => Types.ObjectId(val),
+              },
+              castParams: {
+                '_id': 'documentoId'
+              }
+        });
+        const id = params.filter['_id'];
+        // const id = this.request.params.id;
         if (!id || (id && !Types.ObjectId.isValid(id))) return {}
         
         const agente:any = await Agente.findById(id).lean();
@@ -36,7 +49,7 @@ export class DocumentoCredencialAgente extends DocumentoPDF {
             }
         }
         if (file){
-            srcImgCredencial = `${config.app.url}:${config.app.port}/api/modules/agentes/agentes/${agente._id}/fotos?attachment=true`;
+            srcImgCredencial = `${config.app.url}:${config.app.port}/api/modules/agentes/agentes/${agente._id}/fotos?attachment=true&token=${token}`;
         }
         else{
             srcImgCredencial = `${config.app.url}:${config.app.port}/static/images/user.jpg`

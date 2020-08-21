@@ -3,14 +3,16 @@ import * as aqp from 'api-query-params';
 
 import { DocumentoPDF } from "../documentos";
 import { Agente } from "../../../modules/agentes/schemas/agente";
+
 import * as utils from "../utils";
+import config from '../../../confg';
 
 // TODO Agregar al final de cada agrupamiento el total de agentes y el 
 // porcentaje que representa sobre el total de todos los agente
 
 export class DocumentoListadoAgentes extends DocumentoPDF {
     templateName = 'reportes/agentes-listado.ejs';
-    outputFilename = './listado.pdf';
+    outputFilename = `${config.app.uploadFilesPath}/listado.pdf`;
 
     generarCSS() {
         return '';

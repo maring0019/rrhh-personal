@@ -170,8 +170,6 @@ class ReportesController extends BaseDocumentoController {
             return next(err);
         }
     }
-    
-
 }
 
 export default ReportesController;

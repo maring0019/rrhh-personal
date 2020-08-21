@@ -22,3 +22,10 @@ Routes.get('/agentes/licencias/download', controller.downloadLicenciasPorAgente)
 
 Routes.get('/agentes/partes', controller.getPartes);
 Routes.get('/agentes/partes/download', controller.downloadPartes);
+
+Routes.get('/agentes/credencial', controller.getCredencial);
+Routes.get('/agentes/credencial/download', controller.downloadCredencial);
+
+
+Routes.get('/ausentismo/certificado', controller.getCertificado);
+Routes.get('/ausentismo/certificado/download', controller.downloadCertificado);

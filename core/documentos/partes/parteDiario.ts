@@ -1,5 +1,6 @@
 import { Types } from "mongoose";
 import * as aqp from 'api-query-params';
+import config from '../../../confg';
 
 import { DocumentoPDF } from "../documentos";
 import { Parte } from "../../../modules/partes/schemas/parte";
@@ -10,7 +11,7 @@ const controller = new ParteController(Parte);
 
 export class DocumentoParteDiarioAgente extends DocumentoPDF {
     templateName = 'partes/partes-diario-agente.ejs';
-    outputFilename = './partediarioagente.pdf';
+    outputFilename =  `${config.app.uploadFilesPath}/partediarioagente.pdf`;
 
     generarCSS() {
         return '';

@@ -4,11 +4,13 @@ import * as aqp from 'api-query-params';
 import { DocumentoPDF } from "../documentos";
 import { Agente } from "../../../modules/agentes/schemas/agente";
 import { Articulo } from "../../../modules/ausentismo/schemas/articulo";
+
 import * as utils from "../utils";
+import config from '../../../confg';
 
 export class DocumentoAusenciasTotalesPorArticulo extends DocumentoPDF {
     templateName = 'reportes/agentes-ausencias-por-articulo.ejs';
-    outputFilename = './totalesporarticulo.pdf';
+    outputFilename = `${config.app.uploadFilesPath}/totalesporarticulo.pdf`;
 
     generarCSS() {
         return '';
