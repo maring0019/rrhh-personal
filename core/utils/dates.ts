@@ -20,9 +20,6 @@ export function esFinDeSemana(date){
 }
 
 
-
-
-
 export function equal(d1, d2){
     const f1:Date = this.parseDate(d1);
     const f2:Date = this.parseDate(d2);
@@ -30,15 +27,34 @@ export function equal(d1, d2){
 }
 
 export function dateOnly(date){
-    try {
-        new Date(date);
+    if (isIso8601(date)){ date = new Date(date) } 
+    if (isDate(date)){
         return new Date(Date.UTC(date.getUTCFullYear(),date.getUTCMonth(),date.getUTCDate(),0, 0, 0));
     }
-    catch{
+    else{
         return null;
     }
-    
 }
+
+export function isIso8601(value) {
+    return new Date(value).toJSON() === value;
+}
+
+export function isDate(value){
+    if (value instanceof Date) return true;
+    try {
+        new Date(value);
+        return true;
+    }
+    catch{
+        return false;
+    }
+}
+
+export function timestamp(){
+    const f = new Date();
+    return new Date(Date.UTC(f.getFullYear(),f.getMonth(),f.getDate(),f.getHours(),f.getMinutes()));
+  }
 
 export function isSameDay(d1:Date, d2:Date){
     const f1 = new Date(Date.UTC(d1.getUTCFullYear(),d1.getUTCMonth(),d1.getUTCDate()));

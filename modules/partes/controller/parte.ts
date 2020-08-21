@@ -5,7 +5,7 @@ import { ParteAgente } from '../schemas/parteagente';
 import { ParteEstado } from '../schemas/parteestado';
 import { Agente } from '../../agentes/schemas/agente';
 import { FichadaCache } from '../schemas/fichadacache';
-import { isDateEqual, isDateBefore, addOneDay, dateOnly } from '../../../core/utils/dates';
+import { isDateEqual, isDateBefore, addOneDay, dateOnly, timestamp } from '../../../core/utils/dates';
 
 class ParteController extends BaseController {
     
@@ -56,6 +56,7 @@ class ParteController extends BaseController {
                 const estadoSinPresentar:any = await this.findEstadoParte(this.ESTADO_SIN_PRESENTAR);
                 obj.estado = { _id:estadoSinPresentar._id, nombre: estadoSinPresentar.nombre }
             }
+            obj.fecha = dateOnly(obj.fecha);
             let parte = new Parte(obj);
             const parteNew = await parte.save();
             // Una vez creado el parte 'general' creamos los partes
@@ -400,7 +401,7 @@ class ParteController extends BaseController {
                 { $set: 
                     { 
                         estado : { _id: nuevoEstado._id, nombre: nuevoEstado.nombre } },
-                        fechaEnvio: new Date(),
+                        fechaEnvio: timestamp(),
                         novedades: novedades,
                         procesado: false, // Siempre se vuelve al estado de no procesado
                         editadoPostProcesado: editadoPostProcesado,

@@ -12,6 +12,7 @@ export const ServicioSchema = new Schema({
     departamento: DepartamentoSchema,
     ubicacion: {
         type: Number,
+        index: true,
         required: true,
     },
     codigo: {  // TODO Averiguar si es el  interno de base, o es un codigo externo
