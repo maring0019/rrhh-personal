@@ -6,7 +6,7 @@ export async function findUser(username) {
 }
 
 export async function updateUser(documento, nombre, apellido, password) {
-    const user = await Usuario.findOne({ usuario: documento });
+    const user = await Usuario.findOne({ usuario: ''+documento });
     if (user) await user.updateOne({
         $set: {
             password: password,
@@ -15,6 +15,16 @@ export async function updateUser(documento, nombre, apellido, password) {
             lastLogin: timestamp()  
         }
     })
+}
+
+/**
+ * Temporal fix. Update usernames from number to string
+ */
+export async function updateUsernames(){
+    const users = await Usuario.find({});
+    for (const user of users) {
+        await user.updateOne({ $set: { usuario: ''+user.usuario } });
+    }
 }
 
 function timestamp(){

@@ -81,5 +81,73 @@ export default [
                 type: 'boolean'
             }
         ]
+    },
+    {
+        key: 'config',
+        title: 'Módulo de Configuración',
+        child: [
+            {
+                key: 'config-articulos',
+                title: 'Configuración Articulos',
+                child: [
+                    {
+                        key: 'view_articulo',
+                        title: 'Ver Feriado',
+                        comment: 'Ver detalle de un Feriado',
+                        type: 'boolean'
+                    },
+                    {
+                        key: 'change_articulo',
+                        title: 'Modificar Feriado',
+                        comment: 'Modificar un Feriado',
+                        type: 'boolean'
+                    },
+                    {
+                        key: 'add_articulo',
+                        title: 'Alta de Feriado',
+                        comment: 'Alta de Feriado',
+                        type: 'boolean'
+                    },
+                    {
+                        key: 'delete_articulo',
+                        title: 'Eliminar Feriado',
+                        comment: 'Eliminar un Feriado',
+                        type: 'boolean'
+                    },
+
+                ]
+            },
+            {
+                key: 'config-feriados',
+                title: 'Configuración Días Feriados',
+                child: [
+                    {
+                        key: 'view_feriado',
+                        title: 'Ver Artículo',
+                        comment: 'Ver detalle de un Artículo',
+                        type: 'boolean'
+                    },
+                    {
+                        key: 'change_feriado',
+                        title: 'Modificar Artículo',
+                        comment: 'Modificar un Artículo',
+                        type: 'boolean'
+                    },
+                    {
+                        key: 'add_feriado',
+                        title: 'Alta de Artículo',
+                        comment: 'Alta de Artículo',
+                        type: 'boolean'
+                    },
+                    {
+                        key: 'delete_feriado',
+                        title: 'Eliminar Artículo',
+                        comment: 'Eliminar un Artículo',
+                        type: 'boolean'
+                    },
+
+                ]
+            }
+        ]
     }
 ]

@@ -18,14 +18,6 @@ Routes.get('/sesion', authenticateSession(), (req, res) => {
     res.json((req as any).user);
 });
 
-
-/**
- * Refresca el token y los permisos dado una organizacion}
- * @param {string} usuario nombre de usuario (DNI)
- * @param {string} password Password de la cuenta
- * @post /api/auth/login
- */
-
 Routes.post('/login', async (req, res, next) => {
     // Función interna que genera token
     const login = async (user, prof?) => {
@@ -70,6 +62,16 @@ Routes.post('/login', async (req, res, next) => {
         return next(403);
     }
 });
+
+
+/**
+ * Temporal fix. Update usernames from number to string
+ */
+Routes.get('/usuarios/update-usernames', async (req, res, next) => {
+    await AuthController.updateUsernames();
+    return next(200);
+});
+
 
 Routes.post('/usuarios', async (req, res, next) => {
     let usuario = new Usuario(

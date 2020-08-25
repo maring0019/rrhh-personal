@@ -66,6 +66,12 @@ export const modules = {
         path: './modules/notas/routes',
         route: '/modules/notas',
         middleware: null,
+    },
+    usuario:{
+        active: true,
+        path: './modules/seguridad/routes',
+        route: '/modules/seguridad',
+        middleware: null,
     }
 };
 
