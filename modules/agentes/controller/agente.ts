@@ -143,38 +143,17 @@ async function updateAgente(req, res, next) {
         if (!agente) return res.status(404).send({message:"Agente no encontrado."});
 
         let objWithChanges = req.body;
-        // console.log(objWithChanges);
+        
         // Hacemos una copia de la situacion para preservar
         // algunos valores internos que no son provistos por el front
         const situacionCopy = agente.situacionLaboral.toObject();
-        // agente.situacionLaboral = req.body.situacionLaboral;
         objWithChanges.situacionLaboral.fecha = situacionCopy.fecha;
         objWithChanges.situacionLaboral.motivo = situacionCopy.motivo;
         objWithChanges.situacionLaboral.esAlta = situacionCopy.esAlta;
-        
-        // agente.numero= req.body.numero;
-        // agente.documento= req.body.documento;
-        // agente.cuil= req.body.cuil;
-        // agente.nombre= req.body.nombre;
-        // agente.apellido= req.body.apellido;
-        // agente.estadoCivil= req.body.estadoCivil;
-        // agente.sexo= req.body.sexo;
-        // agente.genero= req.body.genero;
-        // agente.fechaNacimiento= req.body.fechaNacimiento;
-        // agente.nacionalidad= req.body.nacionalidad;
-        // agente.direccion= req.body.direccion;
-        // // TODO Test
-        // agente.contactos= req.body.contactos;
-        // agente.educacion= req.body.educacion;
-        // // Hacemos una copia de la situacion para preservar
-        // // algunos valores internos que no son provistos por el front
-        // const situacionCopy = agente.situacionLaboral.toObject();
-        // agente.situacionLaboral = req.body.situacionLaboral;
-        // agente.situacionLaboral.fecha = situacionCopy.fecha;
-        // agente.situacionLaboral.motivo = situacionCopy.motivo;
-        // agente.situacionLaboral.esAlta = situacionCopy.esAlta;
-        await agente.updateOne({ $set: objWithChanges });// save();
-        // console.log("Agente Actualizado", agente)
+        // Warning! Se pierde la historia si no se preserva en un update
+        objWithChanges.historiaLaboral = agente.historiaLaboral;
+        objWithChanges.foto = undefined; // La foto no es necesaria aqui.
+        await agente.updateOne({ $set: objWithChanges });
         return res.json(agente);
     } catch (err) {
         return next(err);
