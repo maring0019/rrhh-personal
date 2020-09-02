@@ -1,11 +1,11 @@
-import * as express from 'express';
-import { Auth } from '../index';
-import { authenticateSession } from '../middleware';
-import { Usuario } from '../schemas/Usuarios';
-import * as LdapController from '../ldap.controller';
-import * as AuthController from '../auth.controller';
+import * as express from "express";
+import { Auth } from "../index";
+import { authenticateSession } from "../middleware";
+import { Usuario } from "../schemas/Usuarios";
+import * as LdapController from "../ldap.controller";
+import * as AuthController from "../auth.controller";
 
-const sha1Hash = require('sha1');
+const sha1Hash = require("sha1");
 
 export const Routes = express.Router();
 
@@ -14,18 +14,22 @@ export const Routes = express.Router();
  * @get /api/auth/sesion
  */
 
-Routes.get('/sesion', authenticateSession(), (req, res) => {
+Routes.get("/sesion", authenticateSession(), (req, res) => {
     res.json((req as any).user);
 });
 
-Routes.post('/login', async (req, res, next) => {
+Routes.post("/login", async (req, res, next) => {
     // Función interna que genera token
     const login = async (user, prof?) => {
-        AuthController.updateUser(user.usuario, user.nombre, user.apellido, user.password);
+        AuthController.updateUser(
+            user.usuario,
+            user.nombre,
+            user.apellido,
+            user.password
+        );
         res.json({
-            token: Auth.generateUserToken(user)
+            token: Auth.generateUserToken(user),
         });
-
     };
 
     // Valida datos
@@ -35,9 +39,12 @@ Routes.post('/login', async (req, res, next) => {
     try {
         const user = await AuthController.findUser(req.body.usuario);
         if (user) {
-            switch (user.authMethod || 'ldap') {
-                case 'ldap':
-                    const ldapUser = await LdapController.checkPassword(user, req.body.password);
+            switch (user.authMethod || "ldap") {
+                case "ldap":
+                    const ldapUser = await LdapController.checkPassword(
+                        user,
+                        req.body.password
+                    );
                     if (ldapUser) {
                         user.nombre = ldapUser.nombre;
                         user.apellido = ldapUser.apellido;
@@ -46,8 +53,8 @@ Routes.post('/login', async (req, res, next) => {
                     } else {
                         return next(403);
                     }
-                case 'password':
-                case '':
+                case "password":
+                case "":
                 case undefined:
                 case null:
                     const passwordSha1 = sha1Hash(req.body.password);
@@ -63,28 +70,17 @@ Routes.post('/login', async (req, res, next) => {
     }
 });
 
-
-/**
- * Temporal fix. Update usernames from number to string
- */
-Routes.get('/usuarios/update-usernames', async (req, res, next) => {
-    await AuthController.updateUsernames();
-    return next(200);
-});
-
-
-Routes.post('/usuarios', async (req, res, next) => {
-    let usuario = new Usuario(
-        {
-            usuario: req.body.usuario,
-            activo: true,
-            nombre: req.body.nombre,
-            apellido: req.body.apellido,
-            password: sha1Hash(req.body.password),
-            authMethod: 'password',
-            permisos: req.body.permisos
-        }
-    );
+Routes.post("/usuarios", async (req, res, next) => {
+    let usuario = new Usuario({
+        usuario: req.body.usuario,
+        activo: true,
+        nombre: req.body.nombre,
+        apellido: req.body.apellido,
+        password: sha1Hash(req.body.password),
+        authMethod: "password",
+        permisos: req.body.permisos,
+        roles: req.body.roles,
+    });
     usuario.save();
     return next(200);
 });

@@ -1,4 +1,4 @@
-import { Schema, model, Document } from 'mongoose';
+import { Schema, model, Document } from "mongoose";
 
 export interface IUsuario {
     usuario: string;
@@ -9,6 +9,7 @@ export interface IUsuario {
     foto: string;
     authMethod: string;
     permisos: [String];
+    roles: [String];
     lastLogin: Date;
 }
 
@@ -18,8 +19,8 @@ export const UsuarioSchema = new Schema({
     usuario: {
         type: String,
         required: true,
-        unique: true
-    }, 
+        unique: true,
+    },
     activo: Boolean,
     nombre: String,
     apellido: String,
@@ -27,7 +28,12 @@ export const UsuarioSchema = new Schema({
     foto: String,
     authMethod: String,
     permisos: [String],
+    roles: [String],
     lastLogin: Date,
 });
 
-export const Usuario = model<IUsuarioDoc>('usuarios', UsuarioSchema, 'usuarios');
+export const Usuario = model<IUsuarioDoc>(
+    "usuarios",
+    UsuarioSchema,
+    "usuarios"
+);
