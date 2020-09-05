@@ -1,22 +1,22 @@
-import { Schema, Types, model } from 'mongoose';
+import { Schema, Types, model } from "mongoose";
 
 export const FichadaSchema = new Schema({
     agente: {
         _id: {
             type: Types.ObjectId,
             required: true,
-            index: true
+            index: true,
         },
         nombre: String,
-        apellido: String
+        apellido: String,
     },
-    fecha:{
+    fecha: {
         type: Date,
         required: true,
-        index: true
-    }, 
+        index: true,
+    },
     esEntrada: Boolean,
     reloj: Number,
-})
+});
 
-export const Fichada = model('Fichada', FichadaSchema, 'fichadas');
+export const Fichada = model("Fichada", FichadaSchema, "fichadas");

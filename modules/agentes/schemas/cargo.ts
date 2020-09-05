@@ -1,22 +1,23 @@
-import { Schema, model } from 'mongoose';
+import { Schema, model } from "mongoose";
 
-import { ServicioSchema } from '../../../core/organigrama/schemas/servicio';
-import { SectorSchema } from '../../../core/organigrama/schemas/sector';
-import { PuestoSchema } from '../../../core/organigrama/schemas/puesto';
-import { SubPuestoSchema } from '../../../core/organigrama/schemas/subpuesto';
-import { AgrupamientoSchema } from '../../../core/organigrama/schemas/agrupamiento';
-
+import { ServicioSchema } from "../../../core/organigrama/schemas/servicio";
+import { SectorSchema } from "../../../core/organigrama/schemas/sector";
+import { PuestoSchema } from "../../../core/organigrama/schemas/puesto";
+import { SubPuestoSchema } from "../../../core/organigrama/schemas/subpuesto";
+import { AgrupamientoSchema } from "../../../core/organigrama/schemas/agrupamiento";
+import { UbicacionSchema } from "../../../core/organigrama/schemas/ubicacion";
 
 export const CargoSchema = new Schema({
     agrupamiento: AgrupamientoSchema,
     //categoria: CategoriaSchema, // No se utiliza mas. Se reemplaza por agrupamiento
-    puesto: PuestoSchema,         // Alias Agrupamiento (otro agrupamiento)
-    subpuesto: SubPuestoSchema,   // Alias Funcion
-    sector: SectorSchema,         // Alias Lugar de Trabajo
+    puesto: PuestoSchema, // Alias Agrupamiento (otro agrupamiento)
+    subpuesto: SubPuestoSchema, // Alias Funcion
+    sector: SectorSchema, // Alias Lugar de Trabajo
     servicio: ServicioSchema,
+    ubicacion: UbicacionSchema,
     observaciones: String,
     esJefeServicio: Boolean,
-    jefeServicios: [ServicioSchema]
-})
+    jefeServicios: [ServicioSchema],
+});
 
-export const Cargo = model('Cargo', CargoSchema, 'cargos');
+export const Cargo = model("Cargo", CargoSchema, "cargos");
