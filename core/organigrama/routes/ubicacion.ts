@@ -8,9 +8,10 @@ const baseUrl = "/ubicaciones";
 export const Routes = express.Router();
 
 Routes.get(`${baseUrl}`, controller.get);
-Routes.get(`${baseUrl}/:id`, controller.getById);
-Routes.get(`${baseUrl}/mock/ubicaciones`, controller.getUbicaciones);
+Routes.get(`${baseUrl}/hospital`, controller.getUbicacionesHospital);
+Routes.get(`${baseUrl}/:codigo/children`, controller.getUbicacionesFromPadre);
 Routes.get(`${baseUrl}/codigo/:codigo`, controller.getByCodigo);
+Routes.get(`${baseUrl}/:id`, controller.getById);
 
 Routes.post(`${baseUrl}`, controller.add);
 Routes.put(`${baseUrl}/:id`, controller.update);

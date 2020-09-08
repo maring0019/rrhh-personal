@@ -25,6 +25,7 @@ export const UbicacionSchema = new Schema({
 	subtipo: Number,
 	telefono: String,
 	despachoHabilitado: Boolean,
+	ancestors: [Number], // Para simplificar las consultas. See https://docs.mongodb.com/manual/tutorial/model-tree-structures-with-ancestors-array/
 });
 
 export const Ubicacion = model("Ubicacion", UbicacionSchema, "ubicaciones");

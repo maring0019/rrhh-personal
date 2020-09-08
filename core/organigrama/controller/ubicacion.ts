@@ -4,7 +4,8 @@ import { Ubicacion } from "../schemas/ubicacion";
 class UbicacionController extends BaseController {
 	constructor(model) {
 		super(model);
-		this.getUbicaciones = this.getUbicaciones.bind(this);
+		this.getUbicacionesHospital = this.getUbicacionesHospital.bind(this);
+		this.getUbicacionesFromPadre = this.getUbicacionesFromPadre.bind(this);
 		this.getByCodigo = this.getByCodigo.bind(this);
 	}
 
@@ -17,254 +18,59 @@ class UbicacionController extends BaseController {
 		}
 	}
 
-	async getUbicaciones(req, res, next) {
+	async getUbicacionesHospital(req, res, next) {
 		try {
-			const params = this.getCustomQueryParams(req);
-			let objs = await this.search(params);
+			// Recuperar supuestamente de la funcion dbo.hsp_Ubicaciones_HospitalInterno()
+			const codigoHospital = 2;
+			const ubicacionHospital: any = await Ubicacion.findOne({
+				codigo: codigoHospital,
+			});
+			let objs = await this.getUbicacionesChildrenFromPadre(
+				ubicacionHospital.codigo
+			);
+			objs.unshift(ubicacionHospital); // Colocamos primero la ubicacion hospital
 			return res.json(objs);
 		} catch (err) {
 			return next(err);
 		}
 	}
 
-	/**
-	 * Unicamente interesan las ubicaciones cuyos codigos
-	 * sean ... (under development)
-	 * @param req
-	 */
-	getCustomQueryParams(req) {
-		let params = super.getQueryParams(req);
-		params.sort = { nombre: 1 };
-		params.filter.codigo = {
-			$in: [
-				5,
-				7,
-				9,
-				11,
-				14,
-				15,
-				17,
-				18,
-				19,
-				20,
-				26,
-				27,
-				28,
-				29,
-				30,
-				32,
-				34,
-				37,
-				38,
-				76,
-				78,
-				103,
-				104,
-				105,
-				106,
-				118,
-				119,
-				120,
-				121,
-				126,
-				128,
-				129,
-				130,
-				135,
-				136,
-				137,
-				231,
-				338,
-				339,
-				340,
-				341,
-				342,
-				343,
-				344,
-				345,
-				346,
-				347,
-				348,
-				349,
-				350,
-				351,
-				352,
-				353,
-				354,
-				355,
-				356,
-				357,
-				358,
-				359,
-				360,
-				361,
-				362,
-				364,
-				502,
-				503,
-				504,
-				505,
-				506,
-				507,
-				508,
-				509,
-				510,
-				511,
-				512,
-				513,
-				514,
-				515,
-				516,
-				517,
-				518,
-				519,
-				520,
-				521,
-				522,
-				523,
-				524,
-				525,
-				526,
-				527,
-				528,
-				529,
-				530,
-				531,
-				532,
-				533,
-				534,
-				535,
-				536,
-				537,
-				538,
-				539,
-				540,
-				541,
-				542,
-				543,
-				544,
-				545,
-				546,
-				547,
-				549,
-				550,
-				551,
-				556,
-				557,
-				558,
-				559,
-				560,
-				561,
-				562,
-				563,
-				564,
-				565,
-				566,
-				567,
-				568,
-				570,
-				571,
-				572,
-				573,
-				574,
-				575,
-				576,
-				577,
-				578,
-				599,
-				600,
-				601,
-				602,
-				603,
-				604,
-				605,
-				606,
-				611,
-				616,
-				624,
-				625,
-				626,
-				627,
-				629,
-				630,
-				730,
-				731,
-				748,
-				756,
-				782,
-				787,
-				799,
-				800,
-				808,
-				809,
-				810,
-				811,
-				812,
-				813,
-				814,
-				815,
-				816,
-				817,
-				818,
-				819,
-				822,
-				823,
-				825,
-				826,
-				832,
-				833,
-				834,
-				843,
-				845,
-				858,
-				860,
-				867,
-				882,
-				883,
-				888,
-				890,
-				2400,
-				2401,
-				87418,
-				91699,
-				100011,
-				100012,
-				100013,
-				100014,
-				100016,
-				100017,
-				100018,
-				100019,
-				100020,
-				100021,
-				100022,
-				100023,
-				100024,
-				100025,
-				100026,
-				100027,
-				100028,
-				100029,
-				100030,
-				100032,
-				100033,
-				100034,
-				100035,
-				100036,
-				100037,
-				100038,
-				100039,
-				100040,
-				100041,
-				100042,
-				100043,
-				100044,
-				100045,
-				100046,
-				100047,
-			],
-		};
-		return params;
+	async getUbicacionesFromPadre(req, res, next) {
+		try {
+			// Recuperamos la ubicacion padre y luego los hijos
+			let ubicacionPadre: any = await Ubicacion.findOne({
+				codigo: req.params.codigo,
+			});
+			if (!ubicacionPadre)
+				return res
+					.status(404)
+					.send({ message: this.getMessageNotFound() });
+
+			let objs = await this.getUbicacionesChildrenFromPadre(
+				ubicacionPadre.codigo
+			);
+			objs.unshift(ubicacionPadre); // Colocamos primero la ubicacion padre
+			return res.json(objs);
+		} catch (err) {
+			return next(err);
+		}
+	}
+
+	async getUbicacionesChildrenFromPadre(codigoPadre) {
+		return await Ubicacion.aggregate([
+			{ $match: { ancestors: codigoPadre } },
+			{
+				$lookup: {
+					from: "sectores",
+					localField: "codigo",
+					foreignField: "ubicacion",
+					as: "sectores",
+				},
+			},
+			{
+				$match: { sectores: { $ne: [] } },
+			},
+		]);
 	}
 }
 

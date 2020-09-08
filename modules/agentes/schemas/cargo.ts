@@ -8,16 +8,16 @@ import { AgrupamientoSchema } from "../../../core/organigrama/schemas/agrupamien
 import { UbicacionSchema } from "../../../core/organigrama/schemas/ubicacion";
 
 export const CargoSchema = new Schema({
-    agrupamiento: AgrupamientoSchema,
-    //categoria: CategoriaSchema, // No se utiliza mas. Se reemplaza por agrupamiento
-    puesto: PuestoSchema, // Alias Agrupamiento (otro agrupamiento)
-    subpuesto: SubPuestoSchema, // Alias Funcion
-    sector: SectorSchema, // Alias Lugar de Trabajo
-    servicio: ServicioSchema,
-    ubicacion: UbicacionSchema,
-    observaciones: String,
-    esJefeServicio: Boolean,
-    jefeServicios: [ServicioSchema],
+	agrupamiento: AgrupamientoSchema,
+	//categoria: CategoriaSchema, // No se utiliza mas. Se reemplaza por agrupamiento
+	puesto: PuestoSchema, // Alias Agrupamiento (otro agrupamiento)
+	subpuesto: SubPuestoSchema, // Alias Funcion
+	sector: SectorSchema, // Alias Lugar de Trabajo
+	servicio: ServicioSchema,
+	ubicacion: UbicacionSchema,
+	observaciones: String,
+	esJefe: Boolean,
+	jefeUbicaciones: [UbicacionSchema],
 });
 
 export const Cargo = model("Cargo", CargoSchema, "cargos");
