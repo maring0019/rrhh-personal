@@ -146,6 +146,25 @@ async function addAgente(req, res, next) {
 	}
 }
 
+function updateField(obj, keys: string[], value) {
+	try {
+		if (keys.length == 1) {
+			obj[keys[0]] = value;
+		} else {
+			const key = keys.shift();
+			updateField(obj[key], keys, value);
+		}
+	} catch (err) {
+		console.log(err);
+	}
+}
+
+/**
+ * TODO Doc this
+ * @param req
+ * @param res
+ * @param next
+ */
 async function updateAgente(req, res, next) {
 	try {
 		const id = req.params.id;
@@ -157,7 +176,13 @@ async function updateAgente(req, res, next) {
 			return res.status(404).send({ message: "Agente no encontrado." });
 
 		let objWithChanges = req.body;
-		// console.log("Objeto con cambios:", objWithChanges);
+		// Update only changed fields. This way, audit module only audits
+		// changed fields correctly
+		for (const key of Object.keys(objWithChanges)) {
+			let keys = key.split(".");
+			console.log(keys);
+			updateField(agente, keys, objWithChanges[key]);
+		}
 
 		// Hacemos una copia de la situacion para preservar
 		// algunos valores internos que no son provistos por el front
@@ -169,7 +194,7 @@ async function updateAgente(req, res, next) {
 		// Warning! Se pierde la historia si no se preserva en un update
 		// objWithChanges.historiaLaboral = agente.historiaLaboral;
 		// objWithChanges.foto = undefined; // La foto no es necesaria aqui.
-		await agente.updateOne(objWithChanges);
+		await agente.updateOne(agente);
 		return res.json(agente);
 	} catch (err) {
 		return next(err);
