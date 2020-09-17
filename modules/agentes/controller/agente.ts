@@ -152,6 +152,7 @@ function updateField(obj, keys: string[], value) {
 			obj[keys[0]] = value;
 		} else {
 			const key = keys.shift();
+			// TODO Validar que la llave exista en el objeto
 			updateField(obj[key], keys, value);
 		}
 	} catch (err) {
