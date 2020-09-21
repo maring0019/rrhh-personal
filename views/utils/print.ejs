@@ -14,7 +14,7 @@ value = function(val, arg1) {
 
     if (typeof val === 'String' || typeof val === 'string'){
         if (isIso8601(val)){
-            return dateValue(val)// Es una fecha
+            return dateValue(new Date(val))// Es una fecha
         }
         else{
             return titleCase(''+val);
@@ -150,4 +150,3 @@ agenteBaja = function(agente){
 }
 
 %>
-
