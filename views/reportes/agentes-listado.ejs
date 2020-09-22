@@ -2,13 +2,13 @@
 <html>
     <%- include("base-header") %>
     <body style="margin:30px 25px;">
-        <h1>Listados de Agentes</h1>
+        <h1>Agentes por <%= agrupamientoText %></h1>
             <%- include("../utils/print") %>
-            <% for (const grupo of gruposAgente) { %>
+            <% for (const grupo of agrupamientoAgente) { %>
             <table class="tg tgw" style="width:100%">
                 <tr> <!-- HEADER  -->
                     <th class="tg-266k" colspan="5">
-                        <h2 class="m0">Agrupamiento: <%= value(grupo._id) %></h2>
+                        <h2 class="m0"><%= agrupamientoText %>: <%= value(grupo._id) %></h2>
                     </th>
                 </tr>
                 
@@ -27,7 +27,7 @@
                         <td class="<%= rowClass %>"><%= value(agente.documento) %></td>
                         <td class="<%= rowClass %>"><%= value(agente.apellido) %>, <%= value(agente.nombre) %></td>
                         <td class="<%= rowClass %>"><%= value(agente, 'situacionLaboral.cargo.sector.nombre') %> </td>
-                        <td class="<%= rowClass %>"><%= value(agente, 'situacionLaboral.cargo.servicio.nombre') %></td>
+                        <td class="<%= rowClass %>"><%= value(agente, 'situacionLaboral.cargo.ubicacion.nombre') %></td>
                     </tr>
                     <% for (const field of extraFields) { %>
                         <tr>
