@@ -33,7 +33,7 @@
                         </span></td>
                 </tr>
                 <tr>
-                    <td class="tg-0pky" colspan="2">Nombre: <span class="bold"><%= agente.nombre %></span></td>
+                    <td class="tg-0pky" colspan="2">Nombre: <span class="bold"><%= agente.apellido %>, <%= agente.nombre %></span></td>
                 </tr>
                 <tr>
                     <td class="tg-0pky" colspan="2">Documento: <span class="bold"> DNI/D.U <%= agente.documento %></span></td>
@@ -113,7 +113,7 @@
                     <td class="tg-0pky">Fecha de la Norma: <span class="bold"><%= value(situacion, 'normaLegal.fechaNormaLegal') %></span></td>
                 </tr>
                 <tr>
-                    <td class="tg-0pky">Agrupamiento: <span class="bold"><%= value(situacion, 'cargo.puesto.nombre') %></span></td>
+                    <td class="tg-0pky">Agrupamiento: <span class="bold"><%= value(situacion, 'cargo.agrupamiento.nombre') %></span></td>
                     <td class="tg-0pky">Función: <span class="bold"><%= value(situacion, 'cargo.subpuesto.nombre') %></span></td>
                 </tr>
                 <tr>
