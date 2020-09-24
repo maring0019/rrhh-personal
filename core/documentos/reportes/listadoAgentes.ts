@@ -22,6 +22,7 @@ export class DocumentoListadoAgentes extends DocumentoPDF {
 	async getContextData() {
 		// Recuperamos todas las opciones para el reporte (filtros, orden, etc)
 		let query = this.getQueryOptions();
+		console.log(query);
 
 		// Por defecto estos campos siempre se van a mostrar en el reporte
 		const defaultProjection = {
@@ -33,19 +34,19 @@ export class DocumentoListadoAgentes extends DocumentoPDF {
 			"situacionLaboral.cargo.ubicacion.nombre": 1,
 		};
 
-		// Identificamos el campo por el cual agrupar. Si no se especifico agregamos
-		// uno por defecto
-		// Recordar que no se puede especificar un agrupamiento??
+		// Identificamos el campo por el cual agrupar.
 		let groupField = utils.getQueryParam(query.filter, "$group");
+		// Si no se especifico agregamos uno por defecto
 		if (!groupField) groupField = "situacionLaboral.cargo.sector.nombre";
 		const groupCondition = {
 			_id: `$${groupField}`,
 			agentes: { $push: "$$ROOT" },
 		};
-
+		const filters = this.cleanFilterConditions(query.filter);
 		// Aggregation Framework Pipeline
-		let matchStage: any = this.getMatchStage(query);
+		let matchStage: any = this.getMatchStage(filters);
 		let projectStage = [
+			{ $sort: query.sort || { apellido: 1 } },
 			{
 				$project: {
 					...(query.projection || {}),
@@ -92,57 +93,65 @@ export class DocumentoListadoAgentes extends DocumentoPDF {
 		});
 	}
 
+	esBusquedaAgenteActivos(filter): boolean {
+		return filter && filter.activo === true;
+	}
+
+	esBusquedaAgentesInactivos(filter): boolean {
+		return filter && filter.activo && filter.activo.$ne;
+	}
+
 	/**
-	 * Importante!: Aqui se definen los filtros mas relevantes
-	 * para el pipeline general
+	 * Reorganiza los filtros enviados como query params
+	 * para buscar solo agentes inactivos
 	 * @param filter
 	 */
-	getFilterConditions(filter): any {
+	getFiltersAgenteInactivos(filter) {
+		let historiaFilters = {};
+		if (filter["situacionLaboral.cargo.sector.ubicacion"]) {
+			historiaFilters = {
+				"changeset.cargo.sector.ubicacion":
+					filter["situacionLaboral.cargo.sector.ubicacion"],
+			};
+		}
+		let matchAgentesInactivos = {
+			agenteFilters: { activo: { $ne: true } },
+			historiaFilters: historiaFilters,
+		};
+		return matchAgentesInactivos;
+	}
+
+	/**
+	 * Reorganiza los filtros enviados como query params
+	 * para buscar tanto agentes activos como inactivos
+	 * @param filter
+	 */
+	getFiltersAgentesTodos(filter) {
+		let historiaFilters = {};
+		if (filter["situacionLaboral.cargo.sector.ubicacion"]) {
+			historiaFilters = {
+				"changeset.cargo.sector.ubicacion":
+					filter["situacionLaboral.cargo.sector.ubicacion"],
+			};
+		}
+		let matchAgentes = {
+			agenteActivoFilters: { ...filter },
+			agenteInactivoFilters: { activo: { $ne: true } },
+			historiaFilters: historiaFilters,
+		};
+		return matchAgentes;
+	}
+
+	/**
+	 * Utilidad para eliminar condiciones que vienen en los
+	 * query params y no se utilizan en los pipelines
+	 * @param filter
+	 */
+	cleanFilterConditions(filter): any {
 		// El atributo $group no se puede utilizar como filtro
 		if (filter && filter.$group) {
 			delete filter.$group;
 		}
-		// Busqueda de agentes en condicion activa
-		if (filter && filter.activo === true) {
-			let matchAgentesActivos = {
-				agenteFilters: { ...filter },
-			};
-			filter.matchAgentesActivos = matchAgentesActivos;
-		}
-
-		// Busqueda de agentes en condicion NO activa
-		if (filter && filter.activo && filter.activo.$ne) {
-			let historiaFilters = {};
-			if (filter["situacionLaboral.cargo.sector.ubicacion"]) {
-				historiaFilters = {
-					"changeset.cargo.sector.ubicacion":
-						filter["situacionLaboral.cargo.sector.ubicacion"],
-				};
-			}
-			let matchAgentesInactivos = {
-				agenteFilters: { activo: { $ne: true } },
-				historiaFilters: historiaFilters,
-			};
-			filter.matchAgentesInactivos = matchAgentesInactivos;
-		}
-
-		// Busqueda de todos los agentes sin filtro de condicion
-		if (filter && !filter.activo) {
-			let historiaFilters = {};
-			if (filter["situacionLaboral.cargo.sector.ubicacion"]) {
-				historiaFilters = {
-					"changeset.cargo.sector.ubicacion":
-						filter["situacionLaboral.cargo.sector.ubicacion"],
-				};
-			}
-			let matchAgentes = {
-				agenteActivoFilters: { ...filter },
-				agenteInactivoFilters: { activo: { $ne: true } },
-				historiaFilters: historiaFilters,
-			};
-			filter.matchAgentes = matchAgentes;
-		}
-
 		return filter;
 	}
 
@@ -155,48 +164,41 @@ export class DocumentoListadoAgentes extends DocumentoPDF {
 	 * que buscar algunos datos sobre la historia laboral del agente
 	 *
 	 */
-	getMatchStage(query) {
-		// Preparamos las opciones de filtrado
-		let filters = this.getFilterConditions(query.filter);
-		// Recordar que el filtro por activo es activo=true o activo!=true
+	getMatchStage(filter) {
+		if (this.esBusquedaAgenteActivos(filter)) {
+			return this.pipelineAgentesActivos(filter);
+		}
 
-		if (filters.matchAgentesActivos) {
-			const _f = filters.matchAgentesActivos;
-			return this.pipelineAgentesActivos(_f.agenteFilters);
-		} else if (filters.matchAgentesInactivos) {
-			const _f = filters.matchAgentesInactivos;
+		if (this.esBusquedaAgentesInactivos(filter)) {
+			const filters = this.getFiltersAgenteInactivos(filter);
 			return this.pipelineAgentesInactivos(
-				_f.agenteFilters,
-				_f.historiaFilters
-			);
-		} else {
-			const _f = filters.matchAgentes;
-			return this.pipelineAgentes(
-				_f.agenteActivoFilters,
-				_f.agenteInactivoFilters,
-				_f.historiaFilters
+				filters.agenteFilters,
+				filters.historiaFilters
 			);
 		}
+
+		const filters = this.getFiltersAgentesTodos(filter);
+		return this.pipelineAgentesTodos(
+			filters.agenteActivoFilters,
+			filters.agenteInactivoFilters,
+			filters.historiaFilters
+		);
 	}
 
-	pipelineAgentesActivos(agenteFilters) {
+	pipelineAgentesActivos(agenteActivoFilters) {
 		return [
 			{
-				$match: agenteFilters,
+				$match: agenteActivoFilters,
 			},
 		];
 	}
 
-	pipelineAgentesInactivos(agenteFilters, historiaFilters) {
-		let _f = {
-			"historiaLaboral.changeset.cargo.sector.ubicacion":
-				historiaFilters["changeset.cargo.sector.ubicacion"],
-		};
+	pipelineAgentesInactivos(agenteInactivoFilters, historiaFilters) {
 		return [
 			{
 				$match: {
 					$and: [
-						agenteFilters,
+						agenteInactivoFilters,
 						{
 							historiaLaboral: {
 								$elemMatch: historiaFilters,
@@ -207,7 +209,10 @@ export class DocumentoListadoAgentes extends DocumentoPDF {
 			},
 			{ $unwind: "$historiaLaboral" },
 			{
-				$match: _f,
+				$match: {
+					"historiaLaboral.changeset.cargo.sector.ubicacion":
+						historiaFilters["changeset.cargo.sector.ubicacion"],
+				},
 			},
 			{
 				$project: {
@@ -219,21 +224,19 @@ export class DocumentoListadoAgentes extends DocumentoPDF {
 						"$historiaLaboral.changeset.cargo",
 					sexo: 1,
 					activo: 1,
+					nacionalidad: 1,
+					direccion: 1,
+					estadoCivil: 1,
 				},
 			},
 		];
 	}
 
-	pipelineAgentes(
+	pipelineAgentesTodos(
 		agenteActivoFilters,
 		agenteInactivoFilters,
 		historiaFilters
 	) {
-		let _f = {
-			"historiaLaboral.changeset.cargo.sector.ubicacion":
-				historiaFilters["changeset.cargo.sector.ubicacion"],
-		};
-
 		return [
 			// El siguiente pipeline simula una union entre dos colecciones
 			// La version 4.4 de mongodb soporta nativamente esta operacion
@@ -248,11 +251,7 @@ export class DocumentoListadoAgentes extends DocumentoPDF {
 			{
 				$lookup: {
 					from: "agentes",
-					pipeline: [
-						{
-							$match: agenteActivoFilters,
-						},
-					],
+					pipeline: this.pipelineAgentesActivos(agenteActivoFilters),
 					as: "agentes_activos",
 				},
 			},
@@ -260,36 +259,10 @@ export class DocumentoListadoAgentes extends DocumentoPDF {
 			{
 				$lookup: {
 					from: "agentes",
-					pipeline: [
-						{
-							$match: {
-								$and: [
-									agenteInactivoFilters,
-									{
-										historiaLaboral: {
-											$elemMatch: historiaFilters,
-										},
-									},
-								],
-							},
-						},
-						{ $unwind: "$historiaLaboral" },
-						{
-							$match: _f,
-						},
-						{
-							$project: {
-								numero: 1,
-								documento: 1,
-								nombre: 1,
-								apellido: 1,
-								"situacionLaboral.cargo":
-									"$historiaLaboral.changeset.cargo",
-								sexo: 1,
-								activo: 1,
-							},
-						},
-					],
+					pipeline: this.pipelineAgentesInactivos(
+						agenteInactivoFilters,
+						historiaFilters
+					),
 					as: "agentes_inactivos",
 				},
 			},
