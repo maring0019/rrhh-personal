@@ -10,7 +10,6 @@ import { attachFilesToObject } from "../../../core/files/controller/file";
 import { AusenciaPeriodo } from "../../ausentismo/schemas/ausenciaperiodo";
 import { readImage } from "../../../core/files/utils";
 import { IndicadorAusentismo } from "../../ausentismo/schemas/indicador";
-import { SituacionLaboral } from "../schemas/situacionlaboral";
 import { NormaLegal } from "../schemas/normaLegal";
 import { Nota } from "../../notas/schemas/nota";
 
@@ -181,20 +180,8 @@ async function updateAgente(req, res, next) {
 		// changed fields correctly
 		for (const key of Object.keys(objWithChanges)) {
 			let keys = key.split(".");
-			console.log(keys);
 			updateField(agente, keys, objWithChanges[key]);
 		}
-
-		// Hacemos una copia de la situacion para preservar
-		// algunos valores internos que no son provistos por el front
-
-		// const situacionCopy = agente.situacionLaboral.toObject();
-		// objWithChanges.situacionLaboral.fecha = situacionCopy.fecha;
-		// objWithChanges.situacionLaboral.motivo = situacionCopy.motivo;
-		// objWithChanges.situacionLaboral.esAlta = situacionCopy.esAlta;
-		// Warning! Se pierde la historia si no se preserva en un update
-		// objWithChanges.historiaLaboral = agente.historiaLaboral;
-		// objWithChanges.foto = undefined; // La foto no es necesaria aqui.
 		await agente.updateOne(agente);
 		return res.json(agente);
 	} catch (err) {
@@ -225,17 +212,16 @@ async function bajaAgente(req, res, next) {
 		if (!agente)
 			return res.status(404).send({ message: "Agente not found" });
 		let baja = req.body;
+		// Comenzamos a aplicar los cambios
 		agente.activo = false;
+
+		// Guardamos la ultima situacion laboral en el historial.
+		moveSituacionLaboralToHistorial(agente);
 
 		// Forzamos la creacion de la Norma Legal con un id valido
 		// ya que necesitamos este dato para posteriormente asociar
 		// los documentos de la misma
 		baja.normaLegal = new NormaLegal(baja.normaLegal);
-
-		// Antes de colocar la baja en el historial, guardamos
-		// tambien la ultima situacion para que cronologicamente
-		// quede registrado.
-		moveSituacionLaboralToHistorial(agente, new SituacionLaboral());
 
 		// Datos de la baja para el historial
 		let nuevaHistoria = {
@@ -259,11 +245,23 @@ async function reactivarAgente(req, res, next) {
 		let agente: any = await Agente.findById(id);
 		if (!agente)
 			return res.status(404).send({ message: "Agente not found" });
-		agente.activo = true;
 		const reactivacion = req.body;
+		if (
+			!reactivacion ||
+			!reactivacion.cargo ||
+			!reactivacion.situacion ||
+			!reactivacion.regimen
+		)
+			return res.status(400).send({
+				message: `Se requiere especificar la nueva Situacion Laboral
+                          del Agente para su correcta reactivación`,
+			});
+		// Si llegamos hasta aqui entonces estan dadas todas condiciones
+		// para reactivar al agente
+		agente.activo = true;
 		agente.situacionLaboral.fecha = reactivacion.fecha;
 		agente.situacionLaboral.motivo = "Reactivación"; // Hardcodeamos el motivo
-		agente.situacionLaboral.normaLegal = reactivacion.normaLegal;
+		agente.situacionLaboral.normaLegal = reactivacion.normaLegal || null;
 		agente.situacionLaboral.situacion = reactivacion.situacion;
 		agente.situacionLaboral.cargo = reactivacion.cargo;
 		agente.situacionLaboral.regimen = reactivacion.regimen;
@@ -292,7 +290,8 @@ async function addHistoriaLaboral(req, res, next) {
 		if (!agente)
 			return res.status(404).send({ message: "Agente not found" });
 		let newSituacionLaboral = req.body;
-		moveSituacionLaboralToHistorial(agente, newSituacionLaboral);
+		moveSituacionLaboralToHistorial(agente);
+		replaceSituacionLaboral(agente, newSituacionLaboral);
 		let agenteActualizado = await agente.save();
 		return res.json(agenteActualizado);
 	} catch (err) {
@@ -359,15 +358,27 @@ async function deleteHistoriaLaboral(req, res, next) {
 
 /**
  * Mueve los datos de la situacion laboral modificada al historial
- * del agente. Ademas actualiza la situacion laboral actual con los
- * datos de la nueva situacion.
+ * del agente.
  * @param agente
  * @param newSituacionLaboral
  */
-function moveSituacionLaboralToHistorial(agente, newSituacionLaboral) {
+function moveSituacionLaboralToHistorial(agente) {
 	let agenteCopy = agente.toObject();
 	let oldSituacionLaboral = agenteCopy.situacionLaboral;
+	let nuevaHistoria = {
+		tipo: oldSituacionLaboral.esAlta ? "alta" : "modificacion",
+		timestamp: new Date(),
+		changeset: { ...oldSituacionLaboral },
+	};
+	agente.historiaLaboral.unshift(nuevaHistoria);
+}
 
+/**
+ * Actualiza la situacion laboral actual con los datos de la nueva situacion.
+ * @param agente
+ * @param newSituacionLaboral
+ */
+function replaceSituacionLaboral(agente, newSituacionLaboral) {
 	// Recordar que los datos siguientes son para utilizar en el
 	// futuro para almacenarse como parte de la historia cuando
 	// se vuelva a modificar la situacion del agente por una nueva
@@ -380,13 +391,6 @@ function moveSituacionLaboralToHistorial(agente, newSituacionLaboral) {
 	agente.situacionLaboral.situacion = newSituacionLaboral.situacion;
 	agente.situacionLaboral.cargo = newSituacionLaboral.cargo;
 	agente.situacionLaboral.regimen = newSituacionLaboral.regimen;
-	// Almacenamos la vieja situacion en el historial del agente
-	let nuevaHistoria = {
-		tipo: oldSituacionLaboral.esAlta ? "alta" : "modificacion",
-		timestamp: new Date(),
-		changeset: { ...oldSituacionLaboral },
-	};
-	agente.historiaLaboral.unshift(nuevaHistoria);
 }
 
 async function uploadFotoPerfil(req, res, next) {
