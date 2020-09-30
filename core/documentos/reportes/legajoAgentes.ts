@@ -47,6 +47,14 @@ export class DocumentoLegajoAgente extends DocumentoPDF {
 			castParams: {
 				_id: "documentoId",
 				"situacionLaboral.cargo.sector._id": "documentoId",
+				"nacionalidad._id": "documentoId",
+				"direccion.localidad._id": "documentoId",
+				"direccion.localidad.provincia._id": "documentoId",
+				"situacionLaboral.situacion.tipoSituacion._id": "documentoId",
+				"situacionLaboral.normaLegal.tipoNormaLegal._id": "documentoId",
+				"situacionLaboral.cargo.puesto._id": "documentoId",
+				"situacionLaboral.cargo.subpuesto._id": "documentoId",
+				"situacionLaboral.regimen.regimenHorario._id": "documentoId",
 			},
 		});
 	}

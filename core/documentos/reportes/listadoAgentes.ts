@@ -22,7 +22,6 @@ export class DocumentoListadoAgentes extends DocumentoPDF {
 	async getContextData() {
 		// Recuperamos todas las opciones para el reporte (filtros, orden, etc)
 		let query = this.getQueryOptions();
-		console.log(query);
 
 		// Por defecto estos campos siempre se van a mostrar en el reporte
 		const defaultProjection = {
@@ -88,6 +87,14 @@ export class DocumentoListadoAgentes extends DocumentoPDF {
 			castParams: {
 				_id: "documentoId",
 				"situacionLaboral.cargo.sector._id": "documentoId",
+				"nacionalidad._id": "documentoId",
+				"direccion.localidad._id": "documentoId",
+				"direccion.localidad.provincia._id": "documentoId",
+				"situacionLaboral.situacion.tipoSituacion._id": "documentoId",
+				"situacionLaboral.normaLegal.tipoNormaLegal._id": "documentoId",
+				"situacionLaboral.cargo.puesto._id": "documentoId",
+				"situacionLaboral.cargo.subpuesto._id": "documentoId",
+				"situacionLaboral.regimen.regimenHorario._id": "documentoId",
 			},
 		});
 	}
