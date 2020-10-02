@@ -1,13 +1,17 @@
 export const opcionesAgrupamiento = [
-    // Datos Personales
-    // { id: "1", nombre: "------ Datos Personales --------", grupo:"Datos Personales" },
-	{ id: "estadoCivil", nombre: "Estado Civil", grupo:"Datos Personales" },
-	{ id: "nacionalidad.nombre", nombre: "Nacionalidad", grupo:"Datos Personales" },
-	{ id: "sexo", nombre: "Sexo", grupo:"Datos Personales" },
+	// Datos Personales
+	// { id: "1", nombre: "------ Datos Personales --------", grupo:"Datos Personales" },
+	{ id: "estadoCivil", nombre: "Estado Civil", grupo: "Datos Personales" },
+	{
+		id: "nacionalidad.nombre",
+		nombre: "Nacionalidad",
+		grupo: "Datos Personales",
+	},
+	{ id: "sexo", nombre: "Sexo", grupo: "Datos Personales" },
 	// { id: 'sexo', nombre: 'Edad' }, TODO Ver como resolver esta opcion
 
-    // Domicilio
-    // { id: "2", nombre: "--------- Domicilio ------------" },
+	// Domicilio
+	// { id: "2", nombre: "--------- Domicilio ------------" },
 	{ id: "direccion.localidad.nombre", nombre: "Localidad" },
 	{ id: "direccion.localidad.provincia.nombre", nombre: "Provincia" },
 
@@ -22,31 +26,110 @@ export const opcionesAgrupamiento = [
 	// { id: "3", nombre: "----------- Cargo --------------" },
 	{ id: "situacionLaboral.cargo.sector.nombre", nombre: "Lugar de Trabajo" },
 	{ id: "situacionLaboral.cargo.ubicacion.nombre", nombre: "Servicio" },
-	{ id: "situacionLaboral.normaLegal.tipoNormaLegal.nombre", nombre: "Norma Legal" },
+	{
+		id: "situacionLaboral.normaLegal.tipoNormaLegal.nombre",
+		nombre: "Norma Legal",
+	},
 	{ id: "situacionLaboral.cargo.puesto.nombre", nombre: "Agrupamiento" },
-    { id: "situacionLaboral.cargo.subpuesto.nombre", nombre: "Función" },
-    
-    // Regimen
-    // { id: "4", nombre: "---------- Regimen -------------" },
-    { id: "situacionLaboral.regimen.regimenHorario.nombre", nombre: "Regimen horario" },
-    { id: "situacionLaboral.regimen.dedicacionExclusiva", nombre: "Dedicación exclusiva" },
-    { id: "situacionLaboral.regimen.tiempoPleno", nombre: "Tiempo pleno" },
-    { id: "situacionLaboral.regimen.actividadCritica", nombre: "Actividad  crítica" },
-    { id: "situacionLaboral.regimen.prolongacionJornada", nombre: "Prolongación de Jornada" },
-    { id: "situacionLaboral.regimen.guardiasPasivas", nombre: "Guardias pasivas" },
-    { id: "situacionLaboral.regimen.guardiasActivas", nombre: "Guardias activas" },
-    
-    // Situación
-    // { id: "5", nombre: "--------- Situación ------------" },
+	{ id: "situacionLaboral.cargo.subpuesto.nombre", nombre: "Función" },
+
+	// Regimen
+	// { id: "4", nombre: "---------- Regimen -------------" },
+	{
+		id: "situacionLaboral.regimen.regimenHorario.nombre",
+		nombre: "Regimen horario",
+	},
+	{
+		id: "situacionLaboral.regimen.dedicacionExclusiva",
+		nombre: "Dedicación exclusiva",
+	},
+	{ id: "situacionLaboral.regimen.tiempoPleno", nombre: "Tiempo pleno" },
+	{
+		id: "situacionLaboral.regimen.actividadCritica",
+		nombre: "Actividad  crítica",
+	},
+	{
+		id: "situacionLaboral.regimen.prolongacionJornada",
+		nombre: "Prolongación de Jornada",
+	},
+	{
+		id: "situacionLaboral.regimen.guardiasPasivas",
+		nombre: "Guardias pasivas",
+	},
+	{
+		id: "situacionLaboral.regimen.guardiasActivas",
+		nombre: "Guardias activas",
+	},
+
+	// Situación
+	// { id: "5", nombre: "--------- Situación ------------" },
 	{ id: "activo", nombre: "Estado (activo/inactivo)" },
 	// { id: 9, nombre: "Causa de Baja" },
-	{ id: "situacionLaboral.situacion.nombre.tipoSituacion.nombre", nombre: "Situación en Planta" },
+	{
+		id: "situacionLaboral.situacion.tipoSituacion.nombre",
+		nombre: "Situación en Planta",
+	},
 	// { id: 10, nombre: "Años en el Estado" },
 	// { id: 10, nombre: "Años en el Hospital" },
-    // { id: 10, nombre: "Antigüedad" },
-    // { id: 10, nombre: "Traslado" },
+	// { id: 10, nombre: "Antigüedad" },
+	// { id: 10, nombre: "Traslado" },
 ];
 
+export const opcionesVisualizacion = [
+	// Datos Personales
+	{ id: "estadoCivil", nombre: "Estado Civil" },
+	{ id: "nacionalidad.nombre", nombre: "Nacionalidad" },
+	{ id: "sexo", nombre: "Sexo" },
+	{ id: "fechaNacimiento", nombre: "Fecha de Nacimiento" },
+	// Domicilio
+	{ id: "direccion.valor", nombre: "Domicilio" },
+	{ id: "direccion.localidad.nombre", nombre: "Localidad" },
+	{ id: "direccion.localidad.provincia.nombre", nombre: "Provincia" },
+	// Educacion (Todo)
+	// Cargo
+	{ id: "situacionLaboral.cargo.sector.nombre", nombre: "Lugar de Trabajo" },
+	{ id: "situacionLaboral.cargo.ubicacion.nombre", nombre: "Servicio" },
+	// { id: "$situacionLaboral.cargo.ubicacion.nombre", nombre: "Departamento"}, // ????
+	{
+		id: "situacionLaboral.normaLegal.tipoNormaLegal.nombre",
+		nombre: "Norma Legal",
+	},
+	{ id: "situacionLaboral.cargo.subpuesto.nombre", nombre: "Función" },
+	{ id: "situacionLaboral.cargo.puesto.nombre", nombre: "Agrupamiento" },
+	// Regimen
+	{
+		id: "situacionLaboral.regimen.regimenHorario.nombre",
+		nombre: "Regimen horario",
+	},
+	{
+		id: "situacionLaboral.regimen.dedicacionExclusiva",
+		nombre: "Dedicación exclusiva",
+	},
+	{ id: "situacionLaboral.regimen.tiempoPleno", nombre: "Tiempo pleno" },
+	{
+		id: "situacionLaboral.regimen.actividadCritica",
+		nombre: "Actividad  crítica",
+	},
+	{
+		id: "situacionLaboral.regimen.prolongacionJornada",
+		nombre: "Prolongación de Jornada",
+	},
+	{
+		id: "situacionLaboral.regimen.guardiasPasivas",
+		nombre: "Guardias pasivas",
+	},
+	{
+		id: "situacionLaboral.regimen.guardiasActivas",
+		nombre: "Guardias activas",
+	},
+	// Situación
+	{ id: "activo", nombre: "Estado (activo/inactivo)" },
+	// { id: 9, nombre: "Causa de Baja" },
+	{
+		id: "situacionLaboral.situacion.tipoSituacion.nombre",
+		nombre: "Situación en Planta",
+	},
+];
 
 export const opcionesOrdenamiento = [
 	{ id: "apellido", nombre: "Apellido y Nombre" },

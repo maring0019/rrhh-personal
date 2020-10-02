@@ -14,6 +14,7 @@ import { DocumentoParteDiarioAgente } from "../../../core/documentos/partes/part
 import {
 	opcionesAgrupamiento,
 	opcionesOrdenamiento,
+	opcionesVisualizacion,
 } from "../../../core/documentos/constants";
 
 class ReportesController extends BaseDocumentoController {
@@ -167,6 +168,10 @@ class ReportesController extends BaseDocumentoController {
 
 	async opcionesOrdenamiento(req, res, next) {
 		return res.json(opcionesOrdenamiento);
+	}
+
+	async opcionesVisualizacion(req, res, next) {
+		return res.json(opcionesVisualizacion);
 	}
 }
 

@@ -30,5 +30,6 @@ Routes.get('/agentes/credencial/download', controller.downloadCredencial);
 Routes.get('/ausentismo/certificado', controller.getCertificado);
 Routes.get('/ausentismo/certificado/download', controller.downloadCertificado);
 
-Routes.get('/opcionesAgrupamiento', controller.opcionesAgrupamiento);
-Routes.get('/opcionesOrdenamiento', controller.opcionesOrdenamiento);
+Routes.get('/opciones-agrupamiento', controller.opcionesAgrupamiento);
+Routes.get('/opciones-ordenamiento', controller.opcionesOrdenamiento);
+Routes.get('/opciones-visualizacion', controller.opcionesVisualizacion);

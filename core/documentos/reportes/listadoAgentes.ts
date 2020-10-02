@@ -5,7 +5,7 @@ import { DocumentoPDF } from "../documentos";
 import { Agente } from "../../../modules/agentes/schemas/agente";
 
 import * as utils from "../utils";
-import { opcionesAgrupamiento } from "../constants";
+import { opcionesAgrupamiento, opcionesVisualizacion } from "../constants";
 import config from "../../../confg";
 
 // TODO Agregar al final de cada agrupamiento el total de agentes y el
@@ -20,7 +20,6 @@ export class DocumentoListadoAgentes extends DocumentoPDF {
 	}
 
 	async getContextData() {
-		// Recuperamos todas las opciones para el reporte (filtros, orden, etc)
 		let query = this.getQueryOptions();
 
 		// Por defecto estos campos siempre se van a mostrar en el reporte
@@ -32,6 +31,8 @@ export class DocumentoListadoAgentes extends DocumentoPDF {
 			"situacionLaboral.cargo.sector.nombre": 1,
 			"situacionLaboral.cargo.ubicacion.nombre": 1,
 		};
+		// Extra project fields
+		const projectCondition = this.cleanProjectConditions(query.projection);
 
 		// Identificamos el campo por el cual agrupar.
 		let groupField = utils.getQueryParam(query.filter, "$group");
@@ -41,14 +42,16 @@ export class DocumentoListadoAgentes extends DocumentoPDF {
 			_id: `$${groupField}`,
 			agentes: { $push: "$$ROOT" },
 		};
+
 		const filterCondition = this.cleanFilterConditions(query.filter);
+
 		// Aggregation Framework Pipeline
 		let pipeline: any = [
 			{ $match: filterCondition || {} },
 			{ $sort: query.sort || { apellido: 1 } },
 			{
 				$project: {
-					...(query.projection || {}),
+					...(projectCondition || {}),
 					...defaultProjection,
 					...{ [groupField]: 1 },
 				},
@@ -63,15 +66,10 @@ export class DocumentoListadoAgentes extends DocumentoPDF {
 			(elem) => elem.id == groupField
 		);
 
-		gruposAgentes = gruposAgentes.map((grupo) => {
-			// Cast agentes into Agente type !Malisimo
-			grupo.agentes = grupo.agentes.map((a) => new Agente(a));
-			return grupo;
-		});
 		return {
-			agrupamientoText: agrupamientoOption.nombre,
-			agrupamientoAgente: gruposAgentes,
-			extraFields: this.projectionToArray(query.projection),
+			agrupamientoLabel: agrupamientoOption.nombre,
+			extraFieldsLabels: this.projectionToArray(projectCondition),
+			results: gruposAgentes,
 		};
 	}
 
@@ -110,6 +108,34 @@ export class DocumentoListadoAgentes extends DocumentoPDF {
 			delete filter.$group;
 		}
 		return filter;
+	}
+
+	/**
+	 * Utilidad para determinar los campos a projectar en el pipeline.
+	 * Basicamente toma el objeto que arma previamente la libreria aqp
+	 * con los campos a proyectar y los 'reorganiza' asignandoles un
+	 * nuevo nombre al campo proyectado (el cual se obtiene de las opciones
+	 * de visualizacion).
+	 * Ej. Si projection = {
+	 *          { "estadoCivil": 1 },
+	 *          { "nacionalidad.nombre": 1 }}
+	 * retorna projection = {
+	 *          { "Estado Civil": "$estadoCivil" },
+	 *          { "Nacionalidad": "$nacionalidad.nombre" }}
+	 *
+	 * @param filter
+	 */
+	cleanProjectConditions(projection): any {
+		if (projection) {
+			Object.keys(projection).forEach((key) => {
+				const option = opcionesVisualizacion.find((e) => e.id == key);
+				if (option) {
+					projection[option.nombre] = "$" + key;
+					delete projection[key];
+				}
+			});
+		}
+		return projection;
 	}
 
 	projectionToArray(extraFields) {

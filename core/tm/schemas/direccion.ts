@@ -19,5 +19,9 @@ export const DireccionSchema = new Schema({
     ultimaActualizacion: Date,
 });
 
+DireccionSchema.methods._str_ = function(cb) {
+    return `${this.valor}`
+  };
+
 
 export const DireccionContacto = model('DireccionContacto', DireccionSchema);
