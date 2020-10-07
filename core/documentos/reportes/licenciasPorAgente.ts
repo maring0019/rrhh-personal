@@ -79,6 +79,7 @@ export class DocumentoLicenciasPorAgente extends DocumentoPDF {
 		return {
 			gruposAgente: gruposAgentes,
 			anios: anios,
+			srcImgLogo: this.headerLogo,
 		};
 	}
 

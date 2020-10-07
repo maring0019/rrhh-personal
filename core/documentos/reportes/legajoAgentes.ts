@@ -29,9 +29,9 @@ export class DocumentoLegajoAgente extends DocumentoPDF {
 			];
 
 			agentes = await Agente.aggregate(pipeline);
-			return { agentes: agentes };
+			return { agentes: agentes, srcImgLogo: this.headerLogo };
 		} catch {
-			return { agentes: agentes };
+			return { agentes: agentes, srcImgLogo: this.headerLogo };
 		}
 	}
 

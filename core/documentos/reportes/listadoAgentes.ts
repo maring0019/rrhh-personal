@@ -70,6 +70,7 @@ export class DocumentoListadoAgentes extends DocumentoPDF {
 			agrupamientoLabel: agrupamientoOption.nombre,
 			extraFieldsLabels: this.projectionToArray(projectCondition),
 			results: gruposAgentes,
+			srcImgLogo: this.headerLogo,
 		};
 	}
 

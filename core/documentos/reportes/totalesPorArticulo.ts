@@ -83,7 +83,8 @@ export class DocumentoAusenciasTotalesPorArticulo extends DocumentoPDF {
 
         return { 
                 gruposAgente: gruposAgentes,
-                articulos: articulos
+                articulos: articulos,
+                srcImgLogo: this.headerLogo
             }
     }
 
