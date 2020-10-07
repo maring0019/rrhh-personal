@@ -2,6 +2,10 @@
 <html>
     <%- include("base-header") %>
     <body style="margin:30px 25px;">
+        
+        <!-- LOGO HEADER  -->
+        <%- include("base-logo") %>
+        
         <h1>Ausencias. Listados por Agente</h1>
             <%- include("../utils/print") %>
             <% for (const grupo of gruposAgente) { %>
@@ -33,19 +37,19 @@
                                     <td class="tg-0pky" rowspan="<%= rowSpan %>"><%= value(agente.numero) %></td>
                                     <td class="tg-0pky" rowspan="<%= rowSpan %>">DNI <%= value(agente.documento) %></td>
                                     <td class="tg-0pky" rowspan="<%= rowSpan %>"><%= value(agente.apellido) %>, <%= value(agente.nombre) %></td>
-                                    <td class="tg-0pky"><%= value(aus[index].fechaDesde) %></td>
-                                    <td class="tg-0pky"><%= value(aus[index].fechaHasta) %></td>
-                                    <td class="tg-0pky"><%= aus[index].cantidadDias %></td>
-                                    <td class="tg-0pky"><%= aus[index].articulo.codigo %></td>
-                                    <td class="tg-0pky"><%= aus[index].extra %></td>
+                                    <td class="tg-0pky"><%= value(aus[index].fechaInicio) %></td>
+                                    <td class="tg-0pky"><%= value(aus[index].fechaFin) %></td>
+                                    <td class="tg-0pky"><%= aus[index].totalAusencias %></td>
+                                    <td class="tg-0pky"><%= aus[index]._id.articulo %></td>
+                                    <td class="tg-0pky"></td>
                                 </tr>
                             <% } else { %>        
                                 <tr>
-                                    <td class="tg-0pky"><%= value(aus[index].fechaDesde) %></td>
-                                    <td class="tg-0pky"><%= value(aus[index].fechaHasta) %></td>
-                                    <td class="tg-0pky"><%= aus[index].cantidadDias %></td>
-                                    <td class="tg-0pky"><%= aus[index].articulo.codigo %></td>
-                                    <td class="tg-0pky"><%= aus[index].extra %></td>
+                                    <td class="tg-0pky"><%= value(aus[index].fechaInicio) %></td>
+                                    <td class="tg-0pky"><%= value(aus[index].fechaFin) %></td>
+                                    <td class="tg-0pky"><%= aus[index].totalAusencias %></td>
+                                    <td class="tg-0pky"><%= aus[index]._id.articulo %></td>
+                                    <td class="tg-0pky"></td>
                                 </tr>
                             <% } %>    
                         <% } %>    
