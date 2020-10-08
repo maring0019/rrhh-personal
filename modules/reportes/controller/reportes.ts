@@ -29,6 +29,10 @@ class ReportesController extends BaseDocumentoController {
 		this.downloadAusenciasPorAgente = this.downloadAusenciasPorAgente.bind(
 			this
 		);
+		this.getTotalesPorArticulo = this.getTotalesPorArticulo.bind(this);
+		this.downloadTotalesPorArticulo = this.downloadTotalesPorArticulo.bind(
+			this
+		);
 		this.getCredencial = this.getCredencial.bind(this);
 		this.downloadCredencial = this.downloadCredencial.bind(this);
 		this.getCertificado = this.getCertificado.bind(this);

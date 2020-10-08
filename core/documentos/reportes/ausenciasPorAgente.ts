@@ -19,6 +19,7 @@ export class DocumentoAusenciasPorAgente extends DocumentoPDF {
     async getContextData(){
         // Recuperamos todas las opciones para el reporte (filtros, orden, etc)
         let query = this.getQueryOptions();
+        
         // Identificamos el campo por el cual agrupar. Si no se especifico agregamos
         // uno por defecto
         let groupField = utils.getQueryParam(query.filter, '$group');

@@ -38,47 +38,65 @@ export class DocumentoAusenciasTotalesPorArticulo extends DocumentoPDF {
         let fechaDesde = utils.getQueryParam(query.filter, 'fechaDesde'); // Format 2016-01-01
         let fechaHasta = utils.getQueryParam(query.filter, 'fechaHasta');
         let articulosIds = utils.getQueryParam(query.filter, 'articulos');
+        let filterArticulos: any = { $ne: null };
         if (articulosIds) {
-            articulosIds = articulosIds.$in? articulosIds.$in: [articulosIds];
+            articulosIds = articulosIds.$in ? articulosIds.$in : [articulosIds];
+            filterArticulos = { $in: articulosIds }
         }
-        else{
+        else {
             articulosIds = [];
         }
+
         // Preparamos las opciones de filtrado sobre el agente. Removemos filtros no requeridos
         let filterCondition = utils.cleanFilters(query.filter);
         
         // Aggregation Framework Pipeline
         let pipeline:any = [
             { $match: filterCondition || {}},
-            { $sort: query.sort || { apellido: 1 }},
+            { $sort: query.sort || { apellido: 1 } },
             { $lookup: {
                     from: "ausenciasperiodo",
-                    let: { agente_id: "$_id", fecha_desde: fechaDesde, fecha_hasta: fechaHasta},
-                    pipeline: 
-                        [{ 
-                            $match: { 
-                                $expr: {
-                                    $and: [ 
-                                        { $eq: ["$$agente_id", "$agente._id"]}, // Join con agente id
-                                        (articulosIds.length)?{ $in: ["$articulo._id", articulosIds ]}:{},
-                                        { $gte: ["$fechaDesde", "$$fecha_desde"]},
-                                        { $lte: ["$fechaHasta", "$$fecha_hasta"]}
-                                        ]
-                                    },
+                    let: { agente_id: "$_id" },
+                    pipeline:
+                        [{
+                            $match: {
+                                "$expr": { $eq: ["$agente._id", "$$agente_id"] }, // 'Join' con agentes
+                                "fechaHasta": { $gte: fechaDesde },
+                                "fechaDesde": { $lte: fechaHasta },
+                                "articulo._id": filterArticulos
+                            }
+                        },
+                        { $unwind: "$ausencias" },
+                        {
+                            $match: {
+                                "ausencias.fecha": {
+                                    $gte: fechaDesde,
+                                    $lte: fechaHasta
                                 }
-                            },
-                            { $group: { _id: "$articulo._id", ausenciasPorArticulo: { $sum: "$cantidadDias"} } },
-                            { $group: { _id : null, ausenciasTotales: { $sum: "$ausenciasPorArticulo"}, articulos: { $push: "$$ROOT" } } },
-
+                            }
+                        },
+                        {
+                        $group: {
+                            "_id": { "articulo": "$articulo._id"},
+                            ausenciasPorArticulo: { $sum: 1 }
+                        }
+                        },
+                        { $group: {
+                            "_id": null,
+                            "ausenciasTotales": { $sum: "$ausenciasPorArticulo" },
+                            "articulos": { $push: "$$ROOT" } } },
+                        
                         ],
                     as: "ausentismo"
-                 }
-            } ,
+                }
+            },
             { $group: groupCondition},
             { $sort: { _id:1 }}
         ]
 
+
         let gruposAgentes = await Agente.aggregate(pipeline);
+
         let articulos = await Articulo.find((articulosIds.length)?{"_id": { $in: articulosIds }}:{}).sort({ codigo: 1});
 
         return { 
