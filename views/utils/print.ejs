@@ -113,7 +113,16 @@ existAnio = function(element){
     return vigencia == anio;
 }
 
-mapLicenciasPorAnio = function(anios, ausentismo){
+sumAcumuladorPorAnio = function(totalAcumulado, anio, tomados, resto){
+    if (!totalAcumulado[anio]){
+        totalAcumulado[anio] = { totalTomado : 0, totalResto: 0 };
+    } 
+    totalAcumulado[anio].totalTomado = totalAcumulado[anio].totalTomado + tomados
+    totalAcumulado[anio].totalResto = totalAcumulado[anio].totalResto + resto
+    return totalAcumulado
+}
+
+mapLicenciasPorAgenteAnio = function(anios, ausentismo){
     let totalAcumulado = 0;
     let totalResto = 0;
     anios = anios.map(anio => {
@@ -121,24 +130,29 @@ mapLicenciasPorAnio = function(anios, ausentismo){
         if (idx >= 0){
             const totales = ausentismo[idx].intervalos[0].totales;
             const ejecutadas = ausentismo[idx].intervalos[0].ejecutadas;
-            anio = { 
-                tomados: totales,
-                resto: totales - ejecutadas
+            anio = {
+                anio :  anio, 
+                tomados: ejecutadas? ejecutadas: 0,
+                resto: totales - (ejecutadas? ejecutadas: 0)
             }
             totalAcumulado = totalAcumulado + anio.tomados;
             totalResto = totalResto + anio.resto;
         }
         else{
             anio = { 
-                tomados: '--',
-                resto: '--'
+                anio : anio,
+                tomados: 0,
+                resto: 0,
+
             }
         }
         return anio;
      })
-     anios.push({ tomados: totalAcumulado, resto: totalResto })
+     anios.push({ anio: "totales", tomados: totalAcumulado, resto: totalResto })
      return anios;
 }
+
+
 
 /**
 * Used by agente-legajo.ejs

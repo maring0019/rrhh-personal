@@ -33,6 +33,10 @@ class ReportesController extends BaseDocumentoController {
 		this.downloadTotalesPorArticulo = this.downloadTotalesPorArticulo.bind(
 			this
 		);
+		this.getLicenciasPorAgente = this.getLicenciasPorAgente.bind(this);
+		this.downloadLicenciasPorAgente = this.downloadLicenciasPorAgente.bind(
+			this
+		);
 		this.getCredencial = this.getCredencial.bind(this);
 		this.downloadCredencial = this.downloadCredencial.bind(this);
 		this.getCertificado = this.getCertificado.bind(this);

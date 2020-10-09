@@ -81,7 +81,7 @@ export class DocumentoLicenciasPorAgente extends DocumentoPDF {
 			anios: anios,
 			srcImgLogo: this.headerLogo,
 		};
-	}
+    }
 
 	getFilterField(filter, filterCondition) {
 		let filterField;

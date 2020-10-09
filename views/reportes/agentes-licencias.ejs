@@ -8,6 +8,8 @@
         
         <h1>Licencias</h1>
             <%- include("../utils/print") %>
+            <% var colWidth = "width:" + 70 / ((anios.length + 1) * 2) + "%"; %> 
+            <% var sumTotalXanio = {}; %> 
             <% for (const grupo of gruposAgente) { %>
             <table class="tg tgw">
                 <!-- HEADER  -->
@@ -18,8 +20,8 @@
                 </tr>
                 <!-- SUBHEADER  -->
                 <tr> 
-                    <td class="tg-xq07" rowspan="2" style="width:10%"><h3 class="m0">Numero</h3></td>
-                    <td class="tg-xq07" rowspan="2" style="width:10%"><h3 class="m0">Documento</h3></td>
+                    <td class="tg-xq07" rowspan="2" style="width:8%"><h3 class="m0">Numero</h3></td>
+                    <td class="tg-xq07" rowspan="2" style="width:7%"><h3 class="m0">Documento</h3></td>
                     <td class="tg-xq07" rowspan="2" style="width:15%"><h3 class="m0">Nombre</h3></td>
                     <% for (const anio of anios) { %>
                         <td class="tg-xq07" colspan="2"><h3 class="m0"><%= anio %></h3></td>    
@@ -28,28 +30,53 @@
                 </tr>
                 <tr> 
                     <% for (const anio of anios) { %>
-                        <td class="tg-xq07"><h3 class="m0">Tomados</h3></td>
-                        <td class="tg-xq07"><h3 class="m0">Resto</h3></td>
+                        <td class="tg-xq07" style=<%= colWidth %>><h3 class="m0">Tomados</h3></td>
+                        <td class="tg-xq07" style=<%= colWidth %>><h3 class="m0">Resto</h3></td>
                     <% } %>
-                        <td class="tg-xq07"><h3 class="m0">Tomados</h3></td>
-                        <td class="tg-xq07"><h3 class="m0">Resto</h3></td>
+                        <td class="tg-xq07" style=<%= colWidth %>><h3 class="m0">Tomados</h3></td>
+                        <td class="tg-xq07" style=<%= colWidth %>><h3 class="m0">Resto</h3></td>
                 </tr>
                 <!-- DATA  -->
+                <% var sumXgrupoXanio = {}; %> 
                 <% for (const agente of grupo.agentes) { %>
                 <tr>
                     <td class="tg-0pky"><%= value(agente.numero) %></td>
                     <td class="tg-0pky"><%= value(agente.documento) %></td>
                     <td class="tg-0pky"><%= value(agente.nombre) %>. DNI <%= value(agente.apellido) %></td>
-                    <% let licenciasMap = mapLicenciasPorAnio(anios, agente.ausentismo) %>
+                    <% let licenciasMap = mapLicenciasPorAgenteAnio(anios, agente.ausentismo) %>
                     <% for (const aus of licenciasMap) { %>
+                        <% sumXgrupoXanio = sumAcumuladorPorAnio(sumXgrupoXanio, aus.anio, aus.tomados, aus.resto)%>
                         <td class="tg-0pky"><%= value(aus.tomados) %></td>
                         <td class="tg-0pky"><%= value(aus.resto) %></td>    
                     <% } %>
                 </tr>
                 <% } %> 
+                <tr> 
+                    <td class="tg-xq07" colspan="3"><h3 class="m0">Subtotal</h3></td>
+                    <% for (const anio of anios) { %>
+                        <td class="tg-xq07"><%= sumXgrupoXanio[anio].totalTomado %></td>
+                        <td class="tg-xq07"><%= sumXgrupoXanio[anio].totalResto %></td>    
+                    <% } %>
+                        <td class="tg-xq07"><%= sumXgrupoXanio.totales.totalTomado %></td>
+                        <td class="tg-xq07"><%= sumXgrupoXanio.totales.totalResto %></td>
+                </tr>
             </table>
             <br>
+            <% for (const anio of anios) { %>
+                <% sumTotalXanio = sumAcumuladorPorAnio(sumTotalXanio, anio, sumXgrupoXanio[anio].totalTomado, sumXgrupoXanio[anio].totalResto);%>
+            <% } %>
+            <% sumTotalXanio = sumAcumuladorPorAnio(sumTotalXanio, "totales", sumXgrupoXanio.totales.totalTomado, sumXgrupoXanio.totales.totalResto);%>
         <% } %>
-
+        <table class="tg tgw">
+            <tr> 
+                <td class="tg-xq07" colspan="3" style="width:30%"><h3 class="m0">Total</h3></td>
+                <% for (const anio of anios) { %>
+                    <td class="tg-xq07" style=<%= colWidth %>><%= sumTotalXanio[anio].totalTomado %></td>
+                    <td class="tg-xq07" style=<%= colWidth %>><%= sumTotalXanio[anio].totalResto %></td>    
+                <% } %>
+                    <td class="tg-xq07" style=<%= colWidth %>><%= sumTotalXanio.totales.totalTomado %></td>
+                    <td class="tg-xq07" style=<%= colWidth %>><%= sumTotalXanio.totales.totalResto %></td>
+            </tr>
+        </table>
     </body>
 </html>
