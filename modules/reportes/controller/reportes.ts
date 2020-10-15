@@ -15,28 +15,14 @@ import {
 	opcionesAgrupamiento,
 	opcionesOrdenamiento,
 	opcionesVisualizacion,
+	opcionesTipoReporte,
 } from "../../../core/documentos/constants";
 
 class ReportesController extends BaseDocumentoController {
 	constructor() {
 		super();
 		// Reports
-		this.getLegajoAgente = this.getLegajoAgente.bind(this);
-		this.downloadLegajoAgente = this.downloadLegajoAgente.bind(this);
-		this.getListadoAgente = this.getListadoAgente.bind(this);
-		this.downloadListadoAgente = this.downloadListadoAgente.bind(this);
-		this.getAusenciasPorAgente = this.getAusenciasPorAgente.bind(this);
-		this.downloadAusenciasPorAgente = this.downloadAusenciasPorAgente.bind(
-			this
-		);
-		this.getTotalesPorArticulo = this.getTotalesPorArticulo.bind(this);
-		this.downloadTotalesPorArticulo = this.downloadTotalesPorArticulo.bind(
-			this
-		);
-		this.getLicenciasPorAgente = this.getLicenciasPorAgente.bind(this);
-		this.downloadLicenciasPorAgente = this.downloadLicenciasPorAgente.bind(
-			this
-		);
+		this.getReporte = this.getReporte.bind(this);
 		this.getCredencial = this.getCredencial.bind(this);
 		this.downloadCredencial = this.downloadCredencial.bind(this);
 		this.getCertificado = this.getCertificado.bind(this);
@@ -45,75 +31,44 @@ class ReportesController extends BaseDocumentoController {
 		this.downloadPartes = this.downloadPartes.bind(this);
 	}
 
-	async downloadLegajoAgente(req, res, next, options = null) {
-		let doc = new DocumentoLegajoAgente();
-		return await this.downloadDocumentoPDF(req, res, next, doc, options);
-	}
+	private reportes = {
+		// Reportes Generales
+		listado_agentes: DocumentoListadoAgentes,
+		legajos_agentes: DocumentoLegajoAgente,
+		ausentismo: DocumentoAusenciasPorAgente,
+		ausentismo_totalesxarticulo: DocumentoAusenciasTotalesPorArticulo,
+		licencias_agentes: DocumentoLicenciasPorAgente,
+	};
 
 	/**
-	 * PDF
-	 * @param req
-	 * @param res
-	 * @param next
-	 * @param options
+	 * Genera y retorna un reporte cuyo formato de salida puede ser
+	 * HTML o PDF dependiendo de lo indicado en la variable locals
+	 * del objeto response. El tipo de reporte a generar tambien se
+	 * encuentra en locals. Ambos valores son colocados alli con la
+	 * ayuda un de middleware en el router.
 	 */
-	async downloadListadoAgente(req, res, next, options = null) {
-		let doc = new DocumentoListadoAgentes();
-		return await this.downloadDocumentoPDF(req, res, next, doc, options);
-	}
+	async getReporte(req, res, next, options = null) {
+		const tipoReporte = res.locals.tipoReporte;
+		if (!tipoReporte || !this.reportes[tipoReporte])
+			return res
+				.status(400)
+				.send({ message: "El tipo de reporte solicitado no existe" });
 
-	async downloadTotalesPorArticulo(req, res, next, options = null) {
-		let doc = new DocumentoAusenciasTotalesPorArticulo();
-		return await this.downloadDocumentoPDF(req, res, next, doc, options);
-	}
-
-	async downloadAusenciasPorAgente(req, res, next, options = null) {
-		let doc = new DocumentoAusenciasPorAgente();
-		return await this.downloadDocumentoPDF(req, res, next, doc, options);
-	}
-
-	async downloadLicenciasPorAgente(req, res, next, options = null) {
-		let doc = new DocumentoLicenciasPorAgente();
-		return await this.downloadDocumentoPDF(req, res, next, doc, options);
-	}
-
-	/**
-	 * PDF
-	 * @param req
-	 * @param res
-	 * @param next
-	 * @param options
-	 */
-	async getLegajoAgente(req, res, next) {
-		let doc = new DocumentoLegajoAgente();
-		return await this.getDocumentoHTML(req, res, next, doc);
-	}
-
-	/**
-	 * HTML
-	 * @param req
-	 * @param res
-	 * @param next
-	 * @param options
-	 */
-	async getListadoAgente(req, res, next) {
-		let doc = new DocumentoListadoAgentes();
-		return await this.getDocumentoHTML(req, res, next, doc);
-	}
-
-	async getTotalesPorArticulo(req, res, next) {
-		let doc = new DocumentoAusenciasTotalesPorArticulo();
-		return await this.getDocumentoHTML(req, res, next, doc);
-	}
-
-	async getAusenciasPorAgente(req, res, next) {
-		let doc = new DocumentoAusenciasPorAgente();
-		return await this.getDocumentoHTML(req, res, next, doc);
-	}
-
-	async getLicenciasPorAgente(req, res, next) {
-		let doc = new DocumentoLicenciasPorAgente();
-		return await this.getDocumentoHTML(req, res, next, doc);
+		// Instanciamos 'dinamicamente' el tipo de documento a generar
+		// a partir del nombre del reporte especificado por parametro en
+		// el request. (Ver middleware en el router)
+		let doc = new this.reportes[tipoReporte]();
+		if (res.locals.formato == "html") {
+			return await this.getDocumentoHTML(req, res, next, doc);
+		} else {
+			return await this.downloadDocumentoPDF(
+				req,
+				res,
+				next,
+				doc,
+				options
+			);
+		}
 	}
 
 	async getCredencial(req, res, next, options = null) {
@@ -181,114 +136,10 @@ class ReportesController extends BaseDocumentoController {
 	async opcionesVisualizacion(req, res, next) {
 		return res.json(opcionesVisualizacion);
 	}
+
+	async opcionesTipoReporte(req, res, next) {
+		return res.json(opcionesTipoReporte);
+	}
 }
 
 export default ReportesController;
-
-// /**
-//  * PDF
-//  * @param req
-//  * @param res
-//  * @param next
-//  * @param options
-//  */
-// export async function downloadLegajoAgente(req, res, next, options = null) {
-//     let doc = new DocumentoLegajoAgente();
-//     return await this.downloadDocumentoPDF(req, res, next, doc, options);
-// }
-
-// /**
-//  * PDF
-//  * @param req
-//  * @param res
-//  * @param next
-//  * @param options
-//  */
-// export async function downloadListadoAgente(req, res, next, options = null) {
-//     let doc = new DocumentoListadoAgentes();
-//     return await this.downloadDocumentoPDF(req, res, next, doc, options);
-// }
-
-// export async function downloadTotalesPorArticulo(req, res, next, options = null) {
-//     let doc = new DocumentoAusenciasTotalesPorArticulo();
-//     return await this.downloadDocumentoPDF(req, res, next, doc, options);
-// }
-
-// export async function downloadAusenciasPorAgente(req, res, next, options = null) {
-//     let doc = new DocumentoAusenciasPorAgente();
-//     return await this.downloadDocumentoPDF(req, res, next, doc, options);
-// }
-
-// export async function downloadLicenciasPorAgente(req, res, next, options = null) {
-//     let doc = new DocumentoLicenciasPorAgente();
-//     return await this.downloadDocumentoPDF(req, res, next, doc, options);
-// }
-
-// /**
-//  * PDF
-//  * @param req
-//  * @param res
-//  * @param next
-//  * @param options
-//  */
-// export async function getLegajoAgente(req, res, next) {
-//     let doc = new DocumentoLegajoAgente();
-//     return await this.getDocumentoHTML(req, res, next, doc);
-// }
-
-// /**
-//  * HTML
-//  * @param req
-//  * @param res
-//  * @param next
-//  * @param options
-//  */
-// export async function getListadoAgente(req, res, next) {
-//     let doc = new DocumentoListadoAgentes();
-//     return await this.getDocumentoHTML(req, res, next, doc);
-// }
-
-// export async function getTotalesPorArticulo(req, res, next) {
-//     let doc = new DocumentoAusenciasTotalesPorArticulo();
-//     return await this.getDocumentoHTML(req, res, next, doc);
-// }
-
-// export async function getAusenciasPorAgente(req, res, next) {
-//     let doc = new DocumentoAusenciasPorAgente();
-//     return await this.getDocumentoHTML(req, res, next, doc);
-// }
-
-// export async function getLicenciasPorAgente(req, res, next) {
-//     let doc = new DocumentoLicenciasPorAgente();
-//     return await this.getDocumentoHTML(req, res, next, doc);
-// }
-
-// export async function this.getDocumentoHTML(req, res, next, doc) {
-//     try {
-//         let html = await doc.getHTML(req);
-//         res.writeHead(200, {
-//             'Content-Type': 'text/html'
-//         });
-//         res.write(html);
-//         res.end();
-//     }
-//     catch(err){
-//         return next(err);
-//     }
-// }
-
-// export async function this.downloadDocumentoPDF(req, res, next, doc, options = null) {
-//     try {
-//         let file = await doc.getPDF(req);
-//         res.download((file as string), (err) => {
-//             if (err) {
-//                 next(err);
-//             } else {
-//                 next();
-//             }
-//         });
-//     }
-//     catch(err){
-//         return next(err);
-//     }
-// }

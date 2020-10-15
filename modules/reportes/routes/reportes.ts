@@ -5,20 +5,33 @@ const controller = new ReportesController();
 
 export const Routes = express.Router();
 
-Routes.get('/agentes/legajo', controller.getLegajoAgente);
-Routes.get('/agentes/legajo/download', controller.downloadLegajoAgente);
+const middlewareView = async function (req, res, next) {
+    try {
+        res.locals.tipoReporte = req.query.tipoReporte;
+        res.locals.formato = req.query.formato? req.query.formato : 'html';
+        delete req.query.tipoReporte;
+        delete req.query.formato;
+        next();
+    } catch (err) {
+        return next(err);
+    }
+}
 
-Routes.get('/agentes/listado', controller.getListadoAgente);
-Routes.get('/agentes/listado/download', controller.downloadListadoAgente);
+const middlewarePrint = async function (req, res, next) {
+    try {
+        res.locals.tipoReporte = req.query.tipoReporte;
+        res.locals.formato = req.query.formato? req.query.formato : 'pdf';
+        delete req.query.tipoReporte;
+        delete req.query.formato;
+        next();
+    } catch (err) {
+        return next(err);
+    }
+}
 
-Routes.get('/agentes/ausentismo/totalesporarticulo', controller.getTotalesPorArticulo);
-Routes.get('/agentes/ausentismo/totalesporarticulo/download', controller.downloadTotalesPorArticulo);
+Routes.get('/view', middlewareView, controller.getReporte);
+Routes.get('/print', middlewarePrint, controller.getReporte);
 
-Routes.get('/agentes/ausentismo', controller.getAusenciasPorAgente);
-Routes.get('/agentes/ausentismo/download', controller.downloadAusenciasPorAgente);
-
-Routes.get('/agentes/licencias', controller.getLicenciasPorAgente);
-Routes.get('/agentes/licencias/download', controller.downloadLicenciasPorAgente);
 
 Routes.get('/agentes/partes', controller.getPartes);
 Routes.get('/agentes/partes/download', controller.downloadPartes);
@@ -30,6 +43,7 @@ Routes.get('/agentes/credencial/download', controller.downloadCredencial);
 Routes.get('/ausentismo/certificado', controller.getCertificado);
 Routes.get('/ausentismo/certificado/download', controller.downloadCertificado);
 
+Routes.get('/opciones-tipo-reporte', controller.opcionesTipoReporte);
 Routes.get('/opciones-agrupamiento', controller.opcionesAgrupamiento);
 Routes.get('/opciones-ordenamiento', controller.opcionesOrdenamiento);
 Routes.get('/opciones-visualizacion', controller.opcionesVisualizacion);

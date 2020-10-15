@@ -1,3 +1,11 @@
+export const opcionesTipoReporte = [
+    { id: "listado_agentes", nombre: "Listado de Agentes" },
+    { id: "legajos_agentes", nombre: "Legajos de Agentes" },
+    { id: "ausentismo", nombre: "Ausentismo" },
+    { id: "ausentismo_totalesxarticulo", nombre: "Ausentismo - Totales por artículo" },
+    { id: "licencias_agentes", nombre: "Licencias" },
+]
+
 export const opcionesAgrupamiento = [
 	// Datos Personales
 	// { id: "1", nombre: "------ Datos Personales --------", grupo:"Datos Personales" },
