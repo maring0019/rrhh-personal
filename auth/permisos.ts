@@ -134,15 +134,15 @@ export default [
 					},
 					{
 						key: "view_ausentismo",
-						title: "Ver Ausentismo",
+						title: "Ver Ausencias",
 						comment:
 							"Permite visualizar el ausentismo de los agentes",
 						type: "boolean",
 					},
 					{
 						key: "delete_ausentismo",
-						title: "Modificar Ausentismo",
-						comment: "Permite modificar las ausencias de un agente",
+						title: "Eliminar Ausencias",
+						comment: "Permite eliminar las ausencias de un agente",
 						type: "boolean",
 					},
 				],
