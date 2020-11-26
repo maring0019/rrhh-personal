@@ -1,31 +1,30 @@
-import * as express from 'express';
-import AgenteController from '../controller/agente';
-
+import * as express from "express";
+import { AgenteController as Controller } from "../controller/agente";
 
 export const Routes = express.Router();
 
+Routes.get("/agentes", Controller.getAgentes);
+Routes.get("/agentes/search", Controller.searchAgentes);
+Routes.get("/agentes/:id", Controller.getAgenteByID);
+Routes.get("/agentes/:id/fotos", Controller.getFotoPerfil);
+Routes.get("/agentes/:id/ausencias", Controller.getAusencias);
+Routes.get("/agentes/:id/ausencias/eventos", Controller.getAusenciasAsEvento);
+Routes.get("/agentes/:id/licencias/totales", Controller.getLicenciasTotales);
+Routes.get("/agentes/:id/ausencias/periodo", Controller.getAusencias);
+Routes.get("/agentes/:id/notas", Controller.getNotas);
+Routes.get("/agentes/:id/fichado/consultar", Controller.consultaFichadoAgente);
 
-Routes.get('/agentes', AgenteController.getAgentes);
-Routes.get('/agentes/search', AgenteController.searchAgentes);
-Routes.get('/agentes/:id', AgenteController.getAgenteByID);
-Routes.get('/agentes/:id/fotos', AgenteController.getFotoPerfil);
-Routes.get('/agentes/:id/ausencias', AgenteController.getAusencias);
-Routes.get('/agentes/:id/ausencias/eventos', AgenteController.getAusenciasAsEvento);
-Routes.get('/agentes/:id/licencias/totales', AgenteController.getLicenciasTotales);
-Routes.get('/agentes/:id/ausencias/periodo', AgenteController.getAusencias);
-Routes.get('/agentes/:id/notas', AgenteController.getNotas);
+Routes.post("/agentes", Controller.addAgente);
+Routes.post("/agentes/:id/fotos", Controller.uploadFotoPerfil);
+Routes.post("/agentes/:id/files", Controller.uploadFilesAgente);
 
-
-Routes.post('/agentes', AgenteController.addAgente);
-Routes.post('/agentes/:id/fotos', AgenteController.uploadFotoPerfil);
-Routes.post('/agentes/:id/files', AgenteController.uploadFilesAgente);
-
-
-Routes.put('/agentes/:id', AgenteController.updateAgente);
-Routes.put('/agentes/:id/baja', AgenteController.bajaAgente);
-Routes.put('/agentes/:id/reactivar', AgenteController.reactivarAgente);
-Routes.put('/agentes/:id/historia/add', AgenteController.addHistoriaLaboral);
-Routes.put('/agentes/:id/historia/update', AgenteController.updateHistoriaLaboral);
-Routes.put('/agentes/:id/historia/delete', AgenteController.deleteHistoriaLaboral);
-Routes.delete('/agentes/:id', AgenteController.deleteAgente);
-
+Routes.put("/agentes/:id", Controller.updateAgente);
+Routes.put("/agentes/:id/baja", Controller.bajaAgente);
+Routes.put("/agentes/:id/reactivar", Controller.reactivarAgente);
+Routes.put("/agentes/:id/fichado/habilitar", Controller.habilitaFichadoAgente);
+// prettier-ignore
+Routes.put("/agentes/:id/fichado/inhabilitar", Controller.inhabilitaFichadoAgente);
+Routes.put("/agentes/:id/historia/add", Controller.addHistoriaLaboral);
+Routes.put("/agentes/:id/historia/update", Controller.updateHistoriaLaboral);
+Routes.put("/agentes/:id/historia/delete", Controller.deleteHistoriaLaboral);
+Routes.delete("/agentes/:id", Controller.deleteAgente);
