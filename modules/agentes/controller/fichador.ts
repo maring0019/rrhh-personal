@@ -1,11 +1,6 @@
 const sql = require("mssql");
 import { SQLServerConnection } from "../../../connections";
 
-// class FichadorException extends Error {};
-
-async function generateLegacyID(agente) {
-    return 323232;
-}
 
 async function findUsuario(userID) {
     const sqlConn = await SQLServerConnection.connection;
@@ -54,6 +49,5 @@ export const fichador = {
     habilitaUsuario,
     inhabilitaUsuario,
     addUsuario,
-    findUsuario,
-    generateLegacyID,
+    findUsuario
 };

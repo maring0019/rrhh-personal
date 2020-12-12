@@ -14,6 +14,8 @@ import { Nota } from "../../notas/schemas/nota";
 
 import { fichador } from "./fichador";
 
+class FichadorException extends Error {};
+
 async function getAgentes(req, res, next) {
     try {
         let query = Agente.find({});
@@ -269,6 +271,17 @@ async function reactivarAgente(req, res, next) {
     }
 }
 
+async function generateLegacyID() {
+    let results:any = await Agente.aggregate([
+        { $sort: { idLegacy: -1 }},
+        { $limit: 1 },  
+    ]);
+    if (results && results.length == 1)
+        return results[0].idLegacy + 1;
+    throw new FichadorException(`No se pudo obtener un id valido para fichar`);
+}
+
+
 async function consultaFichadoAgente(req, res, next) {
     try {
         const id = req.params.id;
@@ -325,7 +338,7 @@ async function habilitaFichadoAgente(req, res, next) {
             return res.status(404).send({ message: "Agente not found" });
 
         if (!agente.idLegacy) {
-            agente.idLegacy = await fichador.generateLegacyID(agente);
+            agente.idLegacy = await generateLegacyID();
             await agente.save();
         }
 
