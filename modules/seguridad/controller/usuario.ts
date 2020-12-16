@@ -12,9 +12,8 @@ class UsuarioController extends BaseController {
 			let obj = req.body;
 			obj = this.cleanObjectID(obj);
 			let object = new Usuario(obj);
-			return res.json(object);
-			// const objNuevo = await object.save();
-			// return res.json(objNuevo);
+			const objNuevo = await object.save();
+			return res.json(objNuevo);
 		} catch (err) {
 			return next(err);
 		}
