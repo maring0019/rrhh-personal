@@ -1,5 +1,6 @@
 import { Types } from "mongoose";
 
+import * as config from "../../../confg";
 import { IndicadorAusentismo } from "../schemas/indicador";
 import { IndicadorAusentismoHistorico } from "../schemas/indicadorhistorico";
 import { AusenciaPeriodo } from "../schemas/ausenciaperiodo";
@@ -284,7 +285,7 @@ export async function getIndicadoresLicencia(agente) {
 	const thisYear = new Date().getFullYear();
 	return await IndicadorAusentismo.find({
 		"agente._id": Types.ObjectId(agente._id),
-		vigencia: { $gte: thisYear - 2 },
+		vigencia: { $gte: thisYear - config.appModules.ausentismo.maxYearsLicencias },
 		// 'vencido': false,
 		"intervalos.totales": { $nin: [null, ""] },
 	}).sort({ vigencia: 1 });

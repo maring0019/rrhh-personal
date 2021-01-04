@@ -64,3 +64,9 @@ export const hosts = {
 export const ports = {
     ldapPort: env("LDAP_PORT", ":389"),
 };
+
+export const appModules = {
+    ausentismo: { 
+        maxYearsLicencias : env("AUSENTISMO_MAX_YEARS_LICENCIAS", 3), 
+    }
+};
