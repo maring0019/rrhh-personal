@@ -71,23 +71,22 @@ export class DocumentoPDF {
 			format: "A4",
 			border: {
 				// default is 0, units: mm, cm, in, px
-				top: ".25cm",
+				top: "0.25cm",
 				right: "0cm",
-				bottom: "3cm",
+				// bottom: "3cm",
 				left: "0cm",
 			},
 			header: {
-				height: "5.75cm",
+				height: "0.25cm",
 			},
 			footer: {
-				height: "1cm",
+				height: "1.15cm",
 				contents: {},
 			},
 		};
 
-		DocumentoPDF.options = DocumentoPDF.options || phantomPDFOptions;
-		let options = DocumentoPDF.options || phantomPDFOptions;
-		return options;
+		DocumentoPDF.options = (Object.keys(DocumentoPDF.options).length)? DocumentoPDF.options : phantomPDFOptions;
+		return DocumentoPDF.options;
 	}
 
 	protected generarCSS() {
