@@ -13,11 +13,6 @@ export class DocumentoCredencialAgente extends DocumentoPDF {
     templateName = 'credencial/agente-credencial.ejs';
     outputFilename = `${config.app.uploadFilesPath}/credencialAgente.pdf`;
 
-    // generarCSS() {
-    //     return '';
-    // }
-    
-
     async getContextData(){
         const token = this.request.token;
         // Recuperamos los parametros de busqueda aplicados
@@ -29,37 +24,55 @@ export class DocumentoCredencialAgente extends DocumentoPDF {
                 '_id': 'documentoId'
               }
         });
-        const id = params.filter['_id'];
-        // const id = this.request.params.id;
-        if (!id || (id && !Types.ObjectId.isValid(id))) return {}
-        
-        const agente:any = await Agente.findById(id).lean();
-        if(!agente) return {}
-
-        let srcImgCredencial='';
-        
-        const agenteFotoModel = makeFs();
-        const files = await agenteFotoModel.find({ 'metadata.agenteID': new Types.ObjectId(agente._id) });
-        let file:any;
-        if (files && files.length){
-            for (const f of files){ // Si hay mas de un archivo procesamos el ultimos¿?
-                if (f.contentType =='image/jpg'){
-                    file = f;
-                } 
-            }
-        }
-        if (file){
-            srcImgCredencial = `${config.app.url}:${config.app.port}/api/modules/agentes/agentes/${agente._id}/fotos?attachment=true&token=${token}`;
-        }
+        // Validamos los parametros de busqueda ingresados y recuperamos los agentes de interes
+        let cleanIds:any;
+        const ids = params.filter['_ids'];
+        if (!ids) return {};
+        if (!ids.$in){
+            cleanIds = (Types.ObjectId.isValid(ids))? [ids] : null;
+        } 
         else{
-            srcImgCredencial = `${config.app.url}:${config.app.port}/static/images/user.jpg`
+            cleanIds = ids.$in.filter(id=> Types.ObjectId.isValid(id)); 
         }
-        const cargo = agente.situacionLaboral? agente.situacionLaboral.cargo : null;
+        if (!cleanIds || !cleanIds.length) return {};
+        const agentes:any = await Agente.find( { _id: { $in: cleanIds }}).lean();
+        if(!agentes || !agentes.length) return {};
+
+        // Por cada agente vamos a recuperar info extra necesaria para las crendenciales
+        let srcImgCredenciales = [];
+        let servicios = [];
+        let funciones = [];
+        const agenteFotoModel = makeFs();
+        for (const agente of agentes) {
+            
+            // Recuperamos la foto de cada agente
+            const files = await agenteFotoModel.find({ 'metadata.agenteID': new Types.ObjectId(agente._id) });
+            let file:any;
+            if (files && files.length){
+                for (const f of files){ // Si hay mas de un archivo procesamos el ultimos¿?
+                    if (f.contentType =='image/jpg'){
+                        file = f;
+                    } 
+                }
+            }
+            if (file){
+                srcImgCredenciales.push(`${config.app.url}:${config.app.port}/api/modules/agentes/agentes/${agente._id}/fotos?attachment=true&token=${token}`);
+            }
+            else{
+                srcImgCredenciales.push(`${config.app.url}:${config.app.port}/static/images/user.jpg`);
+            }
+            // Identificamos funcion y servicio de cada agente
+            const cargo = agente.situacionLaboral? agente.situacionLaboral.cargo : null;
+            funciones.push(cargo? cargo.subpuesto.nombre : '');
+            servicios.push(cargo? cargo.servicio.nombre: '')
+            
+        }
+        
         return {
-            agente: agente,
-            funcion: cargo? cargo.subpuesto.nombre : '',
-            servicio: cargo? cargo.servicio.nombre: '',
-            srcImgCredencial: srcImgCredencial,
+            agentes: agentes,
+            funciones: funciones,
+            servicios: servicios,
+            srcImgCredenciales: srcImgCredenciales,
             srcImgLogo: `${config.app.url}:${config.app.port}/static/images/logo_hospital.jpeg`
         }
     }

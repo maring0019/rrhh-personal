@@ -1,0 +1,25 @@
+<div class="container">
+    <div class="credencial">
+        <div class="header">
+            <% if (funcion) { %>
+                <%= value(funcion) %>
+            <% } %>
+        </div>
+        <div class="body">
+            <% if (foto) { %>
+                <img src="<%= foto %>" class="foto" alt="...">
+            <% } %>
+            <% if (agente) { %>
+                <h1><%= value(agente.apellido) %>, <%= value(agente.nombre) %></h1>
+            <% } %>
+            
+            <div class="break"></div>
+            <% if (servicio) { %>
+                <h5 class="servicio"><%= value(servicio) %></h5>
+            <% } %>    
+        </div>
+        <div class="footer">
+            <img src='<%= srcImgLogo %>'>
+        </div>
+    </div>
+</div>

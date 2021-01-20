@@ -58,6 +58,12 @@ export class DocumentoPDF {
 		return path.join(config.app.templateRootPath, this.getTemplateName());
 	}
 
+	/**
+	 * Override este metodo para proveer de datos al 'template'.
+	 * Este metodo es uno de los mas importantes porque aqui se debe
+	 * recuperar y enviar toda la informacion necesaria para que el
+	 * template la renderize (ejs). 
+	 */
 	protected async getContextData() {
 		return this.ctx;
 	}

@@ -7,30 +7,28 @@
     </head>
     <body>
         <%- include("../utils/print") %>
-            <div class="container">
-                <div class="credencial">
-                    <div class="header">
-                        <% if (funcion) { %>
-                            <%= value(funcion) %>
-                        <% } %>
-                    </div>
-                    <div class="body">
-                        <% if (srcImgCredencial) { %>
-                            <img src="<%= srcImgCredencial %>" class="foto" alt="...">
-                        <% } %>
-                        <% if (agente) { %>
-                            <h1><%= value(agente.apellido) %>, <%= value(agente.nombre) %></h1>
-                        <% } %>
-                        
-                        <div class="break"></div>
-                        <% if (servicio) { %>
-                            <h5 class="servicio"><%= value(servicio) %></h5>
-                        <% } %>    
-                    </div>
-                    <div class="footer">
-                        <img src='<%= srcImgLogo %>'>
-                    </div>
-                </div>
-            </div>
+        <% let outerIndex = 0; let hayAgentes = true; %>
+        <table>
+        <% while (hayAgentes) { %>
+            <% if (outerIndex+1 !=1 && (outerIndex+1) % 8 == 1) { %>
+                <tr class="credencial-salto-pagina"></tr>
+                <tr class="credencial-salto-pagina"></tr>
+                <tr class="credencial-salto-pagina"></tr>
+            <% } %>     
+            <tr>
+            <% for (var i = 0; i < 2; i++) { %>
+                <% if (agentes.length > outerIndex) { %>
+                    <td>
+                        <%- include('credencial', {agente: agentes[outerIndex], funcion:funciones[outerIndex], servicio:servicios[outerIndex], foto:srcImgCredenciales[outerIndex], srcImgLogo:srcImgLogo}) %>            
+                    </td>
+                <% } else { %>
+                    <% hayAgentes = false %>
+                <% } %>
+
+                <% outerIndex++ %>
+            <% } %> 
+            </tr>
+        <% } %>
+        </table>    
     </body>
 </html>

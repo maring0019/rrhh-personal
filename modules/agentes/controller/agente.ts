@@ -17,22 +17,23 @@ import { fichador } from "./fichador";
 class FichadorException extends Error {};
 
 async function getAgentes(req, res, next) {
-    try {
-        let query = Agente.find({});
-        if (req.query.nombre) {
-            query
-                .where("nombre")
-                .equals(RegExp("^.*" + req.query.nombre + ".*$", "i"));
-        }
-        if (req.query.numero) {
-            query.where({ numero: req.query.numero });
-        }
+    return await searchAgentes(req, res, next);
+    // try {
+    //     let query = Agente.find({});
+    //     if (req.query.nombre) {
+    //         query
+    //             .where("nombre")
+    //             .equals(RegExp("^.*" + req.query.nombre + ".*$", "i"));
+    //     }
+    //     if (req.query.numero) {
+    //         query.where({ numero: req.query.numero });
+    //     }
 
-        let agentes = await query.sort({ nombre: 1 }).exec();
-        return res.json(agentes);
-    } catch (err) {
-        return next(err);
-    }
+    //     let agentes = await query.sort({ nombre: 1 }).exec();
+    //     return res.json(agentes);
+    // } catch (err) {
+    //     return next(err);
+    // }
 }
 
 // TODO Implementar testing
