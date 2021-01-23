@@ -7,6 +7,36 @@ import * as ejs from "ejs";
 
 import config from "../../confg";
 
+const moment = require("moment");
+moment.locale('es');
+
+class PrintUtils {
+    formatDate(value: any, arg1: string): any {
+        if ( value ){
+            if (arg1) {
+                if (arg1 === 'diahora') return moment(value).utc().format('ddd DD/MM HH:mm');
+                if (arg1 === 'utc') return moment(value).utc().format('DD/MM/YYYY');
+                if (arg1 === 'dia') return moment(value).utc().format('dddd');
+                if (arg1 === 'diasmall') return moment(value).utc().format('dd');
+                if (arg1 === 'diames') return moment(value).utc().format('DD/MM');
+                if (arg1 === 'duracion') return this.duracion(value);
+            } else {
+                return moment(value).format('DD/MM/YYYY');
+            }
+        }
+        else {
+            return "---";
+        }
+        
+    }
+
+    duracion(milisegundos){
+        const tempTime = moment.duration(milisegundos);
+        return tempTime.hours() + "hs. " + tempTime.minutes() + "min. ";
+    }
+
+}
+
 /**
  * Base Class para generar dpcumentos PDF.
  */
@@ -68,6 +98,10 @@ export class DocumentoPDF {
 		return this.ctx;
 	}
 
+	protected getExtraScripts(){
+		return { printUtils: new PrintUtils()}
+	}
+
 	protected getOutputFilename() {
 		return this.outputFilename;
 	}
@@ -117,7 +151,8 @@ export class DocumentoPDF {
 	async generarHTML() {
 		let htmlTemplate = this.getTemplate();
 		let ctx = await this.getContextData();
-		let html = this.parseHTML(htmlTemplate, ctx);
+		let extraScripts = this.getExtraScripts();
+		let html = this.parseHTML(htmlTemplate, {...ctx, ...extraScripts});
 		html = html + this.generarCSS();
 		return html;
 	}

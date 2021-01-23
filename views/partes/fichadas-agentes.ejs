@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <link rel="stylesheet" href="/static/css/style.scss">
+        <%- include("../reportes/base-header") %>
+    </head>
+    
+    <body style="margin:30px 25px;">
+
+        <%- include("../utils/print") %>
+            <div style="margin-bottom:50px; float: right;"> 
+                <img src='<%= srcImgLogo %>' />
+            </div>
+            <!-- REPORT HEADER  -->
+            <br>
+            <table class="tg tgw no-border">
+                <tr>
+                    <td class="tg-0pky" style="width:50%"><span class="bold">Desde:</span> <%= value(fechaDesde) %></td>
+                    <td class="tg-0pky" style="width:50%"><span class="bold">Hasta:</span> <%= value(fechaHasta) %></td>
+                </tr>
+                <% if (agente) { %>
+                <tr>
+                    <td class="tg-0pky" style="width:50%"><span class="bold">Agente:</span> <%= agente.apellido %>, <%= agente.nombre %> </td>
+                    <td class="tg-0pky" style="width:50%"><span class="bold">Documento:</span> <%= agente.documento %></td>
+                </tr>
+                <% } %>
+            </table>
+            <br>
+            
+            
+            <!-- REPORT DATA -->
+            <table class="tg tgw">
+                <!-- SHEADER  -->
+                <tr> 
+                    <td class="tg-xq07" style="width:10%">Lugar de Trabajo</td>
+                    <td class="tg-xq07" style="width:10%">Agente</td>
+                    <td class="tg-xq07" style="width:10%">Cód. Fichado</td>
+                    <td class="tg-xq07" style="width:10%">Entrada</td>
+                    <td class="tg-xq07" style="width:10%">Salida</td>
+                    <td class="tg-xq07" style="width:20%">Hs. Trabajo</td>
+                </tr>
+                
+                <!-- DATA  -->     
+                <% for (const fichada of fichadas) { %>
+                    <tr>
+                        <td><%= value(fichada, 'ubicacion.nombre') %></td>
+                        <td><%= value(fichada, 'agente.apellido') %>, <%= value(fichada, 'agente.nombre') %></td>
+                        <td><%= value(fichada.codigoFichado) %></td>
+                        <td><%= printUtils.formatDate(fichada.entrada, 'diahora') %></td>
+                        <td><%= printUtils.formatDate(fichada.salida, 'diahora') %></td>    
+                        <td><%= printUtils.formatDate(fichada.horasTrabajadas, 'duracion') %></td>
+                    </tr>
+                <% } %>
+            </table>
+          
+            <br>
+    </body>
+</html>

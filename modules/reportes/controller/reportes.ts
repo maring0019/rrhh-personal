@@ -10,6 +10,7 @@ import { DocumentoLicenciasPorAgente } from "../../../core/documentos/reportes/l
 import { DocumentoConstanciaCertificado } from "../../../core/documentos/constanciaCertificado";
 import { DocumentoCredencialAgente } from "../../../core/documentos/credencialAgente";
 import { DocumentoParteDiarioAgente } from "../../../core/documentos/partes/parteDiario";
+import { DocumentoFichadasAgente } from "../../../core/documentos/partes/fichadas";
 
 import {
 	opcionesAgrupamiento,
@@ -17,6 +18,7 @@ import {
 	opcionesVisualizacion,
 	opcionesTipoReporte,
 } from "../../../core/documentos/constants";
+
 
 class ReportesController extends BaseDocumentoController {
 	constructor() {
@@ -38,6 +40,8 @@ class ReportesController extends BaseDocumentoController {
 		ausentismo: DocumentoAusenciasPorAgente,
 		ausentismo_totalesxarticulo: DocumentoAusenciasTotalesPorArticulo,
 		licencias_agentes: DocumentoLicenciasPorAgente,
+		// ReportesPartes
+		fichadas_agentes: DocumentoFichadasAgente
 	};
 
 	/**

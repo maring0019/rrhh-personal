@@ -211,6 +211,20 @@ class ParteController extends BaseController {
      */
     async getFichadasAgentesReporte(req, res, next){
         try {
+            let objs = await this.queryFichadasAgentes(req);
+            return res.json(objs);
+        } catch (err) {
+            return next(err);
+        }
+        
+    }
+
+    /**
+     * Query final para recuperar informacion de las fichadas de uno o mas agentes.
+     * Esta consulta se utiliza tambien para la generacion del reporte pdf.
+     */
+    async queryFichadasAgentes(req){
+        try {
             let objs = [];
             let casters = 
                 {
@@ -252,8 +266,8 @@ class ParteController extends BaseController {
                 }
                 delete qp.filter['fecha'];
             }
-            if (fechaDesde == null || fechaHasta == null)
-                return res.status(400).send({message:"Fecha desde y Fecha hasta son obligatorios"});
+            if (fechaDesde == null || fechaHasta == null) return [];
+            
             qp.filter.fecha = {
                 $gte: fechaDesde,
                 $lte: fechaHasta
@@ -269,7 +283,7 @@ class ParteController extends BaseController {
            
             // Si el agente buscado no pertenece al servicio filtrado evitamos seguir 
             // con la consulta general y simplemente retornamos un array vacio.
-            if (agentesID && agenteID && agentesID.findIndex((e) => e.equals( agenteID))==-1) return res.json([]);
+            if (agentesID && agenteID && agentesID.findIndex((e) => e.equals( agenteID))==-1) return [];
             
             // Aqui determinamos si buscamos las fichadas de un agente particular o las
             // las fichadas de todos los agentes de un servicio/ubicacion
@@ -301,9 +315,9 @@ class ParteController extends BaseController {
             ]
             
             objs = await FichadaCache.aggregate(pipeline);
-            return res.json(objs);
+            return objs;
         } catch (err) {
-            return next(err);
+            return [];
         }
     }
 
