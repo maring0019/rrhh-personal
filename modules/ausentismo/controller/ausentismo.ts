@@ -22,29 +22,41 @@ export async function getAusentismoById(req, res, next){
 export async function getAusentismo(req, res, next) {
     try {
         let results = [];
-        let query = AusenciaPeriodo.find({});
         // Params
         const agenteId = req.query.agenteId;
         const articuloId = req.query.articuloId;
         const fechaDesde = req.query.fechaDesde;
         const fechaHasta = req.query.fechaHasta;
+        let matchParams = {};
         let agente:any = await utils.findObjectById(agenteId, Agente);
         if (!agente){
             return res.json(results);
         }
         else{
-            query.where('agente._id').equals(agenteId);
+            matchParams['agente._id'] = Types.ObjectId(agenteId);
         }
         if (articuloId) {
-            query.where('articulo._id').equals(articuloId);
+            matchParams['articulo._id'] = Types.ObjectId(articuloId);
         }
         if (fechaDesde) {
-            query.where({'fechaDesde': { $gte: fechaDesde }})
+            matchParams['fechaDesde'] = { $gte: new Date(fechaDesde) };
         }
         if (fechaHasta) {
-            query.where({'fechaHasta': { $lte: fechaHasta }})
+            matchParams['fechaHasta'] = { $lte: new Date(fechaHasta) };
         }
-        results = await query.sort({ fechaHasta: -1 }).limit(365).exec();
+        let pipeline:any = [
+            { $match: matchParams },
+            { $lookup: {
+                from: "files.files",
+                localField: "_id",
+                foreignField: "metadata.objID",
+                as: "adjuntos"
+                }
+            },
+            { $limit: 365 },
+            { $sort: { fechaHasta:-1 }}
+        ]
+        results = await AusenciaPeriodo.aggregate(pipeline);
         return res.json(results);
     } catch (err) {
         return next(err);
