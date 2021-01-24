@@ -73,7 +73,7 @@ export class DocumentoCredencialAgente extends DocumentoPDF {
             funciones: funciones,
             servicios: servicios,
             srcImgCredenciales: srcImgCredenciales,
-            srcImgLogo: `${config.app.url}:${config.app.port}/static/images/logo_hospital.jpeg`
+            srcImgLogoSmall: `${config.app.url}:${config.app.port}/static/images/logo_small.jpeg`
         }
     }
 

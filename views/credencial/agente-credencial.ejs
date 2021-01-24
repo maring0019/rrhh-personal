@@ -19,7 +19,7 @@
             <% for (var i = 0; i < 2; i++) { %>
                 <% if (agentes.length > outerIndex) { %>
                     <td>
-                        <%- include('credencial', {agente: agentes[outerIndex], funcion:funciones[outerIndex], servicio:servicios[outerIndex], foto:srcImgCredenciales[outerIndex], srcImgLogo:srcImgLogo}) %>            
+                        <%- include('credencial', {agente: agentes[outerIndex], funcion:funciones[outerIndex], servicio:servicios[outerIndex], foto:srcImgCredenciales[outerIndex], srcImgLogoSmall:srcImgLogoSmall}) %>            
                     </td>
                 <% } else { %>
                     <% hayAgentes = false %>
