@@ -25,6 +25,8 @@ export class DocumentoAusenciasTotalesPorArticulo extends DocumentoPDF {
               castParams: {
                 '_id': 'documentoId',
                 'situacionLaboral.cargo.sector._id': 'documentoId',
+                'situacionLaboral.cargo.puesto._id': 'documentoId',
+                'situacionLaboral.cargo.subpuesto._id': 'documentoId',
                 'articulos': 'documentoId'
               }
         })
