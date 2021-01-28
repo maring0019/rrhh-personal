@@ -62,12 +62,13 @@ export class DocumentoAusenciasPorAgente extends DocumentoPDF {
                             }
                         },
                         { $group: {
-                            "_id" : { "ausentismo": "$_id", "agente":"$agente._id", "articulo":"$articulo.codigo" },
+                            "_id" : { "ausentismo": "$_id", "agente":"$agente._id", "articulo":"$articulo.codigo","observacion":"$observacion","extra":"$extra"},
                             "totalAusencias" : { $sum: 1 },
                             "fechaInicio": { $min: "$ausencias.fecha" },
-                            "fechaFin": { $max: "$ausencias.fecha" }
+                            "fechaFin": { $max: "$ausencias.fecha" },
                             }
                         },
+                        { $sort: { fechaInicio: 1 }}            
                     ],
                 as: "ausentismo"
                 }

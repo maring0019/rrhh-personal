@@ -41,7 +41,7 @@
                                     <td class="tg-0pky"><%= value(aus[index].fechaFin) %></td>
                                     <td class="tg-0pky"><%= aus[index].totalAusencias %></td>
                                     <td class="tg-0pky"><%= aus[index]._id.articulo %></td>
-                                    <td class="tg-0pky"></td>
+                                    <td class="tg-0pky"><%= aus[index]._id.extra %></td>
                                 </tr>
                             <% } else { %>        
                                 <tr>
@@ -49,7 +49,7 @@
                                     <td class="tg-0pky"><%= value(aus[index].fechaFin) %></td>
                                     <td class="tg-0pky"><%= aus[index].totalAusencias %></td>
                                     <td class="tg-0pky"><%= aus[index]._id.articulo %></td>
-                                    <td class="tg-0pky"></td>
+                                    <td class="tg-0pky"><%= aus[index]._id.extra %></td>
                                 </tr>
                             <% } %>    
                         <% } %>    
