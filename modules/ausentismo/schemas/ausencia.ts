@@ -7,7 +7,10 @@ export const AusenciaSchema = new Schema({
             required: true
         }
     }, 
-    fecha: Date,
+    fecha:  {
+        type: Date,
+        index: true
+    },
     articulo: {
         _id: {
             type: Types.ObjectId,

@@ -8,7 +8,7 @@
         
         <h1>Ausencias. Listados por Agente</h1>
             <%- include("../utils/print") %>
-            <% for (const grupo of gruposAgente) { %>
+            <% for (const grupo of gruposAgente) { %>   
                 <table class="tg tgw">
                     <!-- HEADER  -->
                     <tr> 
@@ -28,12 +28,12 @@
                         <td class="tg-xq07" style="width:10%"><h3 class="m0">Obs</h3></td>
                     </tr>
                     <!-- DATA  -->     
-                    <% for (const agente of grupo.agentes) { %>
+                    <% for (const agente of grupo.agentes) { %>                        
                         <% let rowSpan = agente.ausentismo.length? agente.ausentismo.length : 1 %>
                         <% let aus = agente.ausentismo; %>
                         <% for (index = 0; index < aus.length; index++) { %>
                             <% if (index == 0) { %>
-                                <tr>
+                                <tr style="border-top-width: 1px;">
                                     <td class="tg-0pky" rowspan="<%= rowSpan %>"><%= value(agente.numero) %></td>
                                     <td class="tg-0pky" rowspan="<%= rowSpan %>">DNI <%= value(agente.documento) %></td>
                                     <td class="tg-0pky" rowspan="<%= rowSpan %>"><%= value(agente.apellido) %>, <%= value(agente.nombre) %></td>
@@ -53,8 +53,8 @@
                                 </tr>
                             <% } %>    
                         <% } %>    
-                    <% } %>
-                </table>
+                    <% } %> <!-- end for grupo.agentes-->
+                </table>             
             <br>
             <% } %>
 

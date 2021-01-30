@@ -50,7 +50,7 @@ export class DocumentoAusenciasPorAgente extends DocumentoPDF {
                             "$expr" : { $eq : ["$agente._id", "$$agente_id" ] }, // 'Join' con agentes
                             "fechaHasta": { $gte: fechaDesde },
                             "fechaDesde": { $lte: fechaHasta },
-                            "articulo._id": filterArticulos
+                            "articulo._id": filterArticulos,
                             } 
                         },
                         { $unwind : "$ausencias"},
@@ -68,16 +68,19 @@ export class DocumentoAusenciasPorAgente extends DocumentoPDF {
                             "fechaFin": { $max: "$ausencias.fecha" },
                             }
                         },
+                        { $match:{ totalAusencias: { $gt: 0}} },
                         { $sort: { fechaInicio: 1 }}            
                     ],
                 as: "ausentismo"
                 }
             },
+            { $match: { ausentismo: { $not:{ $size: 0 }}}},
             { $group: groupCondition},
             { $sort: { _id:1 }}
         ]
     
         let gruposAgentes = await Agente.aggregate(pipeline);
+    
     
         return { 
             gruposAgente: gruposAgentes,
