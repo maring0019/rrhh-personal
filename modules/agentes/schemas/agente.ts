@@ -91,7 +91,6 @@ AgenteSchema.index(
 	}
 );
 
-// AgenteSchema.plugin(audit.plugin);
 AgenteSchema.plugin(audit.plugin, { omit: ["_id"] });
 
 export const Agente = model("Agente", AgenteSchema, "agentes");

@@ -16,6 +16,8 @@ class AuditController extends BaseController {
 
 	// prettier-ignore
 	models = {
+		// Los modelos se habilitan uno por uno para auditora
+		// en la definicion del schema
         "articulo"       : "Articulo",
         "feriado"        : "Feriado",
         "tipo-situacion" : "TipoSituacion",
@@ -24,7 +26,8 @@ class AuditController extends BaseController {
         "nota"           : "Nota",
         "parte"          : "Parte",
         "parte-agente"   : "ParteAgente",
-        "usuario"        : "usuarios"
+		"usuario"        : "usuarios",
+		"rol"            : "Rol",
     }
 
 	async get(req, res, next) {
