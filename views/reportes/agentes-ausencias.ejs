@@ -33,23 +33,23 @@
                         <% let aus = agente.ausentismo; %>
                         <% for (index = 0; index < aus.length; index++) { %>
                             <% if (index == 0) { %>
-                                <tr style="border-top-width: 1px;">
+                                <tr style="border-top-width: 1px;" class="border-cell">
                                     <td class="tg-0pky" rowspan="<%= rowSpan %>"><%= value(agente.numero) %></td>
                                     <td class="tg-0pky" rowspan="<%= rowSpan %>">DNI <%= value(agente.documento) %></td>
                                     <td class="tg-0pky" rowspan="<%= rowSpan %>"><%= value(agente.apellido) %>, <%= value(agente.nombre) %></td>
-                                    <td class="tg-0pky"><%= value(aus[index].fechaInicio) %></td>
-                                    <td class="tg-0pky"><%= value(aus[index].fechaFin) %></td>
-                                    <td class="tg-0pky"><%= aus[index].totalAusencias %></td>
-                                    <td class="tg-0pky"><%= aus[index]._id.articulo %></td>
-                                    <td class="tg-0pky"><%= aus[index]._id.extra %></td>
+                                    <td><%= value(aus[index].fechaInicio) %></td>
+                                    <td><%= value(aus[index].fechaFin) %></td>
+                                    <td><%= aus[index].totalAusencias %></td>
+                                    <td><%= aus[index]._id.articulo %></td>
+                                    <td><%= aus[index]._id.extra %></td>
                                 </tr>
                             <% } else { %>        
-                                <tr>
-                                    <td class="tg-0pky"><%= value(aus[index].fechaInicio) %></td>
-                                    <td class="tg-0pky"><%= value(aus[index].fechaFin) %></td>
-                                    <td class="tg-0pky"><%= aus[index].totalAusencias %></td>
-                                    <td class="tg-0pky"><%= aus[index]._id.articulo %></td>
-                                    <td class="tg-0pky"><%= aus[index]._id.extra %></td>
+                                <tr class="border-cell">
+                                    <td><%= value(aus[index].fechaInicio) %></td>
+                                    <td><%= value(aus[index].fechaFin) %></td>
+                                    <td><%= aus[index].totalAusencias %></td>
+                                    <td><%= aus[index]._id.articulo %></td>
+                                    <td><%= aus[index]._id.extra %></td>
                                 </tr>
                             <% } %>    
                         <% } %>    
