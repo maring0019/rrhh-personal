@@ -120,7 +120,7 @@ export class DocumentoPDF {
 				height: "0.25cm",
 			},
 			footer: {
-				height: "1.15cm",
+				height: "1.5cm",
 				contents: {},
 			},
 		};
