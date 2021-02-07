@@ -67,6 +67,12 @@ export const modules = {
         route: '/modules/notas',
         middleware: null,
     },
+    adjunto:{
+        active: true,
+        path: './modules/adjuntos/routes',
+        route: '/modules/adjuntos',
+        middleware: null,
+    },
     usuario:{
         active: true,
         path: './modules/seguridad/routes',

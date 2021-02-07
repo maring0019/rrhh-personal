@@ -12,6 +12,7 @@ Routes.get("/agentes/:id/ausencias/eventos", Controller.getAusenciasAsEvento);
 Routes.get("/agentes/:id/licencias/totales", Controller.getLicenciasTotales);
 Routes.get("/agentes/:id/ausencias/periodo", Controller.getAusencias);
 Routes.get("/agentes/:id/notas", Controller.getNotas);
+Routes.get("/agentes/:id/adjuntos", Controller.getAdjuntos);
 Routes.get("/agentes/:id/fichado/consultar", Controller.consultaFichadoAgente);
 
 Routes.post("/agentes", Controller.addAgente);

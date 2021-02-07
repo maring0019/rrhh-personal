@@ -11,8 +11,10 @@ import { readImage } from "../../../core/files/utils";
 import { IndicadorAusentismo } from "../../ausentismo/schemas/indicador";
 import { NormaLegal } from "../schemas/normaLegal";
 import { Nota } from "../../notas/schemas/nota";
+import { Adjunto } from "../../adjuntos/schemas/adjunto";
 
 import { fichador } from "./fichador";
+
 
 class FichadorException extends Error {};
 
@@ -563,6 +565,24 @@ async function getNotas(req, res, next) {
     }
 }
 
+async function getAdjuntos(req, res, next) {
+    try {
+        const id = req.params.id;
+        if (!id || (id && !Types.ObjectId.isValid(id))) return next(404);
+        let agente: any = await Agente.findById(id);
+        if (!agente) return next(404);
+
+        const pipeline = [
+            { $match: { "object._id": Types.ObjectId(agente._id) } },
+            { $sort: { fecha: -1 } },
+        ];
+        let adjuntos = await Adjunto.aggregate(pipeline);
+        return res.json(adjuntos);
+    } catch (err) {
+        return next(err);
+    }
+}
+
 async function getAusenciasAsEvento(req, res, next) {
     try {
         const id = req.params.id;
@@ -808,6 +828,7 @@ export const AgenteController = {
     getAusenciasAsEvento,
     getLicenciasTotales,
     getNotas,
+    getAdjuntos,
     uploadFotoPerfil,
     uploadFilesAgente,
     _findFotoPerfil,

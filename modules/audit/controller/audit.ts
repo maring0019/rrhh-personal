@@ -28,6 +28,7 @@ class AuditController extends BaseController {
         "parte-agente"   : "ParteAgente",
 		"usuario"        : "usuarios",
 		"rol"            : "Rol",
+		"adjunto"        : "Adjunto",
     }
 
 	async get(req, res, next) {
