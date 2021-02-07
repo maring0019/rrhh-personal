@@ -12,9 +12,9 @@ export class DocumentoAusenciasTotalesPorArticulo extends DocumentoPDF {
     templateName = 'reportes/agentes-ausencias-por-articulo.ejs';
     outputFilename = `${config.app.uploadFilesPath}/totalesporarticulo.pdf`;
 
-    generarCSS() {
-        return '';
-    }
+    getCSSFiles(){
+        return this.isPrintable? ["css/reset.scss", "css/reports.scss"] : ["css/reports.scss"];
+    }	
     
     async getContextData(){ 
         // Recuperamos todas las opciones para el reporte (filtros, orden, etc)

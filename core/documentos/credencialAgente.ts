@@ -9,9 +9,12 @@ import config from '../../confg';
 
 
 export class DocumentoCredencialAgente extends DocumentoPDF {
-
     templateName = 'credencial/agente-credencial.ejs';
     outputFilename = `${config.app.uploadFilesPath}/credencialAgente.pdf`;
+
+    getCSSFiles(){
+        return this.isPrintable? ["css/reset.scss", "css/style.scss"] : ["css/style.scss"];
+    }
 
     async getContextData(){
         const token = this.request.token;

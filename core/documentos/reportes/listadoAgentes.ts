@@ -15,9 +15,9 @@ export class DocumentoListadoAgentes extends DocumentoPDF {
 	templateName = "reportes/agentes-listado.ejs";
 	outputFilename = `${config.app.uploadFilesPath}/listado.pdf`;
 
-	generarCSS() {
-		return "";
-	}
+	getCSSFiles(){
+        return this.isPrintable? ["css/reset.scss", "css/reports.scss"] : ["css/reports.scss"];
+    }	
 
 	async getContextData() {
 		let query = this.getQueryOptions();

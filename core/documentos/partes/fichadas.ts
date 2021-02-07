@@ -13,8 +13,9 @@ export class DocumentoFichadasAgente extends DocumentoPDF {
     templateName = 'partes/fichadas-agentes.ejs';
     outputFilename =  `${config.app.uploadFilesPath}/fichadasagentes.pdf`;
 
-    generarCSS() {
-        return '';
+    getCSSFiles(){
+        const html = ["css/style.scss", "css/reports.scss"]
+        return this.isPrintable? ["css/reset.scss", ...html] : html;
     }
     
     async getContextData(){

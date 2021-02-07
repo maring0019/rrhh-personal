@@ -61,10 +61,13 @@ class ReportesController extends BaseDocumentoController {
 		// Instanciamos 'dinamicamente' el tipo de documento a generar
 		// a partir del nombre del reporte especificado por parametro en
 		// el request. (Ver middleware en el router)
-		let doc = new this.reportes[tipoReporte]();
+		
 		if (res.locals.formato == "html") {
+			let doc = new this.reportes[tipoReporte]();
 			return await this.getDocumentoHTML(req, res, next, doc);
 		} else {
+			const printable = true
+			let doc = new this.reportes[tipoReporte](printable);
 			return await this.downloadDocumentoPDF(
 				req,
 				res,
@@ -86,7 +89,8 @@ class ReportesController extends BaseDocumentoController {
 
 	async downloadCredencial(req, res, next, options = null) {
 		try {
-			let doc = new DocumentoCredencialAgente();
+			const printable = true;
+			let doc = new DocumentoCredencialAgente(printable);
 			return await this.downloadDocumentoPDF(req, res, next, doc);
 		} catch (err) {
 			return next(err);
@@ -104,7 +108,8 @@ class ReportesController extends BaseDocumentoController {
 
 	async downloadCertificado(req, res, next, options = null) {
 		try {
-			let doc = new DocumentoConstanciaCertificado();
+			const printable = true;
+			let doc = new DocumentoConstanciaCertificado(printable);
 			return await this.downloadDocumentoPDF(req, res, next, doc);
 		} catch (err) {
 			return next(err);
@@ -122,7 +127,8 @@ class ReportesController extends BaseDocumentoController {
 
 	async downloadPartes(req, res, next, options = null) {
 		try {
-			let doc = new DocumentoParteDiarioAgente();
+			const printable = true;
+			let doc = new DocumentoParteDiarioAgente(printable);
 			return await this.downloadDocumentoPDF(req, res, next, doc);
 		} catch (err) {
 			return next(err);

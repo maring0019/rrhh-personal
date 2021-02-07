@@ -11,9 +11,9 @@ export class DocumentoLegajoAgente extends DocumentoPDF {
 	templateName = "reportes/agentes-legajo.ejs";
 	outputFilename = `${config.app.uploadFilesPath}/legajo.pdf`;
 
-	generarCSS() {
-		return "";
-	}
+	getCSSFiles(){
+        return this.isPrintable? ["css/reset.scss", "css/reports.scss"] : ["css/reports.scss"];
+    }	
 
 	async getContextData() {
 		let agentes = [];

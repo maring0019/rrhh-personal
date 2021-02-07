@@ -11,9 +11,9 @@ export class DocumentoLicenciasPorAgente extends DocumentoPDF {
 	templateName = "reportes/agentes-licencias.ejs";
 	outputFilename = `${config.app.uploadFilesPath}/licenciasporarticulo.pdf`;
 
-	generarCSS() {
-		return "";
-	}
+	getCSSFiles(){
+        return this.isPrintable? ["css/reset.scss", "css/reports.scss"] : ["css/reports.scss"];
+    }	
 
 	async getContextData() {
 		// Recuperamos todas las opciones para el reporte (filtros, orden, etc)

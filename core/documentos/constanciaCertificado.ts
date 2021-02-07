@@ -14,9 +14,9 @@ export class DocumentoConstanciaCertificado extends DocumentoPDF {
     templateName = 'ausentismo/constancia-certificado.ejs';
     outputFilename = `${config.app.uploadFilesPath}/constanciaCertificado.pdf`;
 
-    generarCSS() {
-         return '';
-    }
+    getCSSFiles(){
+        return this.isPrintable? ["css/reset.scss"] : [];
+    }	
     
 
     async getContextData(){

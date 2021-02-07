@@ -13,8 +13,9 @@ export class DocumentoParteDiarioAgente extends DocumentoPDF {
     templateName = 'partes/partes-diario-agente.ejs';
     outputFilename =  `${config.app.uploadFilesPath}/partediarioagente.pdf`;
 
-    generarCSS() {
-        return '';
+    getCSSFiles(){
+        const html = ["css/style.scss", "css/reports.scss"]
+        return this.isPrintable? ["css/reset.scss", ...html] : html;
     }
     
     async getContextData(){

@@ -9,11 +9,11 @@ import config from '../../../confg';
 
 
 export class DocumentoAusenciasPorAgente extends DocumentoPDF {
-    templateName = 'reportes/agentes-ausencias.ejs';
     outputFilename = `${config.app.uploadFilesPath}/ausenciasporagente.pdf`;
+    templateName = 'reportes/agentes-ausencias.ejs';
 
-    generarCSS() {
-        return '';
+    getCSSFiles(){
+        return this.isPrintable? ["css/reset.scss", "css/reports.scss"] : ["css/reports.scss"];
     }
     
     async getContextData(){

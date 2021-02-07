@@ -33,7 +33,11 @@ class PrintUtils {
     duracion(milisegundos){
         const tempTime = moment.duration(milisegundos);
         return tempTime.hours() + "hs. " + tempTime.minutes() + "min. ";
-    }
+	}
+	
+	baseURL(){
+		return `${config.app.url}:${config.app.port}`;
+	}
 
 }
 
@@ -47,8 +51,13 @@ export class DocumentoPDF {
 	ctx: any = {};
 	outputFilename = "documento.pdf";
 	headerLogo = `${config.app.url}:${config.app.port}/static/images/logo_hospital.jpeg`;
+	isPrintable = false;
 
 	request: any;
+
+	constructor(printable:boolean=false){
+		this.isPrintable = printable;
+	}
 
 	private static options: pdf.CreateOptions = {};
 
@@ -89,6 +98,13 @@ export class DocumentoPDF {
 	}
 
 	/**
+	 * Override this method to add custom css per document.
+	 */
+	protected getCSSFiles(){
+		return ["css/reset.scss"];
+	}
+
+	/**
 	 * Override este metodo para proveer de datos al 'template'.
 	 * Este metodo es uno de los mas importantes porque aqui se debe
 	 * recuperar y enviar toda la informacion necesaria para que el
@@ -112,7 +128,7 @@ export class DocumentoPDF {
 			border: {
 				// default is 0, units: mm, cm, in, px
 				top: "0.25cm",
-				right: "0cm",
+				right: "0.25cm",
 				// bottom: "3cm",
 				left: "0cm",
 			},
@@ -131,7 +147,7 @@ export class DocumentoPDF {
 
 	protected generarCSS() {
 		let css = "<style>\n\n";
-		let files = ["css/style.scss"];
+		let files = this.getCSSFiles();
 		for (const file of files) {
 			let scssFile = path.join(config.app.publicFolder, file);
 			css += scss.renderSync({
