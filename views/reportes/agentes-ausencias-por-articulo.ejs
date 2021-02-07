@@ -32,15 +32,15 @@
                 <% for (index = 0; index <= articulos.length; index++){ ceroRows = ceroRows + "<td class='tg-0pky'>0</td>" } %>
                     
                 <% for (const agente of grupo.agentes) { %>
-                    <tr>
-                        <td class="tg-0pky">Agente <%= value(agente.numero) %>. DNI <%= value(agente.documento) %></td>
-                        <td class="tg-0pky"><%= value(agente.apellido) %>, <%= value(agente.nombre) %></td>
+                    <tr class="border-cell">
+                        <td>Agente <%= value(agente.numero) %>. DNI <%= value(agente.documento) %></td>
+                        <td><%= value(agente.apellido) %>, <%= value(agente.nombre) %></td>
                         <% if (agente.ausentismo.length) { %>
                             <% let articulosMap = mapTotalesPorArticulos(articulos, agente.ausentismo[0].articulos) %>
                             <% for (const articulo of articulosMap) {  %>
-                                <td class="tg-0pky"><%= articulo.ausencias %></td>
+                                <td><%= articulo.ausencias %></td>
                             <% } %>    
-                            <td class="tg-0pky"><%= agente.ausentismo[0].ausenciasTotales %></td>
+                            <td><%= agente.ausentismo[0].ausenciasTotales %></td>
                         <% } else { %>  
                             <%- ceroRows %>
                         <% } %>        

@@ -1,15 +1,29 @@
 table {
+    margin-top: 20px;
     border-collapse: collapse;
 }
 table, th, td {
     border: 1px solid black;
 }
 
+h1 {
+   margin-bottom: 0.5rem; 
+}
+
 .border-cell td {border-width: 1px;text-align:left;vertical-align:top}
 .tgw  {width: 100%;}
 .tg  {border-collapse:collapse;border-spacing:0;}
 .tg tr { border-width: 0px; border-style: solid}
-.tg td{font-family:Arial, sans-serif;font-size:12px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;}
+.tg td{
+    font-family:Arial, sans-serif;
+    font-size:12px;
+    vertical-align: middle;
+    padding:5px 5px;
+    border-style:solid;
+    border-width:1px;
+    overflow:hidden;
+    word-break:normal;
+    border-color:black;}
 .tg th{font-family:Arial, sans-serif;font-size:12px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;}
 .tg .tg-xq07{background-color:#efefef;border-color:inherit;text-align:left;vertical-align:top}
 .tg .tg-266k{background-color:#9b9b9b;border-color:inherit;text-align:left;vertical-align:top}
@@ -22,4 +36,6 @@ table, th, td {
 .bold {font-weight:bold}
 .no-border {border: none !important}
 .no-border td {border: none !important}
-    
+.legajo td{
+    padding:10px 5px 5px;
+}

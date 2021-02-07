@@ -15,7 +15,7 @@ export class DocumentoFichadasAgente extends DocumentoPDF {
 
     getCSSFiles(){
         const html = ["css/style.scss", "css/reports.scss"]
-        return this.isPrintable? ["css/reset.scss", ...html] : html;
+        return this.isPrintable? ["css/reset.scss", ...html, "css/print.scss"] : html;
     }
     
     async getContextData(){

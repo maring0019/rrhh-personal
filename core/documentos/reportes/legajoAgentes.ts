@@ -12,7 +12,7 @@ export class DocumentoLegajoAgente extends DocumentoPDF {
 	outputFilename = `${config.app.uploadFilesPath}/legajo.pdf`;
 
 	getCSSFiles(){
-        return this.isPrintable? ["css/reset.scss", "css/reports.scss"] : ["css/reports.scss"];
+        return this.isPrintable? ["css/reset.scss", "css/reports.scss", "css/print.scss"] : ["css/reports.scss"];
     }	
 
 	async getContextData() {

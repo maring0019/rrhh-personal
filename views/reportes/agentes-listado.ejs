@@ -18,14 +18,14 @@
                 <tr> 
                     <td class="tg-xq07" style="width:10%"><h3 class="m0">Numero</h3></td>
                     <td class="tg-xq07" style="width:10%"><h3 class="m0">Documento</h3></td>
-                    <td class="tg-xq07" style="width:40%"><h3 class="m0">Nombre</h3></td>
-                    <td class="tg-xq07" style="width:20%"><h3 class="m0">Lugar de Trabajo</h3></td>
-                    <td class="tg-xq07" style="width:20%"><h3 class="m0">Servicio</h3></td>
+                    <td class="tg-xq07" style="width:36%"><h3 class="m0">Nombre</h3></td>
+                    <td class="tg-xq07" style="width:22%"><h3 class="m0">Lugar de Trabajo</h3></td>
+                    <td class="tg-xq07" style="width:22%"><h3 class="m0">Servicio</h3></td>
                 </tr>
-                <% let rowClass= (extraFieldsLabels && extraFieldsLabels.length)?'tg-xq07':'tg-0pky'; %>
+                <% let rowClass= (extraFieldsLabels && extraFieldsLabels.length)?'tg-xq07':''; %>
                 <% for (const agente of grupo.agentes) { %>
                    
-                    <tr>
+                    <tr class="border-cell">
                         <td class="<%= rowClass %>"><%= value(agente.numero) %></td>
                         <td class="<%= rowClass %>"><%= value(agente.documento) %></td>
                         <td class="<%= rowClass %>"><%= value(agente.apellido) %>, <%= value(agente.nombre) %></td>

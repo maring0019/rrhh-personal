@@ -13,7 +13,7 @@ export class DocumentoAusenciasPorAgente extends DocumentoPDF {
     templateName = 'reportes/agentes-ausencias.ejs';
 
     getCSSFiles(){
-        return this.isPrintable? ["css/reset.scss", "css/reports.scss"] : ["css/reports.scss"];
+        return this.isPrintable? ["css/reset.scss", "css/reports.scss", "css/print.scss"] : ["css/reports.scss"];
     }
     
     async getContextData(){

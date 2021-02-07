@@ -13,7 +13,7 @@ export class DocumentoAusenciasTotalesPorArticulo extends DocumentoPDF {
     outputFilename = `${config.app.uploadFilesPath}/totalesporarticulo.pdf`;
 
     getCSSFiles(){
-        return this.isPrintable? ["css/reset.scss", "css/reports.scss"] : ["css/reports.scss"];
+        return this.isPrintable? ["css/reset.scss", "css/reports.scss", "css/print.scss"] : ["css/reports.scss"];
     }	
     
     async getContextData(){ 
