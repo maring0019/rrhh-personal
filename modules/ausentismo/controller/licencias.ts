@@ -51,7 +51,10 @@ class LicenciasController {
      * @param ausNewValues 
      */
     async simpleUpdateAusentismo(ausToUpdate, ausNewValues){
-        await ausToUpdate.updateOne({ $set: { observacion: ausNewValues.observacion } });
+        await ausToUpdate.updateOne({ $set: {
+             observacion: ausNewValues.observacion,
+             extra: ausNewValues.extra}
+            });
         return ausToUpdate;
     }
 
