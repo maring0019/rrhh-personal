@@ -13,14 +13,14 @@ class GuardiaController extends BaseController {
         super(model);
         this.addAndConfirmar = this.addAndConfirmar.bind(this);
         this.updateAndConfirmar = this.updateAndConfirmar.bind(this);
-        this.updateAndValidar = this.updateAndValidar.bind(this);
+        this.updateAndProcesar = this.updateAndProcesar.bind(this);
         this.generarCSV = this.generarCSV.bind(this);
     }
 
     // Posibles estados de la guardia (planilla)
     ESTADO_SIN_CONFIRMAR = 0;
     ESTADO_CONFIRMADA = 1;
-    ESTADO_VALIDADA = 2;
+    ESTADO_PROCESADA = 2;
 
     
     async add(req, res, next) {
@@ -39,8 +39,8 @@ class GuardiaController extends BaseController {
         return await this.saveUpdate(req, res, next, this.ESTADO_CONFIRMADA);
     }
 
-    async updateAndValidar(req, res, next){
-        return await this.saveUpdate(req, res, next, this.ESTADO_VALIDADA);
+    async updateAndProcesar(req, res, next){
+        return await this.saveUpdate(req, res, next, this.ESTADO_PROCESADA);
     }
 
     
@@ -136,6 +136,7 @@ class GuardiaController extends BaseController {
     async saveAdd(req, res, next, estadoGuardia){
         try {
             let obj = req.body;
+            obj = this.cleanObjectID(obj)
             obj.fechaEntrega = new Date();
             obj.estado = estadoGuardia;
             let object = new Guardia(obj);

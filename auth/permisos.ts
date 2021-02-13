@@ -225,6 +225,56 @@ export default [
             },
         ],
     },
+    // Módulo de Guardias
+    {
+        key: "guardias",
+        title: "Módulo de Guardias",
+        childs: [
+            {
+                key: "guardia",
+                title: "Guardias",
+                childs: [
+                    {
+                        key: "view_guardia",
+                        title: "Ver/Listar Guardias",
+                        comment: "Permite ver o listar guardias.",
+                        type: "boolean",
+                    },
+                    {
+                        key: "add_guardia",
+                        title: "Crear Guardia",
+                        comment: "Permite crear guardias.",
+                        type: "boolean",
+                    },
+                    {
+                        key: "change_guardia",
+                        title: "Editar Guardia",
+                        comment: "Permite editar guardias.",
+                        type: "boolean",
+                    },
+                    {
+                        key: "confirmar_guardia",
+                        title: "Confirmar Guardia",
+                        comment: "Permite confirmar guardias.",
+                        type: "boolean",
+                    },
+                    {
+                        key: "procesar_guardia",
+                        title: "Permite procesar una Guardia",
+                        comment:
+                            "Permite procesar las guardias elaboradas por los jefes de servicio",
+                        type: "boolean",
+                    },
+                    {
+                        key: "exportar_csv",
+                        title: "Permite exportar Guardia al formato CSV",
+                        comment: "Permite exportar una guardia al formato CSV",
+                        type: "boolean",
+                    },
+                ],
+            }
+        ],
+    },
     // Módulo de Reportes
     {
         key: "reportes",
