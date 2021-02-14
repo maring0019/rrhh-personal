@@ -11,7 +11,7 @@ export const GuardiaSchema = new Schema({
     lote: GuardiaLoteSchema,
     planilla: [GuardiaItemPlanillaSchema],
     estado: String,
-    fechaEntrega: Date,
+    fechaHoraEntrega: Date,
     responsableEntrega: {
         _id: {
             type: Types.ObjectId
@@ -20,14 +20,14 @@ export const GuardiaSchema = new Schema({
         apellido: String
     },
     // validado: Boolean,
-    responsableValidacion: { // Agente de Gestion de Personal
+    responsableProcesamiento: { // Agente de Gestion de Personal
         _id: {
             type: Types.ObjectId
         },
         nombre: String,
         apellido: String
     },
-    fechaValidacion: Date
+    fechaHoraProcesamiento: Date
 });
 
 // GuardiaSchema.index({

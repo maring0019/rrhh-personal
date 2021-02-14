@@ -3,6 +3,7 @@ import { Guardia } from "../schemas/guardia";
 import { Types } from "mongoose";
 
 import * as moment from 'moment';
+import { timestamp } from "../../../core/utils/dates";
 
 const fs = require('fs');
 const csv = require('fast-csv');
@@ -22,25 +23,64 @@ class GuardiaController extends BaseController {
     ESTADO_CONFIRMADA = 1;
     ESTADO_PROCESADA = 2;
 
-    
+    protected getQueryParams(req, casters?) {
+        let queryParams = super.getQueryParams(req, casters);
+        // Add default order
+        queryParams['sort'] = { 'estado': 1, 'periodo.fechaHasta': -1, 'fechaHoraEntrega': -1 }
+        return queryParams;
+	}
+
+    getUser(req){
+        const user = super.getUser(req);
+        if (user) {
+            return {
+                _id: user.id,
+                nombre: user.nombre,
+                apellido: user.apellido
+            }
+        }
+        return {};
+    }
+
     async add(req, res, next) {
-        return await this.saveAdd(req, res, next, this.ESTADO_SIN_CONFIRMAR);
+        const changeset = {
+            estado: this.ESTADO_SIN_CONFIRMAR
+        };
+        return await this.saveAdd(req, res, next, changeset);
     }
 
     async addAndConfirmar(req, res, next){
-        return await this.saveAdd(req, res, next, this.ESTADO_CONFIRMADA);
+        const changeset = {
+            estado: this.ESTADO_CONFIRMADA
+        };
+        return await this.saveAdd(req, res, next, changeset);
     }
 
     async update(req, res, next){
-        return await this.saveUpdate(req, res, next, this.ESTADO_SIN_CONFIRMAR);
+        const changeset = {
+            estado: this.ESTADO_SIN_CONFIRMAR,
+            fechaHoraEntrega: timestamp(),
+            responsableEntrega: this.getUser(req)
+        };
+        return await this.saveUpdate(req, res, next, changeset);
     }
 
     async updateAndConfirmar(req, res, next){
-        return await this.saveUpdate(req, res, next, this.ESTADO_CONFIRMADA);
+        const changeset = {
+            estado: this.ESTADO_CONFIRMADA,
+            fechaHoraEntrega: timestamp(),
+            responsableEntrega: this.getUser(req)
+        };
+        return await this.saveUpdate(req, res, next, changeset);
     }
 
     async updateAndProcesar(req, res, next){
-        return await this.saveUpdate(req, res, next, this.ESTADO_PROCESADA);
+        const changeset = {
+            estado: this.ESTADO_PROCESADA,
+            fechaHoraProcesamiento: timestamp(),
+            responsableProcesamiento: this.getUser(req)
+        };
+        return await this.saveUpdate(req, res, next, changeset);
     }
 
     
@@ -128,17 +168,18 @@ class GuardiaController extends BaseController {
 
     /**
      * Helper utilizado por los metodos 'add', y 'addAndConfirmar'
-     * Basicamente crea una guardia con el estado indicado por el
-     * parametro estadoGuardia
-     * @param estadoGuardia
+     * Basicamente crea una guardia, aplicandole los valores enviados
+     * en el changeset
+     * @param changeset
      * TODO: Validar que el periodo, y lote sean unicos 
      */
-    async saveAdd(req, res, next, estadoGuardia){
+    async saveAdd(req, res, next, changeset){
         try {
             let obj = req.body;
             obj = this.cleanObjectID(obj)
-            obj.fechaEntrega = new Date();
-            obj.estado = estadoGuardia;
+            obj.fechaHoraEntrega = timestamp();
+            obj.responsableEntrega = this.getUser(req);
+            obj = {...obj, ...changeset};
             let object = new Guardia(obj);
             const objNuevo = await object.save();
             return res.json(objNuevo);
@@ -150,19 +191,18 @@ class GuardiaController extends BaseController {
 
     /**
      * Helper utilizado por los metodos 'update', y 'updateAndConfirmar'
-     * Basicamente guarda una guardia actualizando la fecha y su estado
-     * segun lo indicado por el parametro estadoGuardia
-     * @param estadoGuardia  
+     * Basicamente guarda una guardia actualizando los parametros indicados
+     * en el changeset
+     * @param changeset
      */
-    async saveUpdate(req, res, next, estadoGuardia){
+    async saveUpdate(req, res, next, changeset){
         try {
             const id = req.params.id;
             if (!id || (id && !Types.ObjectId.isValid(id))) return res.status(404).send();
             let objToUpdate:any = await Guardia.findById(id);
             if (!objToUpdate) return res.status(404).send();
             let objWithChanges = req.body;
-            objWithChanges.fechaEntrega = new Date();
-            objWithChanges.estado = estadoGuardia;
+            objWithChanges = {...objWithChanges, ...changeset};
             await objToUpdate.updateOne({ $set: objWithChanges });
             const objUpdated = await Guardia.findById(id);
             return res.json(objUpdated);

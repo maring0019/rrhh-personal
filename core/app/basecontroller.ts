@@ -89,8 +89,6 @@ class BaseController {
 					.status(404)
 					.send({ message: this.getMessageNotFound() });
 			let changes = req.body;
-			// await object.updateOne({ $set: objWithChanges });
-			// let objUpdated = await this.getObject(req.params.id);
 			object = this.prepareObjectAudit(object, changes);
 			await object.updateOne(object);
 			let objUpdated = await this.getObject(req.params.id);
