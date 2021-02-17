@@ -159,11 +159,7 @@ export async function getIndicadoresSinPeriodo(
  * @param anio
  */
 export async function calcularIndicadoresAusentismo(
-	agente,
-	articulo,
-	formula,
-	anio?
-) {
+						agente, articulo, formula, anio?) {
 	let indicadorAusentismo: any = {
 		agente: agente,
 		articulo: articulo,
@@ -181,11 +177,7 @@ export async function calcularIndicadoresAusentismo(
 }
 
 export async function calcularIndicadoresPorIntervalo(
-	agente,
-	articulo,
-	formula,
-	anio?
-) {
+						agente, articulo, formula, anio?) {
 	let intervalos = [];
 	let indicadoresIntervalo: any;
 	if (!formula.periodo) {
@@ -386,6 +378,13 @@ export const constantes = {
 		],
 	},
 	cuatrimestre: {
+		intervalos: [
+			{ desde: { dia: 1, mes: 0 }, hasta: { dia: 30, mes: 3 } },
+			{ desde: { dia: 1, mes: 4 }, hasta: { dia: 31, mes: 7 } },
+			{ desde: { dia: 1, mes: 8 }, hasta: { dia: 31, mes: 11 } },
+		],
+	},
+	cuatrimestral: {
 		intervalos: [
 			{ desde: { dia: 1, mes: 0 }, hasta: { dia: 30, mes: 3 } },
 			{ desde: { dia: 1, mes: 4 }, hasta: { dia: 31, mes: 7 } },
