@@ -53,8 +53,8 @@ export async function getAusentismo(req, res, next) {
                 as: "adjuntos"
                 }
             },
-            { $limit: 365 },
-            { $sort: { fechaHasta:-1 }}
+            { $sort: { fechaHasta:-1 }},
+            { $limit: 365 }
         ]
         results = await AusenciaPeriodo.aggregate(pipeline);
         return res.json(results);
