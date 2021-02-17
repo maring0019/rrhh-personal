@@ -3,6 +3,7 @@ import * as aqp from 'api-query-params';
 
 import { DocumentoPDF } from "../documentos";
 import { Agente } from "../../../modules/agentes/schemas/agente";
+import { Articulo } from "../../../modules/ausentismo/schemas/articulo";
 
 import * as utils from "../utils";
 import config from '../../../confg';
@@ -14,6 +15,34 @@ export class DocumentoAusenciasPorAgente extends DocumentoPDF {
 
     getCSSFiles(){
         return this.isPrintable? ["css/reset.scss", "css/reports.scss", "css/print.scss"] : ["css/reports.scss"];
+    }
+
+    async encabezadoFiltrosAplicados(){
+        // Recuperamos los filtros aplicados
+        const query = this.getQueryOptions();
+        let articulosIds = utils.getQueryParam(query.filter, 'articulos');
+        const fechaDesde = utils.getQueryParam(query.filter, 'fechaDesde');
+        const fechaHasta = utils.getQueryParam(query.filter, 'fechaHasta')
+        
+        // Identificamos los articulos seleccionados
+        let articulosText = []
+        if (articulosIds){
+            articulosIds = articulosIds.$in? articulosIds.$in: [articulosIds];
+            const articulos:any = await Articulo.find({ _id: {$in: articulosIds}});
+            for (const art of articulos) {
+                articulosText.push(art.nombre)
+            }
+        }
+        else{
+            articulosText = ['---'];
+        }
+
+        // Retornamos el objeto con todas las opciones de filtrado
+        return {
+            fechaDesde:{ label: "Fecha Desde", value: this.printUtils.formatDate(fechaDesde, 'utc')},
+            fechaHasta:{ label: "Fecha Hasta", value: this.printUtils.formatDate(fechaHasta, 'utc')},
+            articulos: { label: "Articulos", value: articulosText.join(", ")}
+        };
     }
     
     async getContextData(){
@@ -84,7 +113,8 @@ export class DocumentoAusenciasPorAgente extends DocumentoPDF {
     
         return { 
             gruposAgente: gruposAgentes,
-            srcImgLogo: this.headerLogo
+            srcImgLogo: this.headerLogo,
+            filtros: await this.encabezadoFiltrosAplicados()
             }
     }
 

@@ -10,7 +10,7 @@ import config from "../../confg";
 const moment = require("moment");
 moment.locale('es');
 
-class PrintUtils {
+export class PrintUtils {
     formatDate(value: any, arg1: string): any {
         if ( value ){
             if (arg1) {
@@ -52,6 +52,7 @@ export class DocumentoPDF {
 	outputFilename = "documento.pdf";
 	headerLogo = `${config.app.url}:${config.app.port}/static/images/logo_hospital.jpeg`;
 	isPrintable = false;
+	printUtils = new PrintUtils();
 
 	request: any;
 

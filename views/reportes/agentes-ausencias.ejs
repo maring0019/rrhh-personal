@@ -7,6 +7,12 @@
         
         <h1>Ausencias. Listados por Agente</h1>
             <%- include("../utils/print") %>
+            <p><strong>Filtros Aplicados: </strong>  
+            <% for (const key of Object.keys(filtros)) { %>
+                <%= filtros[key].label %> = <%= filtros[key].value %>,  
+            <% } %>    
+            </p>
+
             <% for (const grupo of gruposAgente) { %>   
                 <table class="tg tgw">
                     <!-- HEADER  -->
