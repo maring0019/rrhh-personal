@@ -37,6 +37,7 @@ let middleware = async function(req, res, next ){
     }
 }
 
+Routes.post('/ausencias/distribuir', middleware, AusentismoController.distribuirLicencias);
 Routes.post('/ausencias', middleware, AusentismoController.addAusentismo);
 Routes.post('/ausencias/sugerir', middleware, AusentismoController.sugerirDiasAusentismo);
 Routes.post('/ausencias/calcular', AusentismoController.calcularAusentismo);

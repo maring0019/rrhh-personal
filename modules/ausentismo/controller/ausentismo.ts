@@ -63,6 +63,18 @@ export async function getAusentismo(req, res, next) {
     }
 }
 
+export async function distribuirLicencias(req, res, next){
+    try {
+        const ausNewValues = res.locals.ausentismo;
+        let ausentismo:any = await calcularDiasAusentismo(ausNewValues.agente, ausNewValues.articulo, ausNewValues.fechaDesde, ausNewValues.fechaHasta, ausNewValues.cantidadDias);
+        ausentismo = {...ausNewValues, ...ausentismo }; // Copiamos los valores del ausentismo calculado
+        let indicadores = await this.calcularIndicadores(ausentismo);
+        return res.json(indicadores)
+    }
+    catch (err){
+        return next(err);
+    }
+}
 
 export async function addAusentismo(req, res, next) { 
     try {

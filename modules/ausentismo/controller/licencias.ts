@@ -20,6 +20,12 @@ class LicenciasController {
             let ausentismo:any = await calcularDiasAusentismo(ausNewValues.agente, ausNewValues.articulo, ausNewValues.fechaDesde, ausNewValues.fechaHasta, ausNewValues.cantidadDias);
             ausentismo = {...ausNewValues, ...ausentismo }; // Copiamos los valores del ausentismo calculado
             let indicadores = await this.calcularIndicadores(ausentismo);
+            
+            for (const indicador of indicadores) {
+                console.log("Indicador Recalculado: ", indicador)
+                
+            }
+
             let warnings = await validateAusentismo(ausentismo, indicadores);
             if (warnings && warnings.length){
                 ausentismo.warnings = warnings;
@@ -134,6 +140,10 @@ class LicenciasController {
      */
     async calcularIndicadores(ausentismo){
         let indicadoresActuales = await this.obtenerIndicadoresActuales(ausentismo);
+        for (const indicador of indicadoresActuales) {
+            console.log("Indicador Actual: ", indicador)
+            
+        }
         let indicadoresRecalculados = await this.distribuirAusentismoEntreIndicadores(indicadoresActuales, ausentismo.cantidadDias);
         return indicadoresRecalculados;
     }
