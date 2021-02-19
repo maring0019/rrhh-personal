@@ -97,7 +97,8 @@ class GuardiaController extends BaseController {
             let ws = fs.createWriteStream('/tmp/guardia.csv');
             let filasCSV = this._generarFilasCSV(guardia);
             csv.write(filasCSV, {
-                    headers: false
+                    headers: false,
+                    delimiter: ';'
                 })   
                 .pipe(ws)
                 .on('finish', () => {
@@ -118,50 +119,66 @@ class GuardiaController extends BaseController {
         let filasCSV = [];
         // Datos del Encabezado.
         const tipoGuardia = (guardia.lote.tipoGuardia == 'pasiva')? "PASIVA":"ACTIVA";
-        const esProfesional = (guardia.lote.categoria.nombre == 'Profesional')? "x":"TECNICO";
-        const esTecnico = (guardia.lote.categoria.nombre == 'Técnico')? "x": (guardia.lote.categoria.nombre == 'Auxiliar')? "AUXILIARES":"TECNICO";
-        const esAuxiliar = (guardia.lote.categoria.nombre == 'Auxiliar')? "x":"AUXILIARES";
-        const fechaDesde = moment(guardia.periodo.fechaDesde).utc().format('DD/MM/YYYY');
-        const fechaHasta = moment(guardia.periodo.fechaHasta).utc().format('DD/MM/YYYY');
-        let row1 = `CERTIFICACION DE GUARDIAS ${tipoGuardia}S,,,,PROFESIONAL,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,`;
-        let row2 = `Mes:,,,,${esProfesional},,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,`;
-        let row3 = `Dependencia: HOSPITAL DR. EDUARDO CASTRO RENDON,,,,${esTecnico},,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,`;
-        let row4 = `Guardias ${tipoGuardia.toLowerCase()}s: ${fechaDesde} al ${fechaHasta},,,,${esAuxiliar},,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,`;
-        let row5 = `,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,`;
+        const esProfesional = (guardia.lote.categoria.nombre == 'Profesional')? "X": "";
+        const esTecnico = (guardia.lote.categoria.nombre == 'Técnico')? "X": "";
+        const esAuxiliar = (guardia.lote.categoria.nombre == 'Auxiliar')? "X":"";
+        const fechaDesde = moment(guardia.periodo.fechaDesde).utc().format('DD MMMM');
+        const fechaHasta = moment(guardia.periodo.fechaHasta).utc().format('DD MMMM YYYY');
+        let row1 = `CERTIFICACIÓN DE GUARDIA ${tipoGuardia}S,,,,,,,,,,,PROFESIONALES,,,,,${esProfesional},,,,,,,,,,,,,,,,,,,`;
+        let row2 = `,,,,,,,,,,,TÉCNICOS,,,,,${esTecnico},,,,,,,,,,,,,,,,,,,`;
+        let row3 = `,,,,,,,,,,,AUXILIARES,,,,,${esAuxiliar},,,,,,,,,,,,,,,,,,,`;
+        let row4 = `Dependencia:,,Hospital Castro Rendón,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,`;
+        let row5 = `Guardias Periodo,,${fechaDesde} al ${fechaHasta},,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,`;
+        let row6 = `,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,TOTAL`;
         
         filasCSV.push(row1.split(','));
         filasCSV.push(row2.split(','));
         filasCSV.push(row3.split(','));
         filasCSV.push(row4.split(','));
         filasCSV.push(row5.split(','));
+        filasCSV.push(row6.split(','));
         
         // Datos de las Guardias por Agente
-        let headers = ["DEM","Servicio","Legajo","Agente","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","Total"];
+        let headers = ["DEM.","SERVICIO","Nº DE LEGAJO","NOMBRE Y APELLIDO","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15"];
         filasCSV.push(headers);
+        let totalGuardiasPlanilla = 0
         let range = guardia.periodo.range();
         guardia.planilla.forEach(guardiaAgente => {
             let grillaGuardias = [];
-            let totalGuardias = 0;
-            grillaGuardias.push(guardia.lote.numero);
+            let totalGuardiasAgente = 0;
+            grillaGuardias.push("");
             grillaGuardias.push(guardia.lote.servicio.nombre);
             grillaGuardias.push(guardiaAgente.agente.numero);
-            grillaGuardias.push(`${guardiaAgente.agente.apellido} ${guardiaAgente.agente.nombre}`  );
+            grillaGuardias.push(`${guardiaAgente.agente.nombre} ${guardiaAgente.agente.apellido}`);
             range.forEach((dia, index) => {
                 if (guardiaAgente.diasGuardia[index]){
                     const diaCompleto = guardiaAgente.diasGuardia[index].diaCompleto;
-                    totalGuardias += diaCompleto? 1:0.5;
+                    totalGuardiasAgente += diaCompleto? 1:0.5;
                     grillaGuardias.push(diaCompleto?'X':'M');
                 }
                 else{
                     grillaGuardias.push('');
                 }
             });
-            grillaGuardias.push(totalGuardias);
-            filasCSV.push(grillaGuardias)
+            grillaGuardias.push(totalGuardiasAgente);
+            filasCSV.push(grillaGuardias);
+            totalGuardiasPlanilla += totalGuardiasAgente;
         });
-
-        let footer = `Firma y Sello del Director,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,`;
-        filasCSV.push(footer.split(','));
+        const lineaVacia = `,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,`.split(',');
+        //Total Planilla
+        filasCSV.push(`,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,${totalGuardiasPlanilla}`.split(',')); 
+        // Observaciones
+        filasCSV.push(`Observaciones:,,(X = guardia de 24hs.) - (M = guardia de 12hs),,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,`.split(','));
+        filasCSV.push(lineaVacia);
+        filasCSV.push(lineaVacia);
+        filasCSV.push(lineaVacia);
+        filasCSV.push(lineaVacia);
+        // Footer
+        filasCSV.push(`,,,,,,,,,,,,,,,,,,,,,,,Firma y Sello del Director,,,,,,,,,,,,`.split(','));
+        filasCSV.push(lineaVacia);
+        filasCSV.push(`,,,,Subsecretaría de Salud,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,`.split(','));
+        filasCSV.push(`,,,(Centro Administrativo Ministerial). Antártida Argentina 1245. Edificio 3,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,`.split(','));
+        filasCSV.push(`,,,,,0299 - 449 5590 - 5591.  www. Saludneuquen.gov.ar,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,`.split(','));
         return filasCSV;
     }
 
