@@ -49,6 +49,12 @@ export const modules = {
         route: '/modules/guardias',
         middleware: null,
     },
+    recargo:{
+        active: true,
+        path: './modules/recargos/routes',
+        route: '/modules/recargos',
+        middleware: null,
+    },
     reportes:{
         active: true,
         path: './modules/reportes/routes',

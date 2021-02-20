@@ -510,6 +510,36 @@ export default [
                     },
                 ],
             },
+            {
+                key: "recargo_turno",
+                title: "Recargo Turnos",
+                childs: [
+                    {
+                        key: "add_turno",
+                        title: "Alta de un Turno",
+                        comment: "Alta de Turno",
+                        type: "boolean",
+                    },
+                    {
+                        key: "view_turno",
+                        title: "Ver Turno",
+                        comment: "Ver detalle de un Turno",
+                        type: "boolean",
+                    },
+                    {
+                        key: "change_turno",
+                        title: "Modificar Turno",
+                        comment: "Modificar un Turno",
+                        type: "boolean",
+                    },
+                    {
+                        key: "delete_turno",
+                        title: "Eliminar un Turno",
+                        comment: "Eliminar un Turno",
+                        type: "boolean",
+                    },
+                ],
+            },
         ],
     },
     // Módulo de Seguridad
