@@ -540,6 +540,36 @@ export default [
                     },
                 ],
             },
+            {
+                key: "recargo_justificacion",
+                title: "Recargo Justificaciones",
+                childs: [
+                    {
+                        key: "add_justificacion",
+                        title: "Alta de una Justificación",
+                        comment: "Alta de Justificación",
+                        type: "boolean",
+                    },
+                    {
+                        key: "view_justificacion",
+                        title: "Ver Justificación",
+                        comment: "Ver detalle de una Justificación",
+                        type: "boolean",
+                    },
+                    {
+                        key: "change_justificacion",
+                        title: "Modificar Justificación",
+                        comment: "Modificar una Justificación",
+                        type: "boolean",
+                    },
+                    {
+                        key: "delete_justificacion",
+                        title: "Eliminar una Justificación",
+                        comment: "Eliminar una Justificación",
+                        type: "boolean",
+                    },
+                ],
+            },
         ],
     },
     // Módulo de Seguridad
