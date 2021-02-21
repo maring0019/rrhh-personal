@@ -19,7 +19,6 @@ export const GuardiaSchema = new Schema({
         nombre: String,
         apellido: String
     },
-    // validado: Boolean,
     responsableProcesamiento: { // Agente de Gestion de Personal
         _id: {
             type: Types.ObjectId

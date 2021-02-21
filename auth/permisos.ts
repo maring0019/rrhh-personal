@@ -275,6 +275,56 @@ export default [
             }
         ],
     },
+    // Módulo de Recargos
+    {
+        key: "recargos",
+        title: "Módulo de Recargos",
+        childs: [
+            {
+                key: "recargo",
+                title: "Recargos",
+                childs: [
+                    {
+                        key: "view_recargo",
+                        title: "Ver/Listar Recargos",
+                        comment: "Permite ver o listar recargos.",
+                        type: "boolean",
+                    },
+                    {
+                        key: "add_recargo",
+                        title: "Crear Recargo",
+                        comment: "Permite crear recargos.",
+                        type: "boolean",
+                    },
+                    {
+                        key: "change_recargo",
+                        title: "Editar Recargo",
+                        comment: "Permite editar recargos.",
+                        type: "boolean",
+                    },
+                    {
+                        key: "confirmar_recargo",
+                        title: "Confirmar Recargo",
+                        comment: "Permite confirmar recargos.",
+                        type: "boolean",
+                    },
+                    {
+                        key: "procesar_recargo",
+                        title: "Permite procesar una Recargo",
+                        comment:
+                            "Permite procesar las recargos elaboradas por los jefes de servicio",
+                        type: "boolean",
+                    },
+                    {
+                        key: "imprimir",
+                        title: "Permite imprimir un recargo",
+                        comment: "Permite imprimir un recargo al formato PDF",
+                        type: "boolean",
+                    },
+                ],
+            }
+        ],
+    },
     // Módulo de Reportes
     {
         key: "reportes",

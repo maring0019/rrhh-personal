@@ -1,6 +1,6 @@
 import { Schema, Types} from 'mongoose';
-import { RecargoTurno } from './recargoturno';
-import { RecargoJustificacion } from './recargojustificacion';
+import { RecargoTurnoSchema } from './recargoturno';
+import { RecargoJustificacionSchema } from './recargojustificacion';
 
 
 export const RecargoItemPlanillaSchema = new Schema({
@@ -15,8 +15,8 @@ export const RecargoItemPlanillaSchema = new Schema({
         numero: String
     },
     fecha: Date,
-    turno: RecargoTurno,
-    justificacion: RecargoJustificacion,
+    turno: RecargoTurnoSchema,
+    justificacion: RecargoJustificacionSchema,
     observaciones: String
 })
     
