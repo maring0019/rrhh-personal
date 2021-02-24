@@ -1,6 +1,26 @@
 import { Schema, Types} from 'mongoose';
-import { RecargoTurnoSchema } from './recargoturno';
-import { RecargoJustificacionSchema } from './recargojustificacion';
+
+export const ItemPlanillaSchema = new Schema({
+    fecha: Date,
+    turno: {
+        _id: {
+            type: Types.ObjectId,
+            required: true,
+        },
+        nombre: String,
+        observaciones: String
+    },
+    justificacion: {
+        _id: {
+            type: Types.ObjectId,
+            required: true,
+        },
+        nombre: String,
+        observaciones: String
+    },
+    observaciones: String
+
+})
 
 
 export const RecargoItemPlanillaSchema = new Schema({
@@ -14,9 +34,6 @@ export const RecargoItemPlanillaSchema = new Schema({
         apellido: String,
         numero: String
     },
-    fecha: Date,
-    turno: RecargoTurnoSchema,
-    justificacion: RecargoJustificacionSchema,
-    observaciones: String
+    items: [ItemPlanillaSchema]
 })
     
