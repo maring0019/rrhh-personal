@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+    <body style="margin:30px 25px;">
+        <%- include("../utils/print") %>
+        
+        <!-- LOGO HEADER  -->
+        <%- include("../reportes/base-logo") %>
+
+        <table class="tg tgw header-recargo" style="width:60%">
+            <tr> <td class="tg-266k"><h2 class="m0">Adicional por Recargos Extraordinarios</h2></td></tr>
+            <tr> <td class="tg-266k"><h3 class="m0">COD. 1111s</h3></td></tr>
+        </table>
+        <!-- HEADER  -->
+        <table class="tg tgw" style="width:60%">
+            <tr> 
+                <td class="tg-266k" style="width:30%"><h3 class="m0">HOSPITAL:</h3></td>
+                <td style="width:70%"><h3 class="m0">CASTRO RENDON</h3></td>
+            </tr>
+            <tr> 
+                <td class="tg-266k" style="width:30%"><h3 class="m0">SERVICIO:</h3></td>
+                <td style="width:70%"><h3 class="m0"></h3><%= value(recargo, 'servicio.nombre') %></td>
+            </tr>
+            <tr> 
+                <td class="tg-266k" style="width:30%"><h3 class="m0">MES/AÑO</h3></td>
+                <td style="width:70%"><h3 class="m0"><%= recargo.mes.nombre %>/<%= recargo.anio %></h3></td>
+            </tr>
+        </table>
+
+        <!-- SUBHEADER  -->
+
+
+        <!-- PLANILLA AGENTES  -->
+        <table class="tg tgw" style="width:100%">
+            <tr>
+                <td class="tg-266k" style="width:20%"><h3 class="m0">APELLIDO Y NOMBRE</h3></td>
+                <td class="tg-266k" style="width:5%"><h3 class="m0">LEGAJO</h3></td>
+                <td class="tg-266k" style="width:5%"><h3 class="m0">FECHA</h3></td>
+                <td class="tg-266k" style="width:15%"><h3 class="m0">TURNOS</h3></td>
+                <td class="tg-266k" style="width:20%"><h3 class="m0">JUSTIFICACION</h3></td>
+                <td class="tg-266k" style="width:20%"><h3 class="m0">OBSERVACIONES</h3></td>
+                <td class="tg-266k" style="width:5%"><h3 class="m0">TOTAL</h3></td>
+            </tr>
+            <% for (const itemAgente of recargo.planilla) { %>
+                <% for (const item of itemAgente.items) { %>
+                    <tr class="border-cell">
+                        <td><%= value(itemAgente, 'agente.apellido') %> <%= value(itemAgente, 'agente.nombre') %></td>
+                        <td><%= value(itemAgente, 'agente.numero') %></td>
+                        <td><%= value(item.fecha) %></td>
+                        <td><%= value(item, 'turno.nombre') %></td>
+                        <td><%= value(item, 'justificacion.nombre') %></td>
+                        <td><%= value(item.observaciones) %></td>
+                        <td>1</td>
+                    </tr>
+                <% } %>
+                    <tr class="border-cell">
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td><%= itemAgente.items.length %></td>
+                    </tr>
+            <% } %>
+        </table>
+    </body>
+</html>

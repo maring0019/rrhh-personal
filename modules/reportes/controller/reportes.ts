@@ -12,6 +12,8 @@ import { DocumentoCredencialAgente } from "../../../core/documentos/credencialAg
 import { DocumentoParteDiarioAgente } from "../../../core/documentos/partes/parteDiario";
 import { DocumentoFichadasAgente } from "../../../core/documentos/partes/fichadas";
 
+import { DocumentoRecargos } from "../../../core/documentos/recargos/recargo";
+
 import {
 	opcionesAgrupamiento,
 	opcionesOrdenamiento,
@@ -41,7 +43,9 @@ class ReportesController extends BaseDocumentoController {
 		ausentismo_totalesxarticulo: DocumentoAusenciasTotalesPorArticulo,
 		licencias_agentes: DocumentoLicenciasPorAgente,
 		// ReportesPartes
-		fichadas_agentes: DocumentoFichadasAgente
+		fichadas_agentes: DocumentoFichadasAgente,
+		// Recargos
+		recargos : DocumentoRecargos
 	};
 
 	/**

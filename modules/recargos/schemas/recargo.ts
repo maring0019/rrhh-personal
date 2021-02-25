@@ -4,8 +4,14 @@ import { RecargoItemPlanillaSchema } from './recargoitemplanilla';
 
 export const RecargoSchema = new Schema({
     mes: {
-        type: Number,
-        required: true
+        id: {
+            type: Number,
+            required: true
+        },
+        nombre:{
+            type: String,
+            required: true
+        }
     },
     anio: {
         type: Number,
