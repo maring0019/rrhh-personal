@@ -45,7 +45,7 @@ class HoraExtraController extends BaseController {
 
      /**
      * Helper utilizado por los metodos 'add', y 'addAndConfirmar'
-     * Basicamente crea un recargo, aplicandole los valores enviados
+     * Basicamente crea un hora extra, aplicandole los valores enviados
      * en el changeset
      * @param changeset
      * TODO: Validar que el periodo sea unico
