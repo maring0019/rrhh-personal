@@ -325,6 +325,56 @@ export default [
             }
         ],
     },
+    // Módulo de Hs Extras
+    {
+        key: "horas_extras",
+        title: "Módulo de Horas Extras",
+        childs: [
+            {
+                key: "hora_extra",
+                title: "Horas Extras",
+                childs: [
+                    {
+                        key: "view_hora_extra",
+                        title: "Ver/Listar Horas Extras",
+                        comment: "Permite ver o listar horas extras.",
+                        type: "boolean",
+                    },
+                    {
+                        key: "add_hora_extra",
+                        title: "Crear Hora Extra",
+                        comment: "Permite crear horas extras.",
+                        type: "boolean",
+                    },
+                    {
+                        key: "change_hora_extra",
+                        title: "Editar Hora Extra",
+                        comment: "Permite editar horas extras.",
+                        type: "boolean",
+                    },
+                    {
+                        key: "confirmar_hora_extra",
+                        title: "Confirmar Hora Extra",
+                        comment: "Permite confirmar horas extras.",
+                        type: "boolean",
+                    },
+                    {
+                        key: "procesar_hora_extra",
+                        title: "Permite procesar una Hora Extra",
+                        comment:
+                            "Permite procesar las horas extras elaboradas por los jefes de servicio",
+                        type: "boolean",
+                    },
+                    {
+                        key: "imprimir",
+                        title: "Permite imprimir horas extras",
+                        comment: "Permite imprimir horas extras al formato PDF",
+                        type: "boolean",
+                    },
+                ],
+            }
+        ],
+    },
     // Módulo de Reportes
     {
         key: "reportes",

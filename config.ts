@@ -55,6 +55,12 @@ export const modules = {
         route: '/modules/recargos',
         middleware: null,
     },
+    horaextra:{
+        active: true,
+        path: './modules/horas_extras/routes',
+        route: '/modules/horasextras',
+        middleware: null,
+    },
     reportes:{
         active: true,
         path: './modules/reportes/routes',
