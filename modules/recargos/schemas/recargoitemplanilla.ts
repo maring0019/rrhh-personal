@@ -34,6 +34,7 @@ export const RecargoItemPlanillaSchema = new Schema({
         apellido: String,
         numero: String
     },
-    items: [ItemPlanillaSchema]
+    items: [ItemPlanillaSchema],
+    procesado: Boolean
 })
     

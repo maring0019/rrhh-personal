@@ -10,6 +10,7 @@ class RecargoController extends BaseController {
         this.addAndConfirmar = this.addAndConfirmar.bind(this);
         this.updateAndConfirmar = this.updateAndConfirmar.bind(this);
         this.updateAndProcesar = this.updateAndProcesar.bind(this);
+        this.updateAndProcesarParcialmente = this.updateAndProcesarParcialmente.bind(this);
     }
 
     getUser(req){
@@ -27,7 +28,8 @@ class RecargoController extends BaseController {
     // Posibles estados del recargo (planilla)
     ESTADO_SIN_CONFIRMAR = 0;
     ESTADO_CONFIRMADA = 1;
-    ESTADO_PROCESADA = 2;
+    ESTADO_PROCESADA_PARCIALMENTE = 2;
+    ESTADO_PROCESADA = 3;
 
     async add(req, res, next) {
         const changeset = {
@@ -81,6 +83,24 @@ class RecargoController extends BaseController {
             responsableEntrega: this.getUser(req)
         };
         return await this.saveUpdate(req, res, next, changeset);
+    }
+
+    async updateAndProcesarParcialmente(req, res, next){
+        const recargo = req.body;
+        let totalmenteProcesado = true;
+        for (const item of recargo.planilla) {
+            if (!item.procesado){
+                totalmenteProcesado = false;
+                break;
+            }
+        }
+        
+        const changeset = {
+            estado: totalmenteProcesado? this.ESTADO_PROCESADA : this.ESTADO_PROCESADA_PARCIALMENTE,
+            fechaHoraProcesamiento: timestamp(),
+            responsableProcesamiento: this.getUser(req)
+        };
+        return await this.saveUpdate(req, res, next, changeset);        
     }
 
     async updateAndProcesar(req, res, next){
