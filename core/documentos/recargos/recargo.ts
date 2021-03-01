@@ -36,11 +36,33 @@ export class DocumentoRecargos extends DocumentoPDF {
         if (!recargo) return {};
         
         return {
-            recargo: recargo,
+            recargo: this.getRecargosFiltrados(recargo),
+            titulo: this.getTitulo(),
             srcImgLogo: this.headerLogo
         }
-
     }
 
+    getTitulo(){
+        return "Adicional por Recargos Extraordinarios";
+    }
 
+    /**
+     * Retornamos todos los recargos, menos los excedidos
+     * @param recargo 
+     */
+    getRecargosFiltrados(recargo){
+        let agentesExcedidos = []
+        for (const itemAgente of recargo.planilla) {
+            if (itemAgente.items.length>7){
+                const newItems = itemAgente.items.slice(0, 7);
+                itemAgente.items = newItems;
+                agentesExcedidos.push(itemAgente);
+            }
+            else{
+              agentesExcedidos.push(itemAgente);
+            }
+        }
+        recargo.planilla = agentesExcedidos;
+        return recargo;
+    }
 }

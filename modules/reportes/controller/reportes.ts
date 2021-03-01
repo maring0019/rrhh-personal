@@ -13,6 +13,7 @@ import { DocumentoParteDiarioAgente } from "../../../core/documentos/partes/part
 import { DocumentoFichadasAgente } from "../../../core/documentos/partes/fichadas";
 
 import { DocumentoRecargos } from "../../../core/documentos/recargos/recargo";
+import { DocumentoRecargosExcedidos } from "../../../core/documentos/recargos/recargo_excedido";
 
 import {
 	opcionesAgrupamiento,
@@ -45,7 +46,8 @@ class ReportesController extends BaseDocumentoController {
 		// ReportesPartes
 		fichadas_agentes: DocumentoFichadasAgente,
 		// Recargos
-		recargos : DocumentoRecargos
+		recargos : DocumentoRecargos,
+		recargos_excedidos: DocumentoRecargosExcedidos
 	};
 
 	/**
