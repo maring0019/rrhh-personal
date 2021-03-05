@@ -5,7 +5,6 @@ export const ItemPlanillaSchema = new Schema({
     turno: {
         _id: {
             type: Types.ObjectId,
-            required: true,
         },
         nombre: String,
         observaciones: String
@@ -13,7 +12,6 @@ export const ItemPlanillaSchema = new Schema({
     justificacion: {
         _id: {
             type: Types.ObjectId,
-            required: true,
         },
         nombre: String,
         observaciones: String
