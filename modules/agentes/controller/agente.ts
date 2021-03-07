@@ -654,10 +654,10 @@ async function getAusenciasAsEvento(req, res, next) {
 async function getLicenciasTotales(req, res, next) {
     try {
         const id = req.params.id;
-        if (!id || (id && !Types.ObjectId.isValid(id))) return next(404);
+        if (!id || (id && !Types.ObjectId.isValid(id))) return res.status(404).send({ message:"Not found"});;
 
         let agente: any = await Agente.findById(id);
-        if (!agente) return next(404);
+        if (!agente) return res.status(404).send({ message:"Not found"});;
 
         const thisYear = new Date().getFullYear();
         const pipeline = [
