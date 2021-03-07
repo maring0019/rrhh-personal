@@ -1,5 +1,7 @@
 import { Schema, model, Types } from 'mongoose';
 
+const audit = require('../../../packages/mongoose-audit-trail');
+
 export const IndicadorLicenciaSchema = new Schema({
     agente: {
         _id: {
@@ -22,6 +24,8 @@ export const IndicadorLicenciaSchema = new Schema({
     ejecutadas: Number,
     ejecutadas96L: Number,
     vencido: Boolean
-})
+});
+
+IndicadorLicenciaSchema.plugin(audit.plugin, { omit: ["_id", "id"] });
 
 export const IndicadorLicencia = model('IndicadorLicencia', IndicadorLicenciaSchema, 'indicadoresLicencia');
