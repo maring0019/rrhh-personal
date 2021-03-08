@@ -15,6 +15,8 @@ import { DocumentoFichadasAgente } from "../../../core/documentos/partes/fichada
 import { DocumentoRecargos } from "../../../core/documentos/recargos/recargo";
 import { DocumentoRecargosExcedidos } from "../../../core/documentos/recargos/recargo_excedido";
 
+import { DocumentoHorasExtras } from "../../../core/documentos/horas_extras/horas_extras";
+
 import {
 	opcionesAgrupamiento,
 	opcionesOrdenamiento,
@@ -46,8 +48,10 @@ class ReportesController extends BaseDocumentoController {
 		// ReportesPartes
 		fichadas_agentes: DocumentoFichadasAgente,
 		// Recargos
-		recargos : DocumentoRecargos,
-		recargos_excedidos: DocumentoRecargosExcedidos
+		recargos: DocumentoRecargos,
+		recargos_excedidos: DocumentoRecargosExcedidos,
+		// Hs Extras
+		horas_extras: DocumentoHorasExtras
 	};
 
 	/**

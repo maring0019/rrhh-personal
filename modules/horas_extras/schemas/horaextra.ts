@@ -29,6 +29,7 @@ export const HoraExtraSchema = new Schema({
         required: true
     }, 
     planilla: [HoraExtraItemPlanillaSchema],
+    observaciones: String,
     estado: String,
     fechaHoraEntrega: Date,
     responsableEntrega: {

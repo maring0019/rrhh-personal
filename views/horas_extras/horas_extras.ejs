@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+    <body style="margin:30px 25px;">
+        <%- include("../utils/print") %>
+        
+        <!-- LOGO HEADER  -->
+        <%- include("../reportes/base-logo") %>
+        <!-- HEADER  -->
+
+        <table class="tg tgw no-border">
+            <tr> 
+                <td class="tg-266k" style="text-align: center;">
+                    <h3 class="m0">CERTIFICACIÓN DE HORAS EXTRAS</h3>
+                </td>
+            </tr>
+        </table>
+
+        <table class="tg tgw">
+            <tr> 
+                <td class="tg-266k" style="width:20%"><h3 class="m0">Dependencia:</h3></td>
+                <td colspan="4" style="width:80%; text-align: center;"><h3 class="m0">Hospital Provincial Neuquén "Dr. Eduardo Castro Rendón"</h3></td>
+            </tr>
+            <tr> 
+                <td class="tg-266k" style="width:20%"><h3 class="m0">Mes</h3></td>
+                <td style="width:30%"><h3 class="m0"><%= horas_extras.mes.nombre %></h3></td>
+                <td class="tg-266k" style="width:20%"><h3 class="m0">Año</h3></td>
+                <td style="width:30%"><h3 class="m0"><%= horas_extras.anio %></h3></td>
+            </tr>
+            <tr> 
+                <td class="tg-266k" style="width:20%"><h3 class="m0">Servicio:</h3></td>
+                <td colspan="4" style="width:80%"><h3 class="m0"></h3><%= value(horas_extras, 'servicio.nombre') %></td>
+            </tr>
+        </table>
+
+         <!-- SUBHEADER  -->
+         <table class="tg tgw">
+            <tr> 
+                <td class="tg-266k" style="width:20%"><h3 class="m0">Cod 1070s</h3></td>
+                <td style="width:20%"><h3 class="m0">Hs. Extras Simples</h3></td>
+                <td style="width:60%"><h3 class="m0">Lunes a Viernes después del horario laboral</h3></td>
+            </tr>
+            <tr> 
+                <td class="tg-266k" style="width:20%"><h3 class="m0">Cod 1071s</h3></td>
+                <td style="width:20%"><h3 class="m0">Hs. Extras Semidobles</h3></td>
+                <td style="width:60%"><h3 class="m0">Dias Sábados, no laborables y asuetos parciales</h3></td>
+            </tr>
+            <tr> 
+                <td class="tg-266k" style="width:20%"><h3 class="m0">Cod 1072s</h3></td>
+                <td style="width:20%"><h3 class="m0">Hs. Extras Dobles</h3></td>
+                <td style="width:60%"><h3 class="m0">Entre las 21hs y 6hs de dias Domingos, feriados y asuetos de 24hs. </h3></td>
+            </tr>
+        </table>
+
+        <table class="tg tgw" style="width:100%">
+            <tr>
+                <td class="tg-266k" style="width:20%"><h3 class="m0">Legajo Nro.</h3></td>
+                <td class="tg-266k" style="width:20%"><h3 class="m0">Apellido y Nombre</h3></td>
+                <td class="tg-266k" style="width:15%"><h3 class="m0">Hs. Simples</h3></td>
+                <td class="tg-266k" style="width:15%"><h3 class="m0">Hs. Semidobles</h3></td>
+                <td class="tg-266k" style="width:15%"><h3 class="m0">Hs. Dobles</h3></td>
+                <td class="tg-266k" style="width:15%"><h3 class="m0">Total Hs.</h3></td>
+            </tr>
+            <% horasTotalesSimples = 0; %>
+            <% horasTotalesSemiDobles = 0; %>
+            <% horasTotalesDobles = 0; %>
+            <% for (const item of horas_extras.planilla) { %>
+                <% horasTotalesPorAgente = item.horasSimples + item.horasSemiDobles + item.horasDobles; %>
+                <% horasTotalesSimples += item.horasSimples; %>
+                <% horasTotalesSemiDobles += item.horasSemiDobles; %>
+                <% horasTotalesDobles += item.horasDobles; %>
+                <tr class="border-cell">
+                    <td><%= value(item, 'agente.numero') %></td>
+                    <td><%= value(item, 'agente.apellido') %> <%= value(item, 'agente.nombre') %></td>
+                    <td><%= value(item.horasSimples) %></td>
+                    <td><%= value(item.horasSemiDobles) %></td>
+                    <td><%= value(item.horasDobles) %></td>
+                    <td><%= horasTotalesPorAgente %></td>
+                </tr>
+            <% } %>
+            <% horasTotales = horasTotalesSimples + horasTotalesSemiDobles + horasTotalesDobles; %>
+            <tr>
+                <td colspan="2" class="tg-266k"><h3 class="m0">TOTAL GENERAL DE HORAS</h3></td>
+                <td class="tg-266k"><h3 class="m0"><%= horasTotalesSimples %></h3></td>
+                <td class="tg-266k"><h3 class="m0"><%= horasTotalesSemiDobles %></h3></td>
+                <td class="tg-266k"><h3 class="m0"><%= horasTotalesDobles %></h3></td>
+                <td class="tg-266k"><h3 class="m0"><%= horasTotales %></h3></td>
+            </tr>
+        </table>
+        <br>
+        <p style="font-weight: bold; line-height: 12px;">Observaciones: <%= horas_extras.observaciones %> </p>
+        <br>
+        <br>
+        <table class="tg tgw no-border">
+            <tr class="border-no-cell"> 
+                <td style="width:20%"><h3 class="m0"></h3></td>
+                <td class="tg-266k" style="width:30%"><h3 class="m0">Firma y Sello del Responsable</h3></td>
+                <td style="width:20%"><h3 class="m0"></h3></td>
+                <td class="tg-266k" style="width:30%"><h3 class="m0">Firma y Sello del Director</h3></td>
+            </tr>
+        </table>
+
+    </body>
+</html>
