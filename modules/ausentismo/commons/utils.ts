@@ -91,7 +91,9 @@ export function formatWarningsIndicadores(indicadores){
             for (const intervalo of indicador.intervalos){
                 const desde = getFormattedDate(intervalo.desde);
                 const hasta = getFormattedDate(intervalo.hasta);
-                textWarning = `${textControl} (${intervalo.totales} dias). Periodo ${indicador.periodo}: (${desde} - ${hasta})`;
+                const disponibles = intervalo.totales - intervalo.ejecutadas
+                textWarning = `${textControl} (${intervalo.totales} dias). Disponible: ${disponibles} días.
+                Periodo ${indicador.periodo}: (${desde} - ${hasta})`;
             }
         }
         else{
