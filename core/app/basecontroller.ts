@@ -14,6 +14,7 @@ class BaseController {
 
 	protected messageNotFound = "";
 	protected modelName = "";
+	protected defaultSearchOrder = {};
 
 	constructor(modelClass) {
 		this._model = modelClass;
@@ -211,9 +212,13 @@ class BaseController {
 	protected async search(params) {
 		let objs = await this._model
 			.find(params.filter)
-			.sort(params.sort)
+			.sort(this.getSearchOrder(params))
 			.exec();
 		return objs;
+	}
+
+	protected getSearchOrder(params){
+		return (params.sort)? params.sort : this.defaultSearchOrder;
 	}
 }
 

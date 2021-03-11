@@ -670,6 +670,36 @@ export default [
                     },
                 ],
             },
+            {
+                key: "puesto",
+                title: "Puestos",
+                childs: [
+                    {
+                        key: "view_puesto",
+                        title: "Ver Puesto",
+                        comment: "Ver detalle de un Puesto",
+                        type: "boolean",
+                    },
+                    {
+                        key: "change_puesto",
+                        title: "Modificar Puesto",
+                        comment: "Modificar un Puesto",
+                        type: "boolean",
+                    },
+                    {
+                        key: "add_puesto",
+                        title: "Alta de Puesto",
+                        comment: "Alta de Puesto",
+                        type: "boolean",
+                    },
+                    {
+                        key: "delete_puesto",
+                        title: "Eliminar Puesto",
+                        comment: "Eliminar un Puesto",
+                        type: "boolean",
+                    },
+                ],
+            },
         ],
     },
     // Módulo de Seguridad
