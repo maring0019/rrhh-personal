@@ -32,7 +32,8 @@ class AuditController extends BaseController {
 		"recargo-turno"  : "RecargoTurno",
 		"recargo-justificacion": "RecargoJustificacion",
 		"puesto"         : "Puesto",
-		"subpuesto"      : "SubPuesto"   
+		"subpuesto"      : "SubPuesto",
+		"pais"           : "Pais"   
     }
 
 	async get(req, res, next) {

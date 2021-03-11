@@ -1,12 +1,14 @@
 import * as express from 'express';
+import { Pais } from '../schemas/pais';
+import PaisController from '../controller/pais';
 
-import * as PaisController from '../controller/pais';
+const controller = new PaisController(Pais); 
 
 export const Routes = express.Router();
 
+Routes.get('/paises', controller.get);
+Routes.get('/paises/:id', controller.getById);
 
-Routes.get('/paises/:id', PaisController.getPaisById);
-
-Routes.get('/paises', PaisController.getPaises);
-Routes.post('/paises', PaisController.addPais);
-
+Routes.post('/paises', controller.add);
+Routes.put('/paises/:id', controller.update);
+Routes.delete('/paises/:id', controller.delete);

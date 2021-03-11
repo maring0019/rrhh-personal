@@ -730,6 +730,36 @@ export default [
                     },
                 ],
             },
+            {
+                key: "pais",
+                title: "Paises",
+                childs: [
+                    {
+                        key: "view_pais",
+                        title: "Ver Pais",
+                        comment: "Ver detalle de un Pais",
+                        type: "boolean",
+                    },
+                    {
+                        key: "change_pais",
+                        title: "Modificar Paises",
+                        comment: "Modificar un Pais",
+                        type: "boolean",
+                    },
+                    {
+                        key: "add_pais",
+                        title: "Alta de Paises",
+                        comment: "Alta de Pais",
+                        type: "boolean",
+                    },
+                    {
+                        key: "delete_pais",
+                        title: "Eliminar Paises",
+                        comment: "Eliminar un Pais",
+                        type: "boolean",
+                    },
+                ],
+            },
         ],
     },
     // Módulo de Seguridad

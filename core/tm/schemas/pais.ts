@@ -1,4 +1,5 @@
 import { Schema, model } from 'mongoose';
+const audit = require('../../../packages/mongoose-audit-trail');
 
 
 export const PaisSchema = new Schema({
@@ -6,6 +7,7 @@ export const PaisSchema = new Schema({
         type: String,
         index: true,
         required: true,
+        unique: true
     },
     gentilicio: String //Nacionalidad
 });
@@ -13,5 +15,7 @@ export const PaisSchema = new Schema({
 PaisSchema.methods._str_ = function(cb) {
     return `${this.nombre}`
   };
+
+PaisSchema.plugin(audit.plugin, { omit: ["_id", "id"] });
 
 export const Pais = model('Pais', PaisSchema, 'paises');
