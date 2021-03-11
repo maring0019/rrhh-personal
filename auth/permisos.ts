@@ -700,6 +700,36 @@ export default [
                     },
                 ],
             },
+            {
+                key: "subpuesto",
+                title: "Subpuestos",
+                childs: [
+                    {
+                        key: "view_subpuesto",
+                        title: "Ver Subpuesto",
+                        comment: "Ver detalle de un Subpuesto",
+                        type: "boolean",
+                    },
+                    {
+                        key: "change_subpuesto",
+                        title: "Modificar Subpuesto",
+                        comment: "Modificar un Subpuesto",
+                        type: "boolean",
+                    },
+                    {
+                        key: "add_subpuesto",
+                        title: "Alta de Subpuesto",
+                        comment: "Alta de Subpuesto",
+                        type: "boolean",
+                    },
+                    {
+                        key: "delete_subpuesto",
+                        title: "Eliminar Subpuesto",
+                        comment: "Eliminar un Subpuesto",
+                        type: "boolean",
+                    },
+                ],
+            },
         ],
     },
     // Módulo de Seguridad
