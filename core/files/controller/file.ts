@@ -5,10 +5,8 @@ import { FileDescriptor, IFileDescriptor, FileDescriptorDocument } from '../sche
 
 import config from '../../../confg';
 import * as multer from 'multer';
-import * as aqp from 'api-query-params';
 
 import FileSystemStorage from '../storage/FileSystemStorage'
-import { isImage, readImage } from '../utils';
 import { Readable } from 'stream';
 
 const fs = require('fs');
@@ -164,29 +162,15 @@ export async function getFiles(req, res, next){
 
 export async function readFile(req, res, next){
     try {
-        const options = aqp(req.query);
         const id = req.params.id;
         if (!id || (id && !Types.ObjectId.isValid(id))) return next(404);
         const filesModel = FilesModel();
         const file = await filesModel.findById(id);       
         if (file){
-            file.read(async (err, buffer) => {
-                try {
-                    if (err) throw err;
-                    // Si estamos descargando una imagen podemos preprocesar la misma
-                    // a traves de queryparams. Por ejemplo reducir el tamaño
-                    if (file.contentType == 'image/jpeg' && options){
-                        buffer = await readImage(buffer, options.filter);
-                    }
-                    res.setHeader('Content-Type', file.contentType);
-                    res.setHeader('Content-Length', file.length);
-                    res.setHeader('Content-Disposition', `attachment; filename=${file.filename}`);
-                    return res.send(buffer);
-                } catch (err) {
-                    console.log('Encontramos un error'); // TODO Procesar correctamente
-                    return next(err);
-                }
-            });
+            res.set('Content-Type', file.contentType);
+            res.set('Content-Disposition', `attachment; filename=${file.filename}`);
+            const readStream = file.read();
+            return readStream.pipe(res);
         }
         else{
             return res.send(null);
@@ -280,18 +264,7 @@ export function _writeFileFromFsToMongo(file:FileDescriptorDocument, objectId):P
     return new Promise(async function(resolve, reject) {
         let stream = new Readable();
         const filePath = path.join(config.app.uploadFilesPath, file.real_id);
-        
-        if (isImage(file.mimetype)){
-            // Si el archivo es una imagen optimizamos el tamanio
-            // TODO definir correctamente los valores o criterio de optimizacion
-            let buffer = await readImage(filePath, {quality: 90, w: 256});
-            stream.push(buffer);
-            stream.push(null);
-        }
-        else{
-            stream = fs.createReadStream(filePath);
-        }
-        
+        stream = fs.createReadStream(filePath);
         stream.on('error', function()
         { 
             resolve({ok:false, filename:file.filename, _id:file._id}) 
