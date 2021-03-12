@@ -1,9 +1,15 @@
-import { Schema, model } from 'mongoose';
-import { PaisSchema } from './pais';
+import { Schema, model, Types } from 'mongoose';
 
 export const ProvinciaSchema = new Schema({
     nombre: String,
-    pais: { type: PaisSchema}
+    pais: {
+        _id: {
+            type: Types.ObjectId,
+            required: true
+        },
+        nombre: String,
+        gentilicio: String
+    }
 });
 
 export const Provincia = model('Provincia', ProvinciaSchema, 'provincias');
