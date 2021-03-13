@@ -58,6 +58,7 @@ export class DocumentoAusenciasPorAgente extends DocumentoPDF {
         // Filtros para el ausentismo
         let fechaDesde = utils.getQueryParam(query.filter, 'fechaDesde'); // Format 2016-01-01
         let fechaHasta = utils.getQueryParam(query.filter, 'fechaHasta');
+        fechaHasta = new Date(fechaHasta.setDate(fechaHasta.getDate() + 1 ));// Add 1 day
         let articulosIds = utils.getQueryParam(query.filter, 'articulos');
         let filterArticulos: any = { $ne : null };
         if (articulosIds) {
