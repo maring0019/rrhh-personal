@@ -9,24 +9,47 @@ class AusenciasController {
      * Alta de nuevo ausentismo 
      */
     async addAusentismo(ausNewValues){ 
-        let ausentismoNew;
+        let ausentismoNew = await this.prepareAddAusentismo(ausNewValues);
+        let indicadores = await this.calcularIndicadores(ausentismoNew);
+        let warnings = await validateAusentismo(ausentismoNew, indicadores);
+        if (warnings && warnings.length){
+            ausentismoNew.warnings = warnings;
+            return ausentismoNew;
+        }
+
+        const ausentismo = new AusenciaPeriodo(ausentismoNew);    
+        return await ausentismo.save();
+    }
+
+    async prepareAddAusentismo(ausNewValues){
+        let ausentismoNew:any;
         if (!ausNewValues.ausencias.length){
             let ausentismo:any = await calcularDiasAusentismo(ausNewValues.agente, ausNewValues.articulo, ausNewValues.fechaDesde, ausNewValues.fechaHasta, ausNewValues.cantidadDias);
-            ausentismo = {...ausNewValues, ...ausentismo }; // Copiamos los valores del ausentismo calculado
-            let indicadores = await this.calcularIndicadores(ausentismo);
-            let warnings = await validateAusentismo(ausentismo, indicadores);
-            if (warnings && warnings.length){
-                ausentismo.warnings = warnings;
-                return ausentismo;
-            }
-            ausentismoNew = new AusenciaPeriodo(ausentismo);
+            ausentismoNew = {...ausNewValues, ...ausentismo }; // Copiamos los valores del ausentismo calculado
         }
-        else{
-            // Los dias de ausencia ya vienen calculados. No calculamos ausencias ni aplicamos
-            // ningun control o restriccion. Especialmente util en la migracion
-            ausentismoNew = new AusenciaPeriodo(ausNewValues);    
+        return ausentismoNew;
+    }
+
+    async replaceArticuloAusentismo(ausToUpdate, ausNewValues){
+        const ausentismoNew = await this.prepareAddAusentismo(ausNewValues);
+        let indicadores = await this.calcularIndicadores(ausentismoNew);
+        let warnings = await validateAusentismo(ausentismoNew, indicadores, ausToUpdate);
+        if (warnings && warnings.length){
+            ausentismoNew.warnings = warnings;
+            return ausentismoNew
         }
-        return await ausentismoNew.save();
+        
+        const ausentismo:any = new AusenciaPeriodo(ausentismoNew);
+        await ausToUpdate.updateOne({ $set: { 
+            articulo : ausentismo.articulo,
+            fechadDesde : ausentismo.fechaDesde,
+            fechaHasta : ausentismo.fechaHasta,
+            cantidadDias : ausentismo.cantidadDias,
+            observacion : ausentismo.observacion,
+            extra : ausentismo.extra,
+            ausencias : ausentismo.ausencias} 
+        });
+        return await AusenciaPeriodo.findById(ausToUpdate._id) ;
     }
 
     /**

@@ -6,6 +6,7 @@ import { getIndicadoresLicencia } from '../commons/indicadores';
 import { Types } from 'mongoose';
 import { Agente } from '../../agentes/schemas/agente';
 import { Ausencia } from '../schemas/ausencia';
+import { Articulo } from '../schemas/articulo';
 
 export async function getAusentismoById(req, res, next){
     try {
@@ -77,29 +78,30 @@ export async function addAusentismo(req, res, next) {
 
 export async function updateAusentismo(req, res, next){
     try {
-        const id = req.params.id;
-        if (!id || (id && !Types.ObjectId.isValid(id))) return res.status(404).send();
-        
-        let ausentismoToUpdate:any = await AusenciaPeriodo.findById(id);
-        if (!ausentismoToUpdate) return res.status(404).send();
-        
+        let ausentismoToUpdate = res.locals.ausentismoToUpdate;
         let ausentismoNewValues = res.locals.ausentismo;
         let controller = res.locals.controller;
-        if (!ausentismoToUpdate.articulo._id.equals(ausentismoNewValues.articulo._id))
-            return res.status(400).send({ message:"No se puede editar el Articulo!" });
+
+        const articulosEnUso:any = await Articulo.findById(ausentismoToUpdate.articulo._id);
+        const articuloNuevo:any = await Articulo.findById(ausentismoNewValues.articulo._id);
+
+        if (!articulosEnUso._id.equals(articuloNuevo._id) &&
+            (articulosEnUso.descuentaDiasLicencia && !articuloNuevo.descuentaDiasLicencia)||
+            (!articulosEnUso.descuentaDiasLicencia && articuloNuevo.descuentaDiasLicencia))    
+                return res.status(400).send({ message: "No se puede editar un Articulo por una Licencia" });
         
-        let response = "";
+        if (!articulosEnUso._id.equals(articuloNuevo._id))
+            // Se modifico el articulo. Reemplazmos el ausentismo por uno nuevo
+            return res.json(await controller.replaceArticuloAusentismo(ausentismoToUpdate, ausentismoNewValues));
+        
         if (utils.isSameDay(ausentismoToUpdate.fechaDesde, ausentismoNewValues.fechaDesde) &&
-            utils.isSameDay(ausentismoToUpdate.fechaHasta, ausentismoNewValues.fechaHasta)){
-            // Las fechas se mantienen igual por lo que aplicamos una simple actualizacion
-            response = await controller.simpleUpdateAusentismo(ausentismoToUpdate, ausentismoNewValues);
-        }
-        else{
-            // Las fechas se modificaron. Debemos aplicar una actualizacion completa de las
-            // ausencias, indicadores, e indicadores historicos.
-            response = await controller.fullUpdateAusentismo(ausentismoToUpdate, ausentismoNewValues);
-        }
-        return res.json(response);
+            utils.isSameDay(ausentismoToUpdate.fechaHasta, ausentismoNewValues.fechaHasta))
+                // Las fechas se mantienen igual por lo que aplicamos una simple actualizacion
+                return res.json(await controller.simpleUpdateAusentismo(ausentismoToUpdate, ausentismoNewValues));
+        
+        
+        // Las fechas se modificaron. Debemos aplicar una actualizacion completa de las ausencias e indicadores
+        return res.json(await controller.fullUpdateAusentismo(ausentismoToUpdate, ausentismoNewValues));
         
     } catch (err) {
         return next(err);
@@ -123,7 +125,6 @@ export async function deleteAusentismo(req, res, next){
 }
 
 
-
 export async function sugerirDiasAusentismo(req, res, next) {
     try {
         
@@ -132,7 +133,6 @@ export async function sugerirDiasAusentismo(req, res, next) {
         let response = await controller.sugerirAusentismo(ausentismo);
         return res.json(response);
     } catch (err) {
-        console.log(err)
         return next(err);
     }
 }
@@ -287,8 +287,8 @@ export function generarAusencias(agente, articulo, diasAusencia){
     export async function validateAusentismo(ausentismo, indicadores, ausToUpdate?){
         let warnings = [];
         warnings = warnings.concat(this.checkDiasLicencia(ausentismo, indicadores));
-        warnings = warnings.concat(utils.formatWarningsIndicadores(await this.checkMaxDiasDisponibles(indicadores)));
-        warnings = warnings.concat(utils.formatWarningsSuperposicion(await this.checkSolapamientoPeriodos(ausentismo.agente, ausentismo.articulo, ausentismo.fechaDesde, ausentismo.fechaHasta, ausToUpdate)));
+        warnings = warnings.concat(utils.formatWarningsIndicadores(await checkMaxDiasDisponibles(indicadores)));
+        warnings = warnings.concat(utils.formatWarningsSuperposicion(await checkSolapamientoPeriodos(ausentismo.agente, ausentismo.articulo, ausentismo.fechaDesde, ausentismo.fechaHasta, ausToUpdate)));
         return warnings;
     }
 
