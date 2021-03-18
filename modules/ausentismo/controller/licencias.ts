@@ -3,9 +3,12 @@ import { Types } from 'mongoose';
 import { IndicadorAusentismoHistorico } from '../schemas/indicadorhistorico';
 import { IndicadorAusentismo } from '../schemas/indicador';
 import { AusenciaPeriodo } from '../schemas/ausenciaperiodo';
+import * as utils from '../commons/utils';
 
 import { calcularDiasAusentismo, validateAusentismo, validateAusentismoSugerencia, applyChanges } from './ausentismo';
-import { getIndicadoresLicencia } from '../commons/indicadores';
+// import { getIndicadoresLicencia } from '../commons/indicadores';
+import IndicadorLicenciaController from './indicadorlicencia';
+import { IndicadorLicencia } from '../schemas/indicadorlicencia';
 
 class LicenciasController {
 
@@ -208,37 +211,66 @@ class LicenciasController {
      */
     async distribuirAusentismoEntreIndicadores(indicadores, diasLicencia){
         let totalDiasLicencia = diasLicencia;
-        let intervaloEnAnalisis:any;
+        let indicadorEnAnalisis:any;
         for (let indicador of indicadores){         
-            for (const intervalo of indicador.intervalos){
-                intervaloEnAnalisis = intervalo;
-                if (intervalo.totales){
-                    const diasDisponibles = intervalo.totales - intervalo.ejecutadas;
-                    if ( diasDisponibles ==  0 ) break;
-                    if ( diasDisponibles <=  totalDiasLicencia ){
-                        totalDiasLicencia = totalDiasLicencia - diasDisponibles;
-                        intervalo.asignadas = diasDisponibles;
-                    }
-                    else{
-                        intervalo.asignadas = totalDiasLicencia;
-                        totalDiasLicencia = 0;
-                    }
+            indicadorEnAnalisis = indicador;
+            if (indicador.totales){
+                const diasDisponibles = indicador.totales - indicador.ejecutadas;
+                if ( diasDisponibles ==  0 ) break;
+                if ( diasDisponibles <=  totalDiasLicencia ){
+                    totalDiasLicencia = totalDiasLicencia - diasDisponibles;
+                    indicador.asignadas = diasDisponibles;
                 }
-                else{ 
-                    // No habria limite de licencias. Asignamos todos los dias a este intervalo
-                    // TODO Revisar si efectivamente asi deberia ser el comportamiento correcto
-                    intervalo.asignadas = totalDiasLicencia;
+                else{
+                    indicador.asignadas = totalDiasLicencia;
+                    totalDiasLicencia = 0;
                 }
-                
+            }
+            else{ 
+                // No habria limite de licencias. Asignamos todos los dias a este indicador
+                // TODO Revisar si efectivamente asi deberia ser el comportamiento correcto
+                indicador.asignadas = totalDiasLicencia;
             }
         } 
         if ( totalDiasLicencia > 0){
-            // Quedaron dias de licencia sin poder asignar a ningun intervalo
+            // Quedaron dias de licencia sin poder asignar a ningun indicador
             // Forzamos que el numero de licencias asignadas sea superior al disponible
-            if (intervaloEnAnalisis) intervaloEnAnalisis.asignadas = intervaloEnAnalisis.asignadas + totalDiasLicencia; 
+            if (indicadorEnAnalisis) indicadorEnAnalisis.asignadas += totalDiasLicencia; 
         }   
     
         return indicadores;
+        // let totalDiasLicencia = diasLicencia;
+        // let intervaloEnAnalisis:any;
+        // for (let indicador of indicadores){         
+        //     for (const intervalo of indicador.intervalos){
+        //         intervaloEnAnalisis = intervalo;
+        //         if (intervalo.totales){
+        //             const diasDisponibles = intervalo.totales - intervalo.ejecutadas;
+        //             if ( diasDisponibles ==  0 ) break;
+        //             if ( diasDisponibles <=  totalDiasLicencia ){
+        //                 totalDiasLicencia = totalDiasLicencia - diasDisponibles;
+        //                 intervalo.asignadas = diasDisponibles;
+        //             }
+        //             else{
+        //                 intervalo.asignadas = totalDiasLicencia;
+        //                 totalDiasLicencia = 0;
+        //             }
+        //         }
+        //         else{ 
+        //             // No habria limite de licencias. Asignamos todos los dias a este intervalo
+        //             // TODO Revisar si efectivamente asi deberia ser el comportamiento correcto
+        //             intervalo.asignadas = totalDiasLicencia;
+        //         }
+                
+        //     }
+        // } 
+        // if ( totalDiasLicencia > 0){
+        //     // Quedaron dias de licencia sin poder asignar a ningun intervalo
+        //     // Forzamos que el numero de licencias asignadas sea superior al disponible
+        //     if (intervaloEnAnalisis) intervaloEnAnalisis.asignadas = intervaloEnAnalisis.asignadas + totalDiasLicencia; 
+        // }   
+    
+        // return indicadores;
     }
 
 
@@ -325,7 +357,9 @@ class LicenciasController {
 
 
     async obtenerIndicadoresActuales(ausentismo){
-        return await getIndicadoresLicencia(ausentismo.agente);
+        const controller = new IndicadorLicenciaController(IndicadorLicencia); 
+        return await controller.findIndicadoresLicenciaAgente(ausentismo.agente); 
+        // return await getIndicadoresLicencia(ausentismo.agente);
     }
 
 
@@ -356,11 +390,9 @@ class LicenciasController {
 
     async saveIndicadores(indicadores){
         for (const indicador of indicadores){
-            for (let intervalo of indicador.intervalos){
-                if( intervalo.asignadas){
-                    intervalo.ejecutadas = intervalo.ejecutadas + intervalo.asignadas;
-                    intervalo.asignadas = 0;
-                }
+            if( indicador.asignadas){
+                indicador.ejecutadas += indicador.asignadas;
+                indicador.asignadas = 0;
             }
            await indicador.save()
         }
@@ -410,6 +442,77 @@ class LicenciasController {
         }
         return;
     }
+
+    /**
+     * Valida la correctitud de una licencia definida en relacion a los indicadores
+     * calculados. Actualmente se valida:
+     *             - Que el ausentismo no se solape con otras ausencias previas
+     *             - Que los indicadores no excedan los dias disponibles de licencia
+     *             - Que existan indicadores para el caso de las licencias 
+     * @param ausentismo 
+     * @param indicadores 
+     * @param ausToUpdate Opcional. Requerido en la actualizacion de un ausentismo
+     */
+    async validateAusentismo(ausentismo, indicadores, ausToUpdate?){
+        let warnings = [];
+        warnings = warnings.concat(this.checkDiasLicencia(ausentismo, indicadores));
+        warnings = warnings.concat(utils.formatWarningsIndicadores(await this.checkMaxDiasDisponibles(indicadores)));
+        warnings = warnings.concat(utils.formatWarningsSuperposicion(await this.checkSolapamientoPeriodos(ausentismo.agente, ausentismo.articulo, ausentismo.fechaDesde, ausentismo.fechaHasta, ausToUpdate)));
+        return warnings;
+    }
+
+    checkDiasLicencia(ausentismo, indicadores){
+        let warnings = [];
+        if (ausentismo.articulo.descuentaDiasLicencia &&
+            (!indicadores || !indicadores.length)){
+            warnings = warnings.concat(`No se encontró información sobre días disponibles! Consulte con el Administrador del Sistema.`);
+        }
+        return warnings;
+    }
+
+    async checkMaxDiasDisponibles(indicadores){
+        let indicadoresConProblemas = [];
+        for (const indicador of indicadores){
+            if ( indicador.totales ){
+                const diasDisponibles = indicador.totales - indicador.ejecutadas;
+                const restoDiasDisponibles = diasDisponibles - indicador.asignadas;
+                if( indicador.totales && restoDiasDisponibles < 0) {
+                    indicadoresConProblemas.push(indicador);
+                }
+            }
+        }
+        return indicadoresConProblemas;
+    }
+
+    /**
+     * TODO: Analizar donde colocar este metodo para no duplicar(ver ausentismo.ts)
+     * Busca ausencias previas existentes en un periodo determinado para un agente.
+     * El parametro ausentismo se utiliza unicamente en el caso que se este en modo 
+     * edicion, para evitar controlar con el mismo ausentismo que se esta editando
+     * @param agente 
+     * @param articulo 
+     * @param desde 
+     * @param hasta 
+     * @param ausentismo Opcional. Unicamente necesario en modo edicion
+     */
+    async checkSolapamientoPeriodos(agente, articulo, desde, hasta, ausentismo?){
+        let ausentismos = await AusenciaPeriodo.find({
+            'agente._id': agente._id,
+            'ausencias': {
+                $elemMatch: {
+                    fecha: {
+                        $gte: desde,
+                        $lte: hasta
+                    }
+                }
+            }
+        });
+        if (ausentismo){
+            ausentismos = ausentismos.filter(au => !au._id.equals(ausentismo._id));
+        }
+        return ausentismos;
+    }
+    
 }
 
 

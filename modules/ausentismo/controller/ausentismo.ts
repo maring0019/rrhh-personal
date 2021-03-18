@@ -286,7 +286,7 @@ export function generarAusencias(agente, articulo, diasAusencia){
 }
 
 
-/**
+    /**
      * Valida la correctitud de un ausentismo definido en relacion a los indicadores
      * calculados. Actualmente se valida:
      *             - Que el ausentismo no se solape con otras ausencias previas
@@ -298,9 +298,8 @@ export function generarAusencias(agente, articulo, diasAusencia){
      */
     export async function validateAusentismo(ausentismo, indicadores, ausToUpdate?){
         let warnings = [];
-        warnings = warnings.concat(this.checkDiasLicencia(ausentismo, indicadores));
-        warnings = warnings.concat(utils.formatWarningsIndicadores(await this.checkMaxDiasDisponibles(indicadores)));
-        warnings = warnings.concat(utils.formatWarningsSuperposicion(await this.checkSolapamientoPeriodos(ausentismo.agente, ausentismo.articulo, ausentismo.fechaDesde, ausentismo.fechaHasta, ausToUpdate)));
+        warnings = warnings.concat(utils.formatWarningsIndicadores(await checkMaxDiasDisponibles(indicadores)));
+        warnings = warnings.concat(utils.formatWarningsSuperposicion(await checkSolapamientoPeriodos(ausentismo.agente, ausentismo.articulo, ausentismo.fechaDesde, ausentismo.fechaHasta, ausToUpdate)));
         return warnings;
     }
 
@@ -338,15 +337,6 @@ export function generarAusencias(agente, articulo, diasAusencia){
         // certificado: CertificadoSchema,
         // ausencias: [AusenciaSchema]
         return ausToUpdate;
-    }
-
-    export function checkDiasLicencia(ausentismo, indicadores){
-        let warnings = [];
-        if (ausentismo.articulo.descuentaDiasLicencia &&
-            (!indicadores || !indicadores.length)){
-            warnings = warnings.concat(`No se encontró información sobre días disponibles! Consulte con el Administrador del Sistema.`);
-        }
-        return warnings;
     }
 
     export function checkMaxDiasDisponibles(indicadores){

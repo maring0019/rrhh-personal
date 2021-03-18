@@ -12,6 +12,7 @@ class IndicadorLicenciaController extends BaseController {
     constructor(model) {
         super(model);
         this.getIndicadoresLicenciaAgente = this.getIndicadoresLicenciaAgente.bind(this);
+        this.findIndicadoresLicenciaAgente = this.findIndicadoresLicenciaAgente.bind(this);
     }
 
     
@@ -77,18 +78,20 @@ class IndicadorLicenciaController extends BaseController {
             let agente:any = await Agente.findById(id);
             if (!agente) return res.status(404).send({ message:"Not found"});
             
-            const thisYear = new Date().getFullYear();
-            const indicadores = await IndicadorLicencia.find({
-                "agente._id": Types.ObjectId(agente._id),
-                vigencia: { $gte: thisYear - config.appModules.ausentismo.maxYearsLicencias },
-                // 'vencido': false,
-            }).sort({ vigencia: 1 });
-            
+            const indicadores = this.findIndicadoresLicenciaAgente(agente);
             return res.json(indicadores);
         } catch (err) {
             return next(err);
         }
-    
+    }
+
+    async findIndicadoresLicenciaAgente(agente){
+        const thisYear = new Date().getFullYear();
+        return await IndicadorLicencia.find({
+                "agente._id": Types.ObjectId(agente._id),
+                vigencia: { $gte: thisYear - config.appModules.ausentismo.maxYearsLicencias },
+                // 'vencido': false,
+            }).sort({ vigencia: 1 });
     }
 
     async getIndicadoresLicenciaTotalesAgente(req, res, next){
