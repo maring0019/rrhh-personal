@@ -148,6 +148,7 @@ class ParteController extends BaseController {
         if (!qp.filter.fecha || !qp.filter.fecha.$gte || !qp.filter.fecha.$lte) {
             return [];
         }
+
         let fechaDesde = new Date(qp.filter.fecha.$gte);
         let fechaHasta = new Date(qp.filter.fecha.$lte);
         const params = this.cleanQueryParams(qp);
@@ -454,7 +455,6 @@ class ParteController extends BaseController {
             }
             delete queryParams.filter['fecha'];
         }
-
         queryParams.filter['fecha'] = {
             $lte: moment(fechaHasta).subtract(3, 'h').endOf('day').toDate(),
             $gte: moment(fechaDesde).subtract(3, 'h').startOf('day').toDate(),
@@ -492,7 +492,27 @@ class ParteController extends BaseController {
         {
             $lookup: {
                 from: 'ausenciasperiodo',
-                let: { agente_parte: '$agente._id', fecha_parte: '$fecha' },
+                let: {
+                    agente_parte: '$agente._id',
+                    fecha_parte: '$fecha',
+                    fecha_ini: {
+                        $dateFromParts: {
+                            year: { $year: '$fecha' },
+                            month: { $month: '$fecha' },
+                            day: { $dayOfMonth: '$fecha' },
+                        }
+                    },
+                    fecha_fin: {
+                        $dateFromParts: {
+                            year: { $year: '$fecha' },
+                            month: { $month: '$fecha' },
+                            day: { $dayOfMonth: '$fecha' },
+                            hour: 23,
+                            minute: 59,
+                            second: 59
+                        }
+                    }
+                },
                 pipeline: [
                     {
                         $match:
@@ -505,14 +525,14 @@ class ParteController extends BaseController {
                                         // Busqueda solo por fecha, sin importar la hora o tz
                                         {
                                             $lte: [
-                                                { $dateToString: { date: '$fechaDesde', format: '%Y-%m-%d' } },
-                                                { $dateToString: { date: '$$fecha_parte', format: '%Y-%m-%d' } }
+                                                '$fechaDesde',
+                                                '$$fecha_fin'
                                             ]
                                         },
                                         {
                                             $gte: [
-                                                { $dateToString: { date: '$fechaHasta', format: '%Y-%m-%d' } },
-                                                { $dateToString: { date: '$$fecha_parte', format: '%Y-%m-%d' } }
+                                                '$fechaHasta',
+                                                '$$fecha_ini'
                                             ]
                                         }
                                 ]
@@ -532,7 +552,28 @@ class ParteController extends BaseController {
         {
             $lookup: {
                 from: 'fichadascache',
-                let: { agente_parte: '$agente._id', fecha_parte: '$fecha' },
+                let: {
+                    agente_parte: '$agente._id',
+                    fecha_parte: '$fecha',
+                    fecha_ini: {
+                        $dateFromParts: {
+                            year: { $year: '$fecha' },
+                            month: { $month: '$fecha' },
+                            day: { $dayOfMonth: '$fecha' },
+                        }
+                    },
+                    fecha_fin: {
+                        $dateFromParts: {
+                            year: { $year: '$fecha' },
+                            month: { $month: '$fecha' },
+                            day: { $dayOfMonth: '$fecha' },
+                            hour: 23,
+                            minute: 59,
+                            second: 59,
+                            timezone: 'America/Argentina/Buenos_Aires'
+                        }
+                    }
+                },
                 pipeline: [
                     {
                         $match:
@@ -543,10 +584,15 @@ class ParteController extends BaseController {
                                 [
                                         { $eq: ['$agente._id', '$$agente_parte'] },
                                         {
-                                            $eq: [
-                                                // Busqueda solo por fecha, sin importar la hora o tz
-                                                { $dateToString: { date: '$fecha', format: '%Y-%m-%d' } },
-                                                { $dateToString: { date: '$$fecha_parte', format: '%Y-%m-%d' } }
+                                            $lte: [
+                                                '$fecha',
+                                                '$$fecha_fin'
+                                            ]
+                                        },
+                                        {
+                                            $gte: [
+                                                '$fecha',
+                                                '$$fecha_ini'
                                             ]
                                         }
                                 ]
