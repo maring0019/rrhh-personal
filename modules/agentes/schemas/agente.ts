@@ -1,4 +1,4 @@
-import { Schema, model, Types } from "mongoose";
+import { Schema, model } from "mongoose";
 const audit = require("../../../packages/mongoose-audit-trail");
 
 import { parseDate } from "../../../core/utils/dates";
@@ -9,6 +9,8 @@ import { EducacionSchema } from "../../../core/tm/schemas/educacion";
 import { EspecialidadSchema } from "../../../core/tm/schemas/especialidad";
 import { SituacionLaboralSchema } from "./situacionlaboral";
 import { HistoriaLaboralSchema } from "./historialaboral";
+import { PaisSchema } from "../../../core/tm/schemas/pais";
+
 
 export const AgenteSchema = new Schema({
 	idLegacy: Number, // ID Sistema anterior.
@@ -45,12 +47,7 @@ export const AgenteSchema = new Schema({
 		es_indexed: true,
 	},
 	nacionalidad: {
-		_id: {
-			type: Types.ObjectId,
-			required: true
-        },
-		nombre: String,
-		gentilicio: String
+		type : PaisSchema
 	},
 	direccion: DireccionSchema,
 	contactos: [ContactoSchema],
