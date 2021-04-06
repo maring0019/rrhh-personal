@@ -9,7 +9,7 @@ import { EducacionSchema } from "../../../core/tm/schemas/educacion";
 import { EspecialidadSchema } from "../../../core/tm/schemas/especialidad";
 import { SituacionLaboralSchema } from "./situacionlaboral";
 import { HistoriaLaboralSchema } from "./historialaboral";
-import { PaisSchema } from "../../../core/tm/schemas/pais";
+import { _PaisSchema } from "../../../core/tm/schemas/pais";
 
 
 export const AgenteSchema = new Schema({
@@ -47,7 +47,7 @@ export const AgenteSchema = new Schema({
 		es_indexed: true,
 	},
 	nacionalidad: {
-		type : PaisSchema
+		type : _PaisSchema
 	},
 	direccion: DireccionSchema,
 	contactos: [ContactoSchema],

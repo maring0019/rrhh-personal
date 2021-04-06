@@ -1,6 +1,15 @@
 import { Schema, model } from 'mongoose';
 const audit = require('../../../packages/mongoose-audit-trail');
 
+export const _PaisSchema = new Schema({
+    nombre: {
+        type: String,
+        index: true,
+        required: true,
+        unique: true
+    },
+    gentilicio: String //Nacionalidad
+});
 
 export const PaisSchema = new Schema({
     nombre: {
