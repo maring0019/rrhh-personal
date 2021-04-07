@@ -15,6 +15,7 @@ class GuardiaController extends BaseController {
         this.addAndConfirmar = this.addAndConfirmar.bind(this);
         this.updateAndConfirmar = this.updateAndConfirmar.bind(this);
         this.updateAndProcesar = this.updateAndProcesar.bind(this);
+        this.updateAndHabilitarEdicion = this.updateAndHabilitarEdicion.bind(this);
         this.generarCSV = this.generarCSV.bind(this);
     }
 
@@ -83,6 +84,14 @@ class GuardiaController extends BaseController {
         return await this.saveUpdate(req, res, next, changeset);
     }
 
+    async updateAndHabilitarEdicion(req, res, next){
+        const changeset = {
+            estado: this.ESTADO_SIN_CONFIRMAR,
+            fechaHoraProcesamiento: timestamp(),
+            responsableProcesamiento: this.getUser(req)
+        };
+        return await this.saveUpdate(req, res, next, changeset);
+    }
     
     /**
      * Genera un archivo en formato csv a partir del id de una 

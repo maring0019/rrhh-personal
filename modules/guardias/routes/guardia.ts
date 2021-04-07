@@ -17,5 +17,6 @@ Routes.post(`${baseUrl}/confirmar`, controller.addAndConfirmar);
 Routes.put(`${baseUrl}/:id`, controller.update);
 Routes.put(`${baseUrl}/:id/confirmar`, controller.updateAndConfirmar);
 Routes.put(`${baseUrl}/:id/procesar`, controller.updateAndProcesar);
+Routes.put(`${baseUrl}/:id/habilitar-edicion`, controller.updateAndHabilitarEdicion);
 
 Routes.delete(`${baseUrl}/:id`, controller.delete);
