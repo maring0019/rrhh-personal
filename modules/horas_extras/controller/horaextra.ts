@@ -10,6 +10,7 @@ class HoraExtraController extends BaseController {
         this.addAndConfirmar = this.addAndConfirmar.bind(this);
         this.updateAndConfirmar = this.updateAndConfirmar.bind(this);
         this.updateAndProcesar = this.updateAndProcesar.bind(this);
+        this.updateAndHabilitarEdicion = this.updateAndHabilitarEdicion.bind(this);
     }
 
     getUser(req){
@@ -86,6 +87,15 @@ class HoraExtraController extends BaseController {
     async updateAndProcesar(req, res, next){
         const changeset = {
             estado: this.ESTADO_PROCESADA,
+            fechaHoraProcesamiento: timestamp(),
+            responsableProcesamiento: this.getUser(req)
+        };
+        return await this.saveUpdate(req, res, next, changeset);
+    }
+
+    async updateAndHabilitarEdicion(req, res, next){
+        const changeset = {
+            estado: this.ESTADO_SIN_CONFIRMAR,
             fechaHoraProcesamiento: timestamp(),
             responsableProcesamiento: this.getUser(req)
         };
