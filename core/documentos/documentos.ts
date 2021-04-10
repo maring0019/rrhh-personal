@@ -60,8 +60,6 @@ export class DocumentoPDF {
 		this.isPrintable = printable;
 	}
 
-	private static options: pdf.CreateOptions = {};
-
 	protected getTemplateName() {
 		if (this.templateName) {
 			return this.templateName;
@@ -123,9 +121,14 @@ export class DocumentoPDF {
 		return this.outputFilename;
 	}
 
+	protected getPrintOrientation():'portrait' | 'landscape'{
+		return 'portrait';
+	}
+
 	protected getDocumentoOptions() {
 		let phantomPDFOptions: pdf.CreateOptions = {
 			format: "A4",
+			orientation: this.getPrintOrientation(),
 			border: {
 				// default is 0, units: mm, cm, in, px
 				top: "0.25cm",
@@ -142,8 +145,7 @@ export class DocumentoPDF {
 			},
 		};
 
-		DocumentoPDF.options = (Object.keys(DocumentoPDF.options).length)? DocumentoPDF.options : phantomPDFOptions;
-		return DocumentoPDF.options;
+		return phantomPDFOptions;
 	}
 
 	protected generarCSS() {

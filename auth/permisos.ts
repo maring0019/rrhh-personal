@@ -271,6 +271,12 @@ export default [
                         comment: "Permite exportar una guardia al formato CSV",
                         type: "boolean",
                     },
+                    {
+                        key: "exportar_pdf",
+                        title: "Permite exportar Guardia al formato PDF",
+                        comment: "Permite exportar una guardia al formato PDF",
+                        type: "boolean",
+                    },
                 ],
             }
         ],

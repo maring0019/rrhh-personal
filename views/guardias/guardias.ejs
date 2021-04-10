@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+    <body style="margin:30px 25px;">
+        <%- include("../utils/print") %>
+        
+        <!-- LOGO HEADER  -->
+        <%- include("../reportes/base-logo") %>
+        <!-- HEADER  -->
+       
+        <table class="tg tgw no-border">
+            <tr> 
+                <td class="tg-266k" style="text-align: center; text-transform: uppercase;">
+                    <h3 class="m0">CERTIFICACIÓN DE GUARDIA  <%= guardias.lote.tipoGuardia %></h3>
+                </td>
+            </tr>
+        </table>
+                
+        <table class="tg tgw" style="width:60%">
+            <tr> 
+                <td class="tg-266k" style="width:30%"><h3 class="m0">Categoria</h3></td>
+                <td style="width:70%"><h3 class="m0"><%= guardias.lote.categoria.nombre %></h3></td>
+            </tr>
+            <tr> 
+                <td class="tg-266k" style="width:30%"><h3 class="m0">Dependencia:</h3></td>
+                <td style="width:70%"><h3 class="m0"></h3><%= guardias.lote.servicio.nombre %></td>
+            </tr>
+            <tr> 
+                <td class="tg-266k" style="width:30%"><h3 class="m0">Guardia Periodo</h3></td>
+                <td style="width:70%"><h3 class="m0"><%= guardias.periodo.nombre %></h3></td>
+            </tr>
+        </table>
+
+        <table class="tg tgw">
+            <tr> 
+                <td class="tg-266k">DEM</td>
+                <td class="tg-266k">SERVICIO</td>
+                <td class="tg-266k">LEGAJO</td>
+                <td class="tg-266k">NOMBRE Y APELLIDO</td>
+                <td class="tg-266k no-padding">16</td>
+                <td class="tg-266k no-padding">17</td>
+                <td class="tg-266k no-padding">18</td>
+                <td class="tg-266k no-padding">19</td>
+                <td class="tg-266k no-padding">20</td>
+                <td class="tg-266k no-padding">21</td>
+                <td class="tg-266k no-padding">22</td>
+                <td class="tg-266k no-padding">23</td>
+                <td class="tg-266k no-padding">24</td>
+                <td class="tg-266k no-padding">25</td>
+                <td class="tg-266k no-padding">26</td>
+                <td class="tg-266k no-padding">27</td>
+                <td class="tg-266k no-padding">28</td>
+                <td class="tg-266k no-padding">29</td>
+                <td class="tg-266k no-padding">30</td>
+                <td class="tg-266k no-padding">31</td>
+                <td class="tg-266k no-padding">1</td>
+                <td class="tg-266k no-padding">2</td>
+                <td class="tg-266k no-padding">3</td>
+                <td class="tg-266k no-padding">4</td>
+                <td class="tg-266k no-padding">5</td>
+                <td class="tg-266k no-padding">6</td>
+                <td class="tg-266k no-padding">7</td>
+                <td class="tg-266k no-padding">8</td>
+                <td class="tg-266k no-padding">9</td>
+                <td class="tg-266k no-padding">10</td>
+                <td class="tg-266k no-padding">11</td>
+                <td class="tg-266k no-padding">12</td>
+                <td class="tg-266k no-padding">13</td>
+                <td class="tg-266k no-padding">14</td>
+                <td class="tg-266k no-padding">15</td>
+                <td class="tg-266k">TOTAL</td>
+            </tr>
+            <% for (const item of guardias.planilla) { %>
+            <tr>
+                <td></td>
+                <td></td>
+                <td><%= item.agente.numero %> </td>
+                <td><%= item.agente.apellido %> <%= item.agente.nombre %> </td>
+                <% index = 0; totalGuardiasAgente = 0; %>
+                <% for (const _dia of guardias.periodo.range()) { %>
+                    <% if (item.diasGuardia[index]) {%>
+                        <% diaCompleto = item.diasGuardia[index].diaCompleto; %>
+                        <% totalGuardiasAgente += diaCompleto? 1:0.5; %>
+                        <td> <%= diaCompleto?'X':'M' %> </td>
+                    <% } else {%>
+                        <td></td>
+                    <% } %>
+                    <% index += 1; %>
+                <% } %>
+                <td><%= totalGuardiasAgente %></td>
+            </tr>
+            <% } %>
+        </table>
+
+        <br>
+        <p style="font-weight: bold; line-height: 12px;">Observaciones: (X= Guardia de 24hs)-(M= Guardia de 12hs) </p>
+        <br>
+        <br>
+        <table class="tg tgw no-border">
+            <tr class="border-no-cell"> 
+                <td style="width:20%"><h3 class="m0"></h3></td>
+                <td class="tg-266k" style="width:30%"><h3 class="m0">Firma y Sello del Responsable</h3></td>
+                <td style="width:20%"><h3 class="m0"></h3></td>
+                <td class="tg-266k" style="width:30%"><h3 class="m0">Firma y Sello del Director</h3></td>
+            </tr>
+        </table>
+    </body>
+</html>

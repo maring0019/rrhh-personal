@@ -17,6 +17,8 @@ import { DocumentoRecargosExcedidos } from "../../../core/documentos/recargos/re
 
 import { DocumentoHorasExtras } from "../../../core/documentos/horas_extras/horas_extras";
 
+import { DocumentoGuardias } from "../../../core/documentos/guardias/guardias";
+
 import {
 	opcionesAgrupamiento,
 	opcionesOrdenamiento,
@@ -51,7 +53,9 @@ class ReportesController extends BaseDocumentoController {
 		recargos: DocumentoRecargos,
 		recargos_excedidos: DocumentoRecargosExcedidos,
 		// Hs Extras
-		horas_extras: DocumentoHorasExtras
+		horas_extras: DocumentoHorasExtras,
+		// Guardias
+		guardias: DocumentoGuardias
 	};
 
 	/**
