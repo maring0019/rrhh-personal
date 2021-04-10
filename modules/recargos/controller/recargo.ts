@@ -11,6 +11,7 @@ class RecargoController extends BaseController {
         this.updateAndConfirmar = this.updateAndConfirmar.bind(this);
         this.updateAndProcesar = this.updateAndProcesar.bind(this);
         this.updateAndProcesarParcialmente = this.updateAndProcesarParcialmente.bind(this);
+        this.updateAndHabilitarEdicion = this.updateAndHabilitarEdicion.bind(this);
     }
 
     getUser(req){
@@ -106,6 +107,15 @@ class RecargoController extends BaseController {
     async updateAndProcesar(req, res, next){
         const changeset = {
             estado: this.ESTADO_PROCESADA,
+            fechaHoraProcesamiento: timestamp(),
+            responsableProcesamiento: this.getUser(req)
+        };
+        return await this.saveUpdate(req, res, next, changeset);
+    }
+
+    async updateAndHabilitarEdicion(req, res, next){
+        const changeset = {
+            estado: this.ESTADO_SIN_CONFIRMAR,
             fechaHoraProcesamiento: timestamp(),
             responsableProcesamiento: this.getUser(req)
         };
