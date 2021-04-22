@@ -1,9 +1,9 @@
 const sql = require("mssql");
-import { SQLServerConnection } from "../../../connections";
+import { SQLServerAnvizCon, SQLServerHospitalCon } from "../../../connections";
 
 
 async function findUsuario(userID) {
-    const sqlConn = await SQLServerConnection.connection;
+    const sqlConn = await SQLServerAnvizCon.connection;
     const result = await sqlConn
         .request()
         .input("user_id", userID)
@@ -13,7 +13,7 @@ async function findUsuario(userID) {
 }
 
 async function addUsuario(agente) {
-    const sqlConn = await SQLServerConnection.connection;
+    const sqlConn = await SQLServerAnvizCon.connection;
     await sqlConn
         .request()
         .input("user_id", agente.idLegacy)
@@ -35,7 +35,7 @@ async function habilitaUsuario(userID) {
 }
 
 async function fichadorUpdateUsuarioStatus(userID, newStatus) {
-    const sqlConn = await SQLServerConnection.connection;
+    const sqlConn = await SQLServerAnvizCon.connection;
     // prettier-ignore
     await sqlConn.request()
         .input("user_id", sql.Int, userID)
@@ -45,9 +45,28 @@ async function fichadorUpdateUsuarioStatus(userID, newStatus) {
                 WHERE Userid = @user_id`);
 }
 
+
+/**
+ * Inserta un agente en el SQL Server del sistema Legacy 
+ * @param agente 
+ */
+async function insertAgente(agente) {
+    const sqlConn = await SQLServerHospitalCon.connection;
+    return await sqlConn
+        .request()
+        .input("numero", agente.numero)
+        .input("documento", agente.documento)
+        .input("apellido", agente.apellido)
+        .input("nombre", agente.nombre)
+        .query(
+            `INSERT INTO Personal_Agentes (Numero, Documento, Apellido, Nombre)
+            VALUES (@numero, @documento, @apellido, @nombre)`
+        );
+}
 export const fichador = {
     habilitaUsuario,
     inhabilitaUsuario,
     addUsuario,
-    findUsuario
+    findUsuario,
+    insertAgente
 };

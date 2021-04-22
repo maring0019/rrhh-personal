@@ -38,12 +38,19 @@ export default {
     },
     database: {
         mongo: env("MONGO_HOST", "mongodb://localhost:27017/test"),
-        sqlserver: {
+        sqlserverAnviz: { 
             server: env("SQLSERVER_SERVER", "localhost"),
             database: env("SQLSERVER_DB", "test"),
             user: env("SQLSERVER_USER", "test"),
             password: env("SQLSERVER_PASS", "test"),
         },
+        sqlserverHospital: { 
+            server: env("SQLSERVER_SERVER", "localhost"), 
+            database: env("SQLSERVER_DB", "test"), 
+            user: env("SQLSERVER_USER", "test"), 
+            password: env("SQLSERVER_PASS", "test"), 
+        },
+
     },
 };
 

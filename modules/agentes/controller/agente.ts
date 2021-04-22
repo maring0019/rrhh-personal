@@ -95,7 +95,7 @@ async function addAgente(req, res, next) {
                     ? situacionLaboral.normaLegal.fechaNormaLegal
                     : new Date();
         }
-        const agente = new Agente({
+        let agente:any = new Agente({
             idLegacy: req.body.idLegacy,
             numero: req.body.numero,
             // tipoDocumento
@@ -126,19 +126,26 @@ async function addAgente(req, res, next) {
         // https://medium.com/@qjli/how-to-mock-specific-module-function-in-jest-715e39a391f4
         // https://medium.com/@DavideRama/mock-spy-exported-functions-within-a-single-module-in-jest-cdf2b61af642
         const agenteExistente = await AgenteController._findAgente(agente);
-        if (_isEmpty(agenteExistente)) {
-            const agenteNuevo = await agente.save();
-            if (req.body.foto) {
-                await AgenteController._saveImage(
-                    req.body.foto,
-                    agenteNuevo._id,
-                    req.body.migracion
-                );
-            }
-            return res.json(agenteNuevo);
-        } else {
-            return next("El agente ingresado ya existe!");
+        if (!_isEmpty(agenteExistente)) return next("El agente ingresado ya existe!");
+        
+        // Primero insertamos el agente en el SQLServer Legacy
+        const agenteSQLServer = await fichador.insertAgente(agente);
+        // TODO Validar el objeto retornado por insertAgente. Definir que hacer si no se puede insertar
+        if (!agenteSQLServer) return next("El agente ingresado no se pudo dar de alta!");
+        
+        // Asignamos el numero generado por SQLServer al agente e insertamos en mongoDB
+        agente.idLegacy = agenteSQLServer.numero;
+        const agenteNuevo = await agente.save();
+        if (req.body.foto) {
+            await AgenteController._saveImage(
+                req.body.foto,
+                agenteNuevo._id,
+                req.body.migracion
+            );
         }
+        return res.json(agenteNuevo);
+        
+        
     } catch (err) {
         return next(err);
     }
