@@ -1,22 +1,22 @@
-import { Types } from "mongoose";
-import * as aqp from "api-query-params";
+import { Types } from 'mongoose';
+import * as aqp from 'api-query-params';
 
-import { Readable } from "stream";
+import { Readable } from 'stream';
 
-import { Agente } from "../schemas/agente";
-import { makeFs } from "../../../core/tm/schemas/imagenes";
-import { attachFilesToObject } from "../../../core/files/controller/file";
-import { AusenciaPeriodo } from "../../ausentismo/schemas/ausenciaperiodo";
-import { readImage } from "../../../core/files/utils";
-import { IndicadorAusentismo } from "../../ausentismo/schemas/indicador";
-import { NormaLegal } from "../schemas/normaLegal";
-import { Nota } from "../../notas/schemas/nota";
-import { Adjunto } from "../../adjuntos/schemas/adjunto";
+import { Agente } from '../schemas/agente';
+import { makeFs } from '../../../core/tm/schemas/imagenes';
+import { attachFilesToObject } from '../../../core/files/controller/file';
+import { AusenciaPeriodo } from '../../ausentismo/schemas/ausenciaperiodo';
+import { readImage } from '../../../core/files/utils';
+import { IndicadorAusentismo } from '../../ausentismo/schemas/indicador';
+import { NormaLegal } from '../schemas/normaLegal';
+import { Nota } from '../../notas/schemas/nota';
+import { Adjunto } from '../../adjuntos/schemas/adjunto';
 
-import { fichador } from "./fichador";
+import { fichador } from './fichador';
 
 
-class FichadorException extends Error {};
+class FichadorException extends Error { }
 
 async function getAgentes(req, res, next) {
     return await searchAgentes(req, res, next);
@@ -42,16 +42,16 @@ async function getAgentes(req, res, next) {
 async function getAgenteByID(req, res, next) {
     try {
         const id = req.params.id;
-        if (!id || (id && !Types.ObjectId.isValid(id))) return next(404);
+        if (!id || (id && !Types.ObjectId.isValid(id))) { return next(404); }
         let agente: any = await Agente.findById(id);
-        if (!agente) return next(404);
+        if (!agente) { return next(404); }
         let foto = await AgenteController._findFotoPerfil(id);
         if (foto) {
             foto.read((err, buffer) => {
                 if (err) {
                     return res.json(agente);
                 }
-                agente.foto = buffer.toString("base64");
+                agente.foto = buffer.toString('base64');
                 return res.json(agente);
             });
         } else {
@@ -91,11 +91,11 @@ async function addAgente(req, res, next) {
             situacionLaboral.esAlta = true;
             situacionLaboral.fecha =
                 situacionLaboral.normaLegal &&
-                situacionLaboral.normaLegal.fechaNormaLegal
+                    situacionLaboral.normaLegal.fechaNormaLegal
                     ? situacionLaboral.normaLegal.fechaNormaLegal
                     : new Date();
         }
-        let agente:any = new Agente({
+        let agente: any = new Agente({
             idLegacy: req.body.idLegacy,
             numero: req.body.numero,
             // tipoDocumento
@@ -111,11 +111,11 @@ async function addAgente(req, res, next) {
             direccion: req.body.direccion,
             contactos: req.body.contactos,
             educacion: req.body.educacion,
-            situacionLaboral: situacionLaboral,
-            historiaLaboral: historiaLaboral,
+            situacionLaboral,
+            historiaLaboral,
             bajas: req.body.bajas,
             activo:
-                req.body.activo == null || req.body.activo == "undefined"
+                req.body.activo == null || req.body.activo === 'undefined'
                     ? true
                     : req.body.activo,
         });
@@ -126,15 +126,17 @@ async function addAgente(req, res, next) {
         // https://medium.com/@qjli/how-to-mock-specific-module-function-in-jest-715e39a391f4
         // https://medium.com/@DavideRama/mock-spy-exported-functions-within-a-single-module-in-jest-cdf2b61af642
         const agenteExistente = await AgenteController._findAgente(agente);
-        if (!_isEmpty(agenteExistente)) return next("El agente ingresado ya existe!");
-        
+        if (!_isEmpty(agenteExistente)) { return next('El agente ingresado ya existe!'); }
+
         // Primero insertamos el agente en el SQLServer Legacy
-        const agenteSQLServer = await fichador.insertAgente(agente);
+        const agenteSQLServerID = await fichador.insertAgente(agente);
         // TODO Validar el objeto retornado por insertAgente. Definir que hacer si no se puede insertar
-        if (!agenteSQLServer) return next("El agente ingresado no se pudo dar de alta!");
-        
+        if (!agenteSQLServerID) { return next('El agente ingresado no se pudo dar de alta!'); }
+
+        console.log(agenteSQLServerID);
+
         // Asignamos el numero generado por SQLServer al agente e insertamos en mongoDB
-        agente.idLegacy = agenteSQLServer.numero;
+        agente.idLegacy = agenteSQLServerID;
         const agenteNuevo = await agente.save();
         if (req.body.foto) {
             await AgenteController._saveImage(
@@ -144,8 +146,8 @@ async function addAgente(req, res, next) {
             );
         }
         return res.json(agenteNuevo);
-        
-        
+
+
     } catch (err) {
         return next(err);
     }
@@ -153,7 +155,7 @@ async function addAgente(req, res, next) {
 
 function updateField(obj, keys: string[], value) {
     try {
-        if (keys.length == 1) {
+        if (keys.length === 1) {
             obj[keys[0]] = value;
         } else {
             const key = keys.shift();
@@ -174,18 +176,20 @@ function updateField(obj, keys: string[], value) {
 async function updateAgente(req, res, next) {
     try {
         const id = req.params.id;
-        if (!id || (id && !Types.ObjectId.isValid(id)))
-            return res.status(404).send({ message: "Agente no encontrado." });
+        if (!id || (id && !Types.ObjectId.isValid(id))) {
+            return res.status(404).send({ message: 'Agente no encontrado.' });
+        }
 
         let agente: any = await Agente.findById(id);
-        if (!agente)
-            return res.status(404).send({ message: "Agente no encontrado." });
+        if (!agente) {
+            return res.status(404).send({ message: 'Agente no encontrado.' });
+        }
 
         let objWithChanges = req.body;
         // Update only changed fields. This way, audit module only audits
         // changed fields correctly
         for (const key of Object.keys(objWithChanges)) {
-            let keys = key.split(".");
+            let keys = key.split('.');
             updateField(agente, keys, objWithChanges[key]);
         }
         await agente.updateOne(agente);
@@ -198,10 +202,11 @@ async function updateAgente(req, res, next) {
 async function deleteAgente(req, res, next) {
     try {
         const id = req.params.id;
-        if (!id || (id && !Types.ObjectId.isValid(id)))
+        if (!id || (id && !Types.ObjectId.isValid(id))) {
             return res.status(404).send();
+        }
         let situacion: any = await Agente.findById(id);
-        if (!situacion) return res.status(404).send({ message: "Not found" });
+        if (!situacion) { return res.status(404).send({ message: 'Not found' }); }
         const situacionEliminada = await situacion.remove();
         return res.json(situacionEliminada);
     } catch (err) {
@@ -212,11 +217,13 @@ async function deleteAgente(req, res, next) {
 async function bajaAgente(req, res, next) {
     try {
         const id = req.params.id;
-        if (!id || (id && !Types.ObjectId.isValid(id)))
+        if (!id || (id && !Types.ObjectId.isValid(id))) {
             return res.status(404).send();
+        }
         let agente: any = await Agente.findById(id);
-        if (!agente)
-            return res.status(404).send({ message: "Agente not found" });
+        if (!agente) {
+            return res.status(404).send({ message: 'Agente not found' });
+        }
         let baja = req.body;
         // Comenzamos a aplicar los cambios
         agente.activo = false;
@@ -231,12 +238,14 @@ async function bajaAgente(req, res, next) {
 
         // Datos de la baja para el historial
         let nuevaHistoria = {
-            tipo: "baja",
+            tipo: 'baja',
             timestamp: new Date(),
             changeset: baja,
         };
         agente.historiaLaboral.unshift(nuevaHistoria);
         let agenteActualizado = await agente.save();
+
+        await fichador.bajaUsuario(agente);
 
         return res.json(agenteActualizado);
     } catch (err) {
@@ -247,12 +256,14 @@ async function bajaAgente(req, res, next) {
 async function reactivarAgente(req, res, next) {
     try {
         const id = req.params.id;
-        if (!id || (id && !Types.ObjectId.isValid(id)))
+        if (!id || (id && !Types.ObjectId.isValid(id))) {
             return res.status(404).send();
+        }
 
         let agente: any = await Agente.findById(id);
-        if (!agente)
-            return res.status(404).send({ message: "Agente not found" });
+        if (!agente) {
+            return res.status(404).send({ message: 'Agente not found' });
+        }
 
         const reactivacion = req.body;
         if (
@@ -260,16 +271,17 @@ async function reactivarAgente(req, res, next) {
             !reactivacion.cargo ||
             !reactivacion.situacion ||
             !reactivacion.regimen
-        )
+        ) {
             return res.status(400).send({
                 message: `Se requiere especificar la nueva Situacion Laboral
                           del Agente para su correcta reactivación`,
             });
+        }
         // Si llegamos hasta aqui entonces estan dadas todas condiciones
         // para reactivar al agente
         agente.activo = true;
         agente.situacionLaboral.fecha = reactivacion.fecha;
-        agente.situacionLaboral.motivo = "Reactivación"; // Hardcodeamos el motivo
+        agente.situacionLaboral.motivo = 'Reactivación'; // Hardcodeamos el motivo
         agente.situacionLaboral.normaLegal = reactivacion.normaLegal || null;
         agente.situacionLaboral.situacion = reactivacion.situacion;
         agente.situacionLaboral.cargo = reactivacion.cargo;
@@ -282,12 +294,14 @@ async function reactivarAgente(req, res, next) {
 }
 
 async function generateLegacyID() {
-    let results:any = await Agente.aggregate([
-        { $sort: { idLegacy: -1 }},
-        { $limit: 1 },  
+    let results: any = await Agente.aggregate([
+        { $sort: { codigoFichado: -1 } },
+        { $limit: 1 }
     ]);
-    if (results && results.length == 1)
-        return results[0].idLegacy + 1;
+
+    if (results && results.length === 1) {
+        return (results[0].codigoFichado || 50600) + 1;
+    }
     throw new FichadorException(`No se pudo obtener un id valido para fichar`);
 }
 
@@ -295,17 +309,19 @@ async function generateLegacyID() {
 async function consultaFichadoAgente(req, res, next) {
     try {
         const id = req.params.id;
-        if (!id || (id && !Types.ObjectId.isValid(id)))
-            return res.status(404).send({ message: "Agente ID inválido" });
+        if (!id || (id && !Types.ObjectId.isValid(id))) {
+            return res.status(404).send({ message: 'Agente ID inválido' });
+        }
 
         let agente: any = await Agente.findById(id);
-        if (!agente)
-            return res.status(404).send({ message: "Agente not found" });
+        if (!agente) {
+            return res.status(404).send({ message: 'Agente not found' });
+        }
 
-        if (!agente.idLegacy) return res.status(200).send({ status: false });
+        if (!agente.idLegacy) { return res.status(200).send({ status: false }); }
 
         const userFichador = await fichador.findUsuario(agente.idLegacy);
-        if (userFichador && userFichador.Deptid != 6) {
+        if (userFichador && userFichador.Deptid !== 6) {
             return res.status(200).send({ status: true });
         } else {
             return res.status(200).send({ status: false });
@@ -318,17 +334,21 @@ async function consultaFichadoAgente(req, res, next) {
 async function inhabilitaFichadoAgente(req, res, next) {
     try {
         const id = req.params.id;
-        if (!id || (id && !Types.ObjectId.isValid(id)))
-            return res.status(404).send({ message: "Agente ID inválido" });
+        if (!id || (id && !Types.ObjectId.isValid(id))) {
+            return res.status(404).send({ message: 'Agente ID inválido' });
+        }
 
         let agente: any = await Agente.findById(id);
-        if (!agente)
-            return res.status(404).send({ message: "Agente not found" });
+        if (!agente) {
+            return res.status(404).send({ message: 'Agente not found' });
+        }
+
 
         if (agente.idLegacy) {
             const userFichador = await fichador.findUsuario(agente.idLegacy);
-            if (userFichador)
+            if (userFichador) {
                 await fichador.inhabilitaUsuario(userFichador.Userid);
+            }
         }
 
         return res.status(200).send({});
@@ -340,22 +360,27 @@ async function inhabilitaFichadoAgente(req, res, next) {
 async function habilitaFichadoAgente(req, res, next) {
     try {
         const id = req.params.id;
-        if (!id || (id && !Types.ObjectId.isValid(id)))
-            return res.status(404).send({ message: "Agente ID inválido" });
-
-        let agente: any = await Agente.findById(id);
-        if (!agente)
-            return res.status(404).send({ message: "Agente not found" });
-
-        if (!agente.idLegacy) {
-            agente.idLegacy = await generateLegacyID();
-            await agente.save();
+        if (!id || (id && !Types.ObjectId.isValid(id))) {
+            return res.status(404).send({ message: 'Agente ID inválido' });
         }
 
-        const userFichador = await fichador.findUsuario(agente.idLegacy);
-        userFichador
-            ? await fichador.habilitaUsuario(userFichador.Userid)
-            : await fichador.addUsuario(agente);
+        let agente: any = await Agente.findById(id);
+        if (!agente) {
+            return res.status(404).send({ message: 'Agente not found' });
+        }
+
+        if (!agente.codigoFichado) {
+            agente.codigoFichado = await generateLegacyID();
+            await agente.save();
+            await fichador.habilitaUsuario(agente);
+        }
+
+        await fichador.fichadorUpdateUsuarioStatus(agente.idLegacy, 7);
+
+        // const userFichador = await fichador.findUsuario(agente.idLegacy);
+        // userFichador
+        //     ? await fichador.habilitaUsuario(userFichador.Userid)
+        //     : await fichador.addUsuario(agente);
 
         return res.status(200).send({});
     } catch (err) {
@@ -374,12 +399,14 @@ async function habilitaFichadoAgente(req, res, next) {
 async function addHistoriaLaboral(req, res, next) {
     try {
         const id = req.params.id;
-        if (!id || (id && !Types.ObjectId.isValid(id)))
+        if (!id || (id && !Types.ObjectId.isValid(id))) {
             return res.status(404).send();
+        }
 
         let agente: any = await Agente.findById(id);
-        if (!agente)
-            return res.status(404).send({ message: "Agente not found" });
+        if (!agente) {
+            return res.status(404).send({ message: 'Agente not found' });
+        }
         let newSituacionLaboral = req.body;
         moveSituacionLaboralToHistorial(agente);
         replaceSituacionLaboral(agente, newSituacionLaboral);
@@ -393,27 +420,31 @@ async function addHistoriaLaboral(req, res, next) {
 async function updateHistoriaLaboral(req, res, next) {
     try {
         const id = req.params.id;
-        if (!id || (id && !Types.ObjectId.isValid(id)))
+        if (!id || (id && !Types.ObjectId.isValid(id))) {
             return res.status(404).send();
+        }
 
         let agente: any = await Agente.findById(id);
-        if (!agente)
-            return res.status(404).send({ message: "Agente not found" });
+        if (!agente) {
+            return res.status(404).send({ message: 'Agente not found' });
+        }
 
         let historia = req.body;
         const idx = agente.historiaLaboral.findIndex(
-            (obj) => obj._id == historia._id
+            (obj) => obj._id === historia._id
         );
-        if (idx < 0)
-            return res.status(404).send({ message: "Historia not found" });
+        if (idx < 0) {
+            return res.status(404).send({ message: 'Historia not found' });
+        }
 
         // Si la norma legal no tiene id forzamos la creacion ya que
         // es necesario para asociarle los documentos adjuntos.
         // La falta de id es un problema que se arrastra de la migracion
-        if (!historia.changeset.normaLegal._id)
+        if (!historia.changeset.normaLegal._id) {
             historia.changeset.normaLegal = new NormaLegal(
                 historia.changeset.normaLegal
             );
+        }
         agente.historiaLaboral[idx] = historia;
         let agenteActualizado = await agente.save();
         return res.json(agenteActualizado);
@@ -425,19 +456,22 @@ async function updateHistoriaLaboral(req, res, next) {
 async function deleteHistoriaLaboral(req, res, next) {
     try {
         const id = req.params.id;
-        if (!id || (id && !Types.ObjectId.isValid(id)))
+        if (!id || (id && !Types.ObjectId.isValid(id))) {
             return res.status(404).send();
+        }
 
         let agente: any = await Agente.findById(id);
-        if (!agente)
-            return res.status(404).send({ message: "Agente not found" });
+        if (!agente) {
+            return res.status(404).send({ message: 'Agente not found' });
+        }
 
         let historia = req.body;
         const idx = agente.historiaLaboral.findIndex(
-            (obj) => obj._id == historia._id
+            (obj) => obj._id === historia._id
         );
-        if (idx < 0)
-            return res.status(404).send({ message: "Historia not found" });
+        if (idx < 0) {
+            return res.status(404).send({ message: 'Historia not found' });
+        }
 
         agente.historiaLaboral.splice(idx, 1);
         let agenteActualizado = await agente.save();
@@ -457,7 +491,7 @@ function moveSituacionLaboralToHistorial(agente) {
     let agenteCopy = agente.toObject();
     let oldSituacionLaboral = agenteCopy.situacionLaboral;
     let nuevaHistoria = {
-        tipo: oldSituacionLaboral.esAlta ? "alta" : "modificacion",
+        tipo: oldSituacionLaboral.esAlta ? 'alta' : 'modificacion',
         timestamp: new Date(),
         changeset: { ...oldSituacionLaboral },
     };
@@ -488,9 +522,10 @@ async function uploadFotoPerfil(req, res, next) {
     try {
         const id = req.params.id;
         const imagen = req.body.imagen;
-        if (!id || (id && !Types.ObjectId.isValid(id)))
+        if (!id || (id && !Types.ObjectId.isValid(id))) {
             return res.status(404).send();
-        if (!imagen) return res.status(200).send();
+        }
+        if (!imagen) { return res.status(200).send(); }
         await AgenteController._saveImage(imagen, Types.ObjectId(id));
         return res.status(200).send();
     } catch (err) {
@@ -506,28 +541,28 @@ async function getFotoPerfil(req, res, next) {
         if (queryParams && queryParams.attachment) {
             foto.read(async (err, buffer) => {
                 try {
-                    if (err) throw err;
-                    res.setHeader("Content-Type", foto.contentType);
-                    res.setHeader("Content-Length", foto.length);
+                    if (err) { throw err; }
+                    res.setHeader('Content-Type', foto.contentType);
+                    res.setHeader('Content-Length', foto.length);
                     res.setHeader(
-                        "Content-Disposition",
+                        'Content-Disposition',
                         `attachment; filename=${foto.filename}`
                     );
                     return res.send(buffer);
                 } catch (err) {
-                    console.log("Encontramos un error"); // TODO Procesar correctamente
+                    console.log('Encontramos un error'); // TODO Procesar correctamente
                     return next(err);
                 }
             });
         } else {
             foto.read((err, buffer) => {
                 if (err) {
-                    console.log("ERROR!!");
+                    console.log('ERROR!!');
                     return next(err);
                 } else {
-                    res.setHeader("Content-Type", foto.contentType);
-                    res.setHeader("Content-Length", foto.length);
-                    return res.send(buffer.toString("base64"));
+                    res.setHeader('Content-Type', foto.contentType);
+                    res.setHeader('Content-Length', foto.length);
+                    return res.send(buffer.toString('base64'));
                 }
             });
         }
@@ -539,13 +574,13 @@ async function getFotoPerfil(req, res, next) {
 async function getAusencias(req, res, next) {
     try {
         const id = req.params.id;
-        if (!id || (id && !Types.ObjectId.isValid(id))) return next(404);
+        if (!id || (id && !Types.ObjectId.isValid(id))) { return next(404); }
         let agente: any = await Agente.findById(id);
-        if (!agente) return next(404);
+        if (!agente) { return next(404); }
 
         const pipeline = [
-            { $match: { "agente._id": Types.ObjectId(agente._id) } },
-            { $unwind: "$ausencias" },
+            { $match: { 'agente._id': Types.ObjectId(agente._id) } },
+            { $unwind: '$ausencias' },
         ];
         let ausencias = await AusenciaPeriodo.aggregate(pipeline);
         return res.json(ausencias);
@@ -557,12 +592,12 @@ async function getAusencias(req, res, next) {
 async function getNotas(req, res, next) {
     try {
         const id = req.params.id;
-        if (!id || (id && !Types.ObjectId.isValid(id))) return next(404);
+        if (!id || (id && !Types.ObjectId.isValid(id))) { return next(404); }
         let agente: any = await Agente.findById(id);
-        if (!agente) return next(404);
+        if (!agente) { return next(404); }
 
         const pipeline = [
-            { $match: { "agente._id": Types.ObjectId(agente._id) } },
+            { $match: { 'agente._id': Types.ObjectId(agente._id) } },
             { $sort: { fecha: -1 } },
         ];
         let notas = await Nota.aggregate(pipeline);
@@ -575,12 +610,12 @@ async function getNotas(req, res, next) {
 async function getAdjuntos(req, res, next) {
     try {
         const id = req.params.id;
-        if (!id || (id && !Types.ObjectId.isValid(id))) return next(404);
+        if (!id || (id && !Types.ObjectId.isValid(id))) { return next(404); }
         let agente: any = await Agente.findById(id);
-        if (!agente) return next(404);
+        if (!agente) { return next(404); }
 
         const pipeline = [
-            { $match: { "object._id": Types.ObjectId(agente._id) } },
+            { $match: { 'object._id': Types.ObjectId(agente._id) } },
             { $sort: { fecha: -1 } },
         ];
         let adjuntos = await Adjunto.aggregate(pipeline);
@@ -593,15 +628,15 @@ async function getAdjuntos(req, res, next) {
 async function getAusenciasAsEvento(req, res, next) {
     try {
         const id = req.params.id;
-        if (!id || (id && !Types.ObjectId.isValid(id))) return next(404);
+        if (!id || (id && !Types.ObjectId.isValid(id))) { return next(404); }
         let agente: any = await Agente.findById(id);
-        if (!agente) return next(404);
+        if (!agente) { return next(404); }
 
         // TODO: Aplicar algun filtro por anio o similar. Ahora por defecto
         // recupera la info en un periodo de un anio hacia atras y adelante
         const thisYear = new Date().getFullYear();
-        const fechaHastaMax = new Date(thisYear + 1 + "-12-31");
-        const fechaDesdeMin = new Date(thisYear - 5 + "-01-01");
+        const fechaHastaMax = new Date(thisYear + 1 + '-12-31');
+        const fechaDesdeMin = new Date(thisYear - 5 + '-01-01');
         let matchFecha: any = {
             fechaHasta: { $gt: fechaDesdeMin },
             fechaDesde: { $lt: fechaHastaMax },
@@ -610,42 +645,42 @@ async function getAusenciasAsEvento(req, res, next) {
         const pipeline = [
             {
                 $match: {
-                    ...{ "agente._id": Types.ObjectId(agente._id) },
+                    ...{ 'agente._id': Types.ObjectId(agente._id) },
                     ...matchFecha,
                 },
             },
-            { $unwind: "$ausencias" },
+            { $unwind: '$ausencias' },
             {
                 $project: {
-                    _id: "$_id",
-                    title: "$articulo.codigo",
+                    _id: '$_id',
+                    title: '$articulo.codigo',
                     start: {
                         $dateToString: {
-                            date: "$ausencias.fecha",
-                            format: "%Y-%m-%d",
+                            date: '$ausencias.fecha',
+                            format: '%Y-%m-%d',
                         },
                     },
                     allDay: { $literal: true },
-                    backgroundColor: "transparent",
-                    textColor: { $ifNull: ["$articulo.color", "#00A8E0"] },
-                    className: "ausencia-event-class",
-                    type: "AUSENCIA",
+                    backgroundColor: 'transparent',
+                    textColor: { $ifNull: ['$articulo.color', '#00A8E0'] },
+                    className: 'ausencia-event-class',
+                    type: 'AUSENCIA',
                     ausentismoFechaDesde: {
                         $dateToString: {
-                            date: "$fechaDesde",
-                            format: "%Y-%m-%dT00:00:00",
+                            date: '$fechaDesde',
+                            format: '%Y-%m-%dT00:00:00',
                         },
                     },
                     ausentismoFechaHasta: {
                         $dateToString: {
-                            date: "$fechaHasta",
-                            format: "%Y-%m-%dT00:00:00",
+                            date: '$fechaHasta',
+                            format: '%Y-%m-%dT00:00:00',
                         },
                     },
                     startString: {
                         $dateToString: {
-                            date: "$ausencias.fecha",
-                            format: "%Y-%m-%dT00:00:00",
+                            date: '$ausencias.fecha',
+                            format: '%Y-%m-%dT00:00:00',
                         },
                     },
                 },
@@ -661,26 +696,26 @@ async function getAusenciasAsEvento(req, res, next) {
 async function getLicenciasTotales(req, res, next) {
     try {
         const id = req.params.id;
-        if (!id || (id && !Types.ObjectId.isValid(id))) return next(404);
+        if (!id || (id && !Types.ObjectId.isValid(id))) { return next(404); }
 
         let agente: any = await Agente.findById(id);
-        if (!agente) return next(404);
+        if (!agente) { return next(404); }
 
         const thisYear = new Date().getFullYear();
         const pipeline = [
             {
                 $match: {
-                    "agente._id": Types.ObjectId(agente._id),
+                    'agente._id': Types.ObjectId(agente._id),
                     vigencia: { $gte: thisYear - 2 },
                 },
             },
-            { $unwind: "$intervalos" },
-            { $match: { "intervalos.totales": { $nin: [null, ""] } } },
+            { $unwind: '$intervalos' },
+            { $match: { 'intervalos.totales': { $nin: [null, ''] } } },
             {
                 $group: {
                     _id: null,
-                    totales: { $sum: "$intervalos.totales" },
-                    ejecutadas: { $sum: "$intervalos.ejecutadas" },
+                    totales: { $sum: '$intervalos.totales' },
+                    ejecutadas: { $sum: '$intervalos.ejecutadas' },
                 },
             },
         ];
@@ -699,16 +734,16 @@ async function getLicenciasTotales(req, res, next) {
  */
 function _validateAgenteAttributes(agente): String[] {
     let objToCheck = agente;
-    const attrRequeridos = ["documento", "nombre", "apellido", "sexo"];
+    const attrRequeridos = ['documento', 'nombre', 'apellido', 'sexo'];
     let attrFaltantes = [];
-    if (agente.hasOwnProperty("_doc")) {
+    if (agente.hasOwnProperty('_doc')) {
         objToCheck = agente._doc;
     }
     attrRequeridos.forEach((e) => {
         if (!objToCheck.hasOwnProperty(e)) {
             attrFaltantes.push(e);
         } else {
-            if (typeof objToCheck[e] == "undefined" || !objToCheck[e]) {
+            if (typeof objToCheck[e] === 'undefined' || !objToCheck[e]) {
                 attrFaltantes.push(e);
             }
         }
@@ -730,7 +765,7 @@ async function _findAgente(agente): Promise<any> {
     if (attrFaltantes.length > 0) {
         throw new Error(
             `Error: Faltan atributos requeridos. Verifique: ${attrFaltantes.join(
-                ", "
+                ', '
             )}`
         );
     }
@@ -751,22 +786,22 @@ function _isEmpty(obj) {
     return obj === null || undefined
         ? true
         : (() => {
-              for (const prop in obj) {
-                  if (Object.prototype.hasOwnProperty.call(obj, prop)) {
-                      return false;
-                  }
-              }
-              return true;
-          })();
+            for (const prop in obj) {
+                if (Object.prototype.hasOwnProperty.call(obj, prop)) {
+                    return false;
+                }
+            }
+            return true;
+        })();
 }
 
 async function _findFotoPerfil(agenteID) {
     if (agenteID) {
         const fotoAgenteModel = makeFs();
         const fotos = await fotoAgenteModel.find({
-            "metadata.agenteID": new Types.ObjectId(agenteID),
+            'metadata.agenteID': new Types.ObjectId(agenteID),
         });
-        if (fotos.length > 0) return fotos[0];
+        if (fotos.length > 0) { return fotos[0]; }
     }
     return null;
 }
@@ -775,42 +810,43 @@ async function _saveImage(imagen, agenteID, migracion?) {
     // Se eliminan las fotos anteriores si es necesario
     const agenteFotoModel = makeFs();
     const fotosPrevias = await agenteFotoModel.find({
-        "metadata.agenteID": agenteID,
+        'metadata.agenteID': agenteID,
     });
     fotosPrevias.forEach((foto) => {
-        agenteFotoModel.unlinkById(foto._id, (error, unlinkedAttachment) => {});
+        agenteFotoModel.unlinkById(foto._id, (error, unlinkedAttachment) => { });
     });
     // Remove extra data if necesary. En la migracion no es necesario este pre-procesamiento
-    if (!migracion)
+    if (!migracion) {
         imagen = imagen
             .toString()
-            .replace(/^data:image\/(png|jpg|jpeg);base64,/, "");
+            .replace(/^data:image\/(png|jpg|jpeg);base64,/, '');
+    }
 
-    let buffer = Buffer.from(imagen, "base64");
+    let buffer = Buffer.from(imagen, 'base64');
     buffer = await readImage(buffer, { quality: 90, w: 256 });
     let stream = new Readable();
     stream.push(buffer);
     stream.push(null);
     const options = {
-        filename: "fotoCredencialNueva.jpg",
-        contentType: "image/jpg",
+        filename: 'fotoCredencialNueva.jpg',
+        contentType: 'image/jpg',
         metadata: {
-            agenteID: agenteID,
+            agenteID,
         },
     };
-    agenteFotoModel.write(options, stream, (error, file) => {});
+    agenteFotoModel.write(options, stream, (error, file) => { });
 }
 
 async function uploadFilesAgente(req, res, next) {
     try {
         const id = req.params.id;
-        if (!id || (id && !Types.ObjectId.isValid(id))) return next(404);
+        if (!id || (id && !Types.ObjectId.isValid(id))) { return next(404); }
         let agente: any = await Agente.findById(id);
-        if (!agente) return next(404);
+        if (!agente) { return next(404); }
         const result = await attachFilesToObject([], agente);
         return res.json(result);
     } catch (err) {
-        console.log("Estamos atrapando el error!!");
+        console.log('Estamos atrapando el error!!');
         return next(err);
     }
 }
