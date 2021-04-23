@@ -3,12 +3,29 @@ import * as mongoose from "mongoose";
 import * as debug from "debug";
 import config from "./confg";
 
-// SQLServer Config
-const sqlConfig = {
-    user: config.database.sqlserver.user,
-    password: config.database.sqlserver.password,
-    server: config.database.sqlserver.server,
-    database: config.database.sqlserver.database,
+// SQLServer Hospital (Sistema Legacy) Config
+const sqlConfigHospital = {
+    user: config.database.sqlserverHospital.user,
+    password: config.database.sqlserverHospital.password,
+    server: config.database.sqlserverHospital.server,
+    database: config.database.sqlserverHospital.database,
+    parseJSON: true,
+    requestTimeout: 60000,
+    connectionTimeout: 60000,
+    encrypt: false,
+    pool: {
+        max: 10,
+        min: 0,
+        idleTimeoutMillis: 30000,
+    },
+};
+
+// SQLServer Anviz (Fichador) Config
+const sqlConfigAnviz = {
+    user: config.database.sqlserverAnviz.user,
+    password: config.database.sqlserverAnviz.password,
+    server: config.database.sqlserverAnviz.server,
+    database: config.database.sqlserverAnviz.database,
     parseJSON: true,
     requestTimeout: 60000,
     connectionTimeout: 60000,
@@ -21,17 +38,25 @@ const sqlConfig = {
 };
 
 export class SQLServerConnection {
+    static sqlConfig;
     static connection;
     static sqlServerPool;
 
     static connect() {
-        this.sqlServerPool = new sqlClient.ConnectionPool(sqlConfig);
+        this.sqlServerPool = new sqlClient.ConnectionPool(this.sqlConfig);
         this.sqlServerPool.on("error", (err) => {
-            console.log("Fallo la conexion al SQLServer");
+            console.log("Fallo la conexion al SQLServer. Database:" + this.sqlConfig.database);
         });
         this.connection = this.sqlServerPool.connect();
-        console.log("SQLServer Connection Established");
     }
+}
+
+export class SQLServerHospitalCon extends SQLServerConnection {
+    static sqlConfig = sqlConfigHospital;
+}
+
+export class SQLServerAnvizCon extends SQLServerConnection {
+    static sqlConfig = sqlConfigAnviz;
 }
 
 function schemaDefaults(schema) {

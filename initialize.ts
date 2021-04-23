@@ -6,7 +6,7 @@ const requireDir = require("require-dir");
 const audit = require("./packages/mongoose-audit-trail");
 
 import * as config from "./config";
-import { Connections, SQLServerConnection } from "./connections";
+import { Connections, SQLServerHospitalCon, SQLServerAnvizCon } from "./connections";
 import { Auth } from "./auth";
 import { authenticate } from "./auth/middleware";
 import errorMiddleware from "./middleware/error.middleware";
@@ -18,8 +18,10 @@ export function initAPI(app: Express) {
 
     // Inicializa Mongoose
     Connections.initialize();
-    // Inicializa SLQServer connection
-    SQLServerConnection.connect();
+    // Inicializa SQLServer Hospital (Legacy System) connection
+    SQLServerHospitalCon.connect();
+    // Inicializa SQLServer Anviz (Fichador) connection
+    SQLServerAnvizCon.connect();
 
     // Configura Express
     app.use(bodyParser.json({ limit: "300mb" }));
