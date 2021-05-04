@@ -1,16 +1,18 @@
-import * as bodyParser from "body-parser";
-import * as boolParser from "express-query-boolean";
+import * as bodyParser from 'body-parser';
+import * as boolParser from 'express-query-boolean';
 // import * as HttpStatus from 'http-status-codes';
-import { Express } from "express";
-const requireDir = require("require-dir");
-const audit = require("./packages/mongoose-audit-trail");
+import { Express } from 'express';
+const requireDir = require('require-dir');
+const audit = require('./packages/mongoose-audit-trail');
 
-import * as config from "./config";
-import { Connections, SQLServerHospitalCon, SQLServerAnvizCon } from "./connections";
-import { Auth } from "./auth";
-import { authenticate } from "./auth/middleware";
-import errorMiddleware from "./middleware/error.middleware";
-import loggerMiddleware from "./middleware/logger.middleware";
+import * as config from './config';
+import { Connections, SQLServerHospitalCon, SQLServerAnvizCon } from './connections';
+import { Auth } from './auth';
+import { authenticate } from './auth/middleware';
+import errorMiddleware from './middleware/error.middleware';
+import loggerMiddleware from './middleware/logger.middleware';
+import { WebhookSetup, EventCore } from '@andes/event-bus';
+
 
 export function initAPI(app: Express) {
     // Inicializa la autenticación con Passport/JWT
@@ -23,28 +25,34 @@ export function initAPI(app: Express) {
     // Inicializa SQLServer Anviz (Fichador) connection
     SQLServerAnvizCon.connect();
 
+
+    WebhookSetup(
+        EventCore,
+        Connections.main
+    );
+
     // Configura Express
-    app.use(bodyParser.json({ limit: "300mb" }));
+    app.use(bodyParser.json({ limit: '300mb' }));
     app.use(boolParser());
     app.use(
         bodyParser.urlencoded({
             extended: true,
         })
     );
-    app.all("*", (req, res, next) => {
-        res.header("Access-Control-Allow-Origin", "*");
+    app.all('*', (req, res, next) => {
+        res.header('Access-Control-Allow-Origin', '*');
         res.header(
-            "Access-Control-Allow-Methods",
-            "GET,POST,PUT,DELETE,PATCH,OPTIONS"
+            'Access-Control-Allow-Methods',
+            'GET,POST,PUT,DELETE,PATCH,OPTIONS'
         );
         res.header(
-            "Access-Control-Allow-Headers",
-            "Content-Type, Authorization, X-Requested-With"
+            'Access-Control-Allow-Headers',
+            'Content-Type, Authorization, X-Requested-With'
         );
 
         // Permitir que el método OPTIONS funcione sin autenticación
-        if ("OPTIONS" === req.method) {
-            res.header("Access-Control-Max-Age", "1728000");
+        if ('OPTIONS' === req.method) {
+            res.header('Access-Control-Max-Age', '1728000');
             res.sendStatus(200);
         } else {
             next();
@@ -54,8 +62,8 @@ export function initAPI(app: Express) {
     // LOAD ALL ROUTES
     app.use(loggerMiddleware);
 
-    let AUTH = require("./auth");
-    app.use("/api/auth/", AUTH.Routes);
+    let AUTH = require('./auth');
+    app.use('/api/auth/', AUTH.Routes);
 
     app.use(authenticate());
     app.use(audit.middleware);
@@ -65,14 +73,14 @@ export function initAPI(app: Express) {
             for (const route in routes) {
                 if (config.modules[m].middleware) {
                     app.use(
-                        "/api" + config.modules[m].route,
+                        '/api' + config.modules[m].route,
                         config.modules[m].middleware,
-                        routes[route]["Routes"]
+                        routes[route]['Routes']
                     );
                 } else {
                     app.use(
-                        "/api" + config.modules[m].route,
-                        routes[route]["Routes"]
+                        '/api' + config.modules[m].route,
+                        routes[route]['Routes']
                     );
                 }
             }
