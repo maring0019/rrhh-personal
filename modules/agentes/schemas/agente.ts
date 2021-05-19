@@ -66,10 +66,11 @@ AgenteSchema.methods.nombreCompleto = function (cb) {
 };
 
 AgenteSchema.methods.servicios = function (cb) {
-    if (this.activo && this.situacionLaboral && this.situacionLaboral.cargo) {
+    if (this.activo && this.situacionLaboral && this.situacionLaboral.cargo && this.situacionLaboral.cargo.jefeUbicaciones &&
+        this.situacionLaboral.cargo.jefeUbicaciones.length) {
         return this.situacionLaboral.cargo.jefeUbicaciones;
     } else {
-        return [];
+        return [{codigo:-99}];
     }
 };
 

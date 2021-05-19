@@ -111,7 +111,7 @@ async function getTokenPayload(token, user) {
     let payload = {
         usuario : usuario,
         profesional: agente,
-        servicios: agente? agente.servicios(): [],
+        servicios: agente? agente.servicios(): [{codigo:-99}],
         permisos: usuario.permisos
     }
     return payload;

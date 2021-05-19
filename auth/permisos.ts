@@ -387,6 +387,18 @@ export default [
         title: "Módulo de Reportes",
         childs: [
             {
+                key: "reporte",
+                title: "Reportes General",
+                childs: [
+                    {
+                        key: "servicios_query_all",
+                        title: "Visualizar todos los servicios",
+                        comment: "Permite ver todos los servicios",
+                        type: "boolean",
+                    },
+                ],
+            },
+            {
                 key: "agente",
                 title: "Reportes Agentes",
                 childs: [
