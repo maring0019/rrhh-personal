@@ -14,6 +14,7 @@ import { Nota } from '../../notas/schemas/nota';
 import { Adjunto } from '../../adjuntos/schemas/adjunto';
 
 import { fichador } from './fichador';
+import { EventCore } from '@andes/event-bus';
 
 
 class FichadorException extends Error { }
@@ -133,7 +134,6 @@ async function addAgente(req, res, next) {
         // TODO Validar el objeto retornado por insertAgente. Definir que hacer si no se puede insertar
         if (!agenteSQLServerID) { return next('El agente ingresado no se pudo dar de alta!'); }
 
-        console.log(agenteSQLServerID);
 
         // Asignamos el numero generado por SQLServer al agente e insertamos en mongoDB
         agente.idLegacy = agenteSQLServerID;
@@ -145,6 +145,9 @@ async function addAgente(req, res, next) {
                 req.body.migracion
             );
         }
+
+        EventCore.emitAsync('agentes:create', agenteNuevo);
+
         return res.json(agenteNuevo);
 
 

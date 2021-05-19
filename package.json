@@ -48,6 +48,7 @@
     "typescript": "^3.3.1"
   },
   "dependencies": {
+    "@andes/event-bus": "^0.2.5",
     "@types/ejs": "^2.6.3",
     "@types/html-pdf": "^2.1.2",
     "@types/node-sass": "^4.11.0",
