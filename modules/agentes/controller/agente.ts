@@ -129,14 +129,17 @@ async function addAgente(req, res, next) {
         const agenteExistente = await AgenteController._findAgente(agente);
         if (!_isEmpty(agenteExistente)) { return next('El agente ingresado ya existe!'); }
 
-        // Primero insertamos el agente en el SQLServer Legacy
-        const agenteSQLServerID = await fichador.insertAgente(agente);
-        // TODO Validar el objeto retornado por insertAgente. Definir que hacer si no se puede insertar
-        if (!agenteSQLServerID) { return next('El agente ingresado no se pudo dar de alta!'); }
+        if (agente.numero && agente.numero.length > 0) {
+
+            // Primero insertamos el agente en el SQLServer Legacy
+            const agenteSQLServerID = await fichador.insertAgente(agente);
+            // TODO Validar el objeto retornado por insertAgente. Definir que hacer si no se puede insertar
+            if (!agenteSQLServerID) { return next('El agente ingresado no se pudo dar de alta!'); }
+            // Asignamos el numero generado por SQLServer al agente e insertamos en mongoDB
+            agente.idLegacy = agenteSQLServerID;
+        }
 
 
-        // Asignamos el numero generado por SQLServer al agente e insertamos en mongoDB
-        agente.idLegacy = agenteSQLServerID;
         const agenteNuevo = await agente.save();
         if (req.body.foto) {
             await AgenteController._saveImage(
