@@ -12,34 +12,33 @@ export class DocumentoCredencialAgente extends DocumentoPDF {
     templateName = 'credencial/agente-credencial.ejs';
     outputFilename = `${config.app.uploadFilesPath}/credencialAgente.pdf`;
 
-    getCSSFiles(){
-        return this.isPrintable? ["css/reset.scss", "css/style.scss"] : ["css/style.scss"];
+    getCSSFiles() {
+        return this.isPrintable ? ['css/reset.scss', 'css/style.scss'] : ['css/style.scss'];
     }
 
-    async getContextData(){
+    async getContextData() {
         const token = this.request.token;
         // Recuperamos los parametros de busqueda aplicados
         let params = aqp(this.request.query, {
             casters: {
                 documentoId: val => Types.ObjectId(val),
-              },
-              castParams: {
-                '_id': 'documentoId'
-              }
+            },
+            castParams: {
+                _id: 'documentoId'
+            }
         });
         // Validamos los parametros de busqueda ingresados y recuperamos los agentes de interes
-        let cleanIds:any;
+        let cleanIds: any;
         const ids = params.filter['_ids'];
-        if (!ids) return {};
-        if (!ids.$in){
-            cleanIds = (Types.ObjectId.isValid(ids))? [ids] : null;
-        } 
-        else{
-            cleanIds = ids.$in.filter(id=> Types.ObjectId.isValid(id)); 
+        if (!ids) { return {}; }
+        if (!ids.$in) {
+            cleanIds = (Types.ObjectId.isValid(ids)) ? [ids] : null;
+        } else {
+            cleanIds = ids.$in.filter(id => Types.ObjectId.isValid(id));
         }
-        if (!cleanIds || !cleanIds.length) return {};
-        const agentes:any = await Agente.find( { _id: { $in: cleanIds }}).lean();
-        if(!agentes || !agentes.length) return {};
+        if (!cleanIds || !cleanIds.length) { return {}; }
+        const agentes: any = await Agente.find({ _id: { $in: cleanIds } }).lean();
+        if (!agentes || !agentes.length) { return {}; }
 
         // Por cada agente vamos a recuperar info extra necesaria para las crendenciales
         let srcImgCredenciales = [];
@@ -47,41 +46,41 @@ export class DocumentoCredencialAgente extends DocumentoPDF {
         let funciones = [];
         const agenteFotoModel = makeFs();
         for (const agente of agentes) {
-            
+
             // Recuperamos la foto de cada agente
-            const files = await agenteFotoModel.find({ 'metadata.agenteID': new Types.ObjectId(agente._id) });
-            let file:any;
-            if (files && files.length){
-                for (const f of files){ // Si hay mas de un archivo procesamos el ultimos¿?
-                    if (f.contentType =='image/jpg'){
+            const files = await agenteFotoModel.find({ 'metadata.agenteID': new Types.ObjectId(agente._id) }).toArray();
+            let file: any;
+            if (files && files.length) {
+                for (const f of files) { // Si hay mas de un archivo procesamos el ultimos¿?
+                    if (f.contentType === 'image/jpg') {
                         file = f;
-                    } 
+                    }
                 }
             }
-            if (file){
+
+            if (file) {
                 srcImgCredenciales.push(`${config.app.url}:${config.app.port}/api/modules/agentes/agentes/${agente._id}/fotos?attachment=true&token=${token}`);
-            }
-            else{
+            } else {
                 srcImgCredenciales.push(`${config.app.url}:${config.app.port}/static/images/user.jpg`);
             }
             // Identificamos funcion y servicio de cada agente
-            const cargo = agente.situacionLaboral? agente.situacionLaboral.cargo : null;
-            funciones.push(cargo? cargo.subpuesto.nombre : '');
-            servicios.push(cargo? cargo.servicio.nombre: '')
-            
+            const cargo = agente.situacionLaboral ? agente.situacionLaboral.cargo : null;
+            funciones.push(cargo ? cargo.subpuesto.nombre : '');
+            servicios.push(cargo ? cargo.servicio.nombre : '');
+
         }
-        
+
         return {
-            agentes: agentes,
-            funciones: funciones,
-            servicios: servicios,
-            srcImgCredenciales: srcImgCredenciales,
+            agentes,
+            funciones,
+            servicios,
+            srcImgCredenciales,
             srcImgLogoSmall: `${config.app.url}:${config.app.port}/static/images/logo_small.jpeg`
-        }
+        };
     }
 
 
-    todayFormatted():String{
+    todayFormatted(): String {
         let date = new Date();
         const month = date.getMonth() + 1;
         const day = date.getDate();

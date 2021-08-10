@@ -1,4 +1,4 @@
-import { Types } from "mongoose";
+import { Types } from 'mongoose';
 import * as aqp from 'api-query-params';
 
 import { DocumentoPDF } from './documentos';
@@ -14,66 +14,66 @@ export class DocumentoConstanciaCertificado extends DocumentoPDF {
     templateName = 'ausentismo/constancia-certificado.ejs';
     outputFilename = `${config.app.uploadFilesPath}/constanciaCertificado.pdf`;
 
-    getCSSFiles(){
-        return this.isPrintable? ["css/reset.scss"] : [];
-    }	
-    
+    getCSSFiles() {
+        return this.isPrintable ? ['css/reset.scss'] : [];
+    }
 
-    async getContextData(){
+
+    async getContextData() {
         const token = this.request.token;
         // Recuperamos los parametros de busqueda aplicados
         let params = aqp(this.request.query, {
             casters: {
                 documentoId: val => Types.ObjectId(val),
-              },
-              castParams: {
-                '_id': 'documentoId'
-              }
+            },
+            castParams: {
+                _id: 'documentoId'
+            }
         });
         const id = params.filter['_id'];
-        if (!id || (id && !Types.ObjectId.isValid(id))) return {}
-        
-        const ausentismo:any = await AusenciaPeriodo.findById(id).lean();
-        if(!ausentismo) return {}
+        if (!id || (id && !Types.ObjectId.isValid(id))) { return {}; }
+
+        const ausentismo: any = await AusenciaPeriodo.findById(id).lean();
+        if (!ausentismo) { return {}; }
 
         const agente = await Agente.findById(ausentismo.agente._id);
-        if(!agente) return {}
+        if (!agente) { return {}; }
 
         let srcImgCertificado;
-        if (ausentismo.extra){
+        if (ausentismo.extra) {
             // Vamos a intentar obtener la info del medico y demas dato
             // del certificado (sin imagen/escaneo del certificado) para
             // incluirla en la impresion
-        }
-        else{
+        } else {
+
             // Vamos a intentar recuperar si existe el certificado adjunto
             // para incluirlo en la impresion
             const filesModel = FilesModel();
-            const files = await filesModel.find({ 'metadata.objID': new Types.ObjectId(ausentismo._id)});
-            let file:any;
-            if (files && files.length){
-                for (const f of files){ // Si hay mas de un archivo procesamos el ultimos¿?
-                    if (f.contentType =='image/jpeg'){
+            const files = await filesModel.find({ 'metadata.objID': new Types.ObjectId(ausentismo._id) }).toArray();
+            let file: any;
+            if (files && files.length) {
+                for (const f of files) { // Si hay mas de un archivo procesamos el ultimos¿?
+                    if (f.contentType === 'image/jpeg') {
                         file = f;
-                    } 
+                    }
                 }
             }
-            if (file){
+            if (file) {
                 srcImgCertificado = `${config.app.url}:${config.app.port}/api/core/files/objects/${ausentismo._id}/files/${file._id}/download?token=${token}`;
-            }  
+            }
         }
         const fechaHora = this.todayFormatted();
         return {
-            fechaHora: fechaHora,
-            agente: agente,
+            fechaHora,
+            agente,
             extraInfo: ausentismo.extraInfo,
-            srcImgCertificado: srcImgCertificado,
+            srcImgCertificado,
             srcImgLogo: this.headerLogo
-        }
+        };
     }
 
 
-    todayFormatted():String{
+    todayFormatted(): String {
         let date = new Date();
         const month = date.getMonth() + 1;
         const day = date.getDate();
