@@ -1,20 +1,17 @@
-import { Types } from 'mongoose';
-import * as aqp from 'api-query-params';
-
-import { Readable } from 'stream';
-
-import { Agente } from '../schemas/agente';
-import { makeFs } from '../../../core/tm/schemas/imagenes';
-import { attachFilesToObject } from '../../../core/files/controller/file';
-import { AusenciaPeriodo } from '../../ausentismo/schemas/ausenciaperiodo';
-import { readImage } from '../../../core/files/utils';
-import { IndicadorAusentismo } from '../../ausentismo/schemas/indicador';
-import { NormaLegal } from '../schemas/normaLegal';
-import { Nota } from '../../notas/schemas/nota';
-import { Adjunto } from '../../adjuntos/schemas/adjunto';
-
-import { fichador } from './fichador';
 import { EventCore } from '@andes/event-bus';
+import * as aqp from 'api-query-params';
+import { Types } from 'mongoose';
+import { Readable } from 'stream';
+import { attachFilesToObject } from '../../../core/files/controller/file';
+import { readImage } from '../../../core/files/utils';
+import { makeFs } from '../../../core/tm/schemas/imagenes';
+import { Adjunto } from '../../adjuntos/schemas/adjunto';
+import { AusenciaPeriodo } from '../../ausentismo/schemas/ausenciaperiodo';
+import { IndicadorAusentismo } from '../../ausentismo/schemas/indicador';
+import { Nota } from '../../notas/schemas/nota';
+import { Agente } from '../schemas/agente';
+import { NormaLegal } from '../schemas/normaLegal';
+import { fichador } from './fichador';
 
 
 class FichadorException extends Error { }
@@ -129,15 +126,15 @@ async function addAgente(req, res, next) {
         const agenteExistente = await AgenteController._findAgente(agente);
         if (!_isEmpty(agenteExistente)) { return next('El agente ingresado ya existe!'); }
 
-        if (agente.numero && agente.numero.length > 0) {
+        // if (agente.numero && agente.numero.length > 0) {
 
-            // Primero insertamos el agente en el SQLServer Legacy
-            const agenteSQLServerID = await fichador.insertAgente(agente);
-            // TODO Validar el objeto retornado por insertAgente. Definir que hacer si no se puede insertar
-            if (!agenteSQLServerID) { return next('El agente ingresado no se pudo dar de alta!'); }
-            // Asignamos el numero generado por SQLServer al agente e insertamos en mongoDB
-            agente.idLegacy = agenteSQLServerID;
-        }
+        // Primero insertamos el agente en el SQLServer Legacy
+        const agenteSQLServerID = await fichador.insertAgente(agente);
+        // TODO Validar el objeto retornado por insertAgente. Definir que hacer si no se puede insertar
+        if (!agenteSQLServerID) { return next('El agente ingresado no se pudo dar de alta!'); }
+        // Asignamos el numero generado por SQLServer al agente e insertamos en mongoDB
+        agente.idLegacy = agenteSQLServerID;
+        // }
 
 
         const agenteNuevo = await agente.save();

@@ -74,7 +74,7 @@ async function insertAgente(agente) {
     const sqlConn = await SQLServerHospitalCon.connection;
     const resultado = await sqlConn
         .request()
-        .input('numero', agente.numero)
+        .input('numero', agente.numero || `#${agente.documento}`)
         .input('documento', agente.documento)
         .input('apellido', agente.apellido)
         .input('nombre', agente.nombre)
