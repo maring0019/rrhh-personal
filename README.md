@@ -16,3 +16,5 @@ npm install
 ### Configuración
 
 Crear un archivo `.env` con las variables de entorno.
+
+Renombrar el archivo confg/index.ts.example a confg/index.ts, y completar el mismo con la configuración deseada.

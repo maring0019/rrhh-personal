@@ -1,5 +1,6 @@
 # Archivos de configuración
 .env
+confg/index.ts
 
 # Logs
 logs
