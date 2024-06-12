@@ -2,35 +2,32 @@
 import * as mongoose from 'mongoose';
 // const Grid = require('gridfs-stream');
 
-const gridfs = require('mongoose-gridfs');
+const { createBucket } = require('mongoose-gridfs');
 
 export function makeFs() {
-    const AgentesImagenesSchema = gridfs({
-        collection: 'imagenesagente',
-        model: 'AgentesImagenes',
+
+    const AgentesImagenesSchema = createBucket({
+        bucketName: 'imagenesagente',
         mongooseConnection: mongoose.connection
     });
-  
-    return AgentesImagenesSchema.model;
+    return AgentesImagenesSchema;
 }
 
 
 export function FilesModel() {
-    const FilesSchema = gridfs({
-        collection: 'files',
-        model: 'Files',
+    const FilesSchema = createBucket({
+        bucketName: 'files',
         mongooseConnection: mongoose.connection
     });
-    return FilesSchema.model;
+    return FilesSchema;
 }
 
 export function FilesTemporalModel() {
-    const FilesSchema = gridfs({
-        collection: 'filestemporal',
-        model: 'Files',
+    const FilesSchema = createBucket({
+        bucketName: 'filestemporal',
         mongooseConnection: mongoose.connection
     });
-    return FilesSchema.model;
+    return FilesSchema;
 }
 
 // export function GridFS({ host, collectionName = 'filesAgentes' }) {

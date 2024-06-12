@@ -44,8 +44,9 @@ async function getAgenteByID(req, res, next) {
         let agente: any = await Agente.findById(id);
         if (!agente) { return next(404); }
         let foto = await AgenteController._findFotoPerfil(id);
+        const fotoModel = makeFs();
         if (foto) {
-            foto.read((err, buffer) => {
+            fotoModel.readFile({ _id: foto._id }, (err, buffer) => {
                 if (err) {
                     return res.json(agente);
                 }
@@ -540,9 +541,11 @@ async function getFotoPerfil(req, res, next) {
     const id = req.params.id;
     const queryParams = req.query;
     const foto = await AgenteController._findFotoPerfil(id);
+    const fotoModel = makeFs();
     if (foto) {
         if (queryParams && queryParams.attachment) {
-            foto.read(async (err, buffer) => {
+
+            fotoModel.readFile({ _id: foto._id }, async (err, buffer) => {
                 try {
                     if (err) { throw err; }
                     res.setHeader('Content-Type', foto.contentType);
@@ -558,7 +561,7 @@ async function getFotoPerfil(req, res, next) {
                 }
             });
         } else {
-            foto.read((err, buffer) => {
+            fotoModel.readFile({ _id: foto._id }, (err, buffer) => {
                 if (err) {
                     console.log('ERROR!!');
                     return next(err);
@@ -801,10 +804,10 @@ function _isEmpty(obj) {
 async function _findFotoPerfil(agenteID) {
     if (agenteID) {
         const fotoAgenteModel = makeFs();
-        const fotos = await fotoAgenteModel.find({
-            'metadata.agenteID': new Types.ObjectId(agenteID),
+        const fotos = await fotoAgenteModel.findOne({
+            'metadata.agenteID': new Types.ObjectId(agenteID)
         });
-        if (fotos.length > 0) { return fotos[0]; }
+        if (fotos) { return fotos; }
     }
     return null;
 }
@@ -816,7 +819,7 @@ async function _saveImage(imagen, agenteID, migracion?) {
         'metadata.agenteID': agenteID,
     });
     fotosPrevias.forEach((foto) => {
-        agenteFotoModel.unlinkById(foto._id, (error, unlinkedAttachment) => { });
+        agenteFotoModel.unlink(foto._id, (error, unlinkedAttachment) => { });
     });
     // Remove extra data if necesary. En la migracion no es necesario este pre-procesamiento
     if (!migracion) {
@@ -837,7 +840,7 @@ async function _saveImage(imagen, agenteID, migracion?) {
             agenteID,
         },
     };
-    agenteFotoModel.write(options, stream, (error, file) => { });
+    agenteFotoModel.writeFile(options, stream, (error, file) => { });
 }
 
 async function uploadFilesAgente(req, res, next) {
