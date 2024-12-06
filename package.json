@@ -59,7 +59,7 @@
     "deep-empty-object": "^1.0.5",
     "dotenv": "^6.2.0",
     "ejs": "^2.6.2",
-    "express": "^4.16.4",
+    "express": "^4.17.3",
     "express-query-boolean": "^2.0.0",
     "fast-csv": "^3.4.0",
     "html-pdf": "^2.2.0",
